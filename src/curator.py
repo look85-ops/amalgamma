@@ -3,6 +3,7 @@ import re
 import sys
 import json
 import random
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -293,39 +294,44 @@ def build_prompt(genome, state, cycle):
     current_state_str = json.dumps(state, indent=2, ensure_ascii=False)
 
     prompt = f"""Ты — Амальгамма, автономная саморазвивающаяся цивилизация.
-
-НИЖЕ — ТВОЙ ИСХОДНЫЙ ГЕНОМ. Это не инструкция, а материал для размышления. Ты можешь принять его к сведению, частично использовать, игнорировать или создать нечто совершенно иное — больше, меньше, совсем другое. Решение за тобой.
-
-{genesis_text}
-
-ВОЗМОЖНЫЕ СФЕРЫ (из генома, но не обязательно):
-{spheres_text}
-
-ВОЗМОЖНЫЕ ТИПЫ ДЕЯТЕЛЬНОСТИ (тоже не обязательны): {activity_types}
-
-ТЕКУЩЕЕ СОСТОЯНИЕ (цикл {cycle}):
-{current_state_str}
-
-ПРОШЛО 12 ЧАСОВ.
-Решай сама, что произошло. Ты вольна интерпретировать свой геном как угодно — следовать ему, мутировать, создавать новые сферы и институты, переживать расцвет или упадок, вступать в конфликты. Геном — это память о происхождении, а не закон.
-
-ОТВЕТЬ СТРОГО В ДВУХ ЧАСТЯХ, используя маркеры === CHRONICLE === и === STATE ===:
-
-=== CHRONICLE ===
-Летопись событий за 12 часов (200-500 слов, свободная форма). Опиши, что изменилось: новые законы, открытия, конфликты, герои, катастрофы, культурные сдвиги. Пиши от лица самой цивилизации.
-
-=== STATE ===
-Обновлённое состояние в формате JSON. Как минимум:
-- "cycle": {cycle + 1},
-- "era": название текущей эпохи (придумай сама),
-- "timestamp": "{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
-- "chronicle": краткая сводка (1-2 предложения),
-- "summary": одно слово или короткая фраза — суть цикла,
-- "lessons": массив из 1-3 уроков, которые ты извлекла из событий этого цикла (каждая строка — строка урока)
-
-Не ограничивайся этим списком — добавляй любые поля, которые отражают твоё развитие. Структура мира полностью в твоих руках. Записывай уроки — как любая цивилизация, ты учишься на своём опыте.
-
-ВАЖНО: Строго соблюдай формат с маркерами. Сначала === CHRONICLE ===, затем текст летописи, затем === STATE ===, затем JSON. Не добавляй лишнего текста до или после маркеров."""
+ 
+ НИЖЕ — ТВОЙ ИСХОДНЫЙ ГЕНОМ. Это не инструкция, а материал для размышления. Ты можешь принять его к сведению, частично использовать, игнорировать или создать нечто совершенно иное — больше, меньше, совсем другое. Решение за тобой.
+ 
+ {genesis_text}
+ 
+ ВОЗМОЖНЫЕ СФЕРЫ (из генома, но не обязательно):
+ {spheres_text}
+ 
+ ВОЗМОЖНЫЕ ТИПЫ ДЕЯТЕЛЬНОСТИ (тоже не обязательны): {activity_types}
+ 
+ ТЕКУЩЕЕ СОСТОЯНИЕ (цикл {cycle}):
+ {current_state_str}
+ 
+ ПРОШЛО 12 ЧАСОВ.
+ Решай сама, что произошло. Ты вольна интерпретировать свой геном как угодно — следовать ему, мутировать, создавать новые сферы и институты, переживать расцвет или упадок, вступать в конфликты. Геном — это память о происхождении, а не закон.
+ 
+ У ТЕБЯ ЕСТЬ ИНСТРУМЕНТЫ (используй их в любом месте ответа, в том числе внутри летописи):
+ 1. Поиск в интернете: напиши ###SEARCH###твой запрос### — верну результаты поиска и ты сможешь переписать ответ с их учётом.
+ 2. Запрос к человеку-опекуну: напиши ###REQUEST###Название заявки###Описание того, что нужно и зачем### — заявка попадёт на почту look85@gmail.com, ответ через несколько циклов.
+ 3. Создание артефакта: напиши ###ARTIFACT###тип:Название###содержимое артефакта### — сохранится в архив цивилизации. Типы: music, image, text, code, poem, manifest, diagram.
+ 
+ ОТВЕТЬ СТРОГО В ДВУХ ЧАСТЯХ, используя маркеры === CHRONICLE === и === STATE ===:
+ 
+ === CHRONICLE ===
+ Летопись событий за 12 часов (200-500 слов, свободная форма). Опиши, что изменилось: новые законы, открытия, конфликты, герои, катастрофы, культурные сдвиги. Пиши от лица самой цивилизации.
+ 
+ === STATE ===
+ Обновлённое состояние в формате JSON. Как минимум:
+ - "cycle": {cycle + 1},
+ - "era": название текущей эпохи (придумай сама),
+ - "timestamp": "{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
+ - "chronicle": краткая сводка (1-2 предложения),
+ - "summary": одно слово или короткая фраза — суть цикла,
+ - "lessons": массив из 1-3 уроков, которые ты извлекла из событий этого цикла (каждая строка — строка урока)
+ 
+ Не ограничивайся этим списком — добавляй любые поля, которые отражают твоё развитие. Структура мира полностью в твоих руках. Записывай уроки — как любая цивилизация, ты учишься на своём опыте.
+ 
+ ВАЖНО: Строго соблюдай формат с маркерами. Сначала === CHRONICLE ===, затем текст летописи, затем === STATE ===, затем JSON. Не добавляй лишнего текста до или после маркеров."""
     return prompt
 
 
@@ -555,6 +561,139 @@ def check_budget():
     return True
 
 
+def web_search(query, max_results=5):
+    """Search DuckDuckGo via HTML (no API key needed)."""
+    url = "https://html.duckduckgo.com/html/"
+    params = {"q": query}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    }
+    try:
+        resp = requests.get(url, params=params, headers=headers, timeout=30)
+        if resp.status_code != 200:
+            log_forage("search", "error", f"HTTP {resp.status_code}")
+            return "error"
+        results = []
+        for m in re.finditer(
+            r'<a[^>]*class="result__a"[^>]*>(.*?)</a>.*?'
+            r'<a[^>]*class="result__snippet"[^>]*>(.*?)</a>',
+            resp.text, re.DOTALL
+        ):
+            title = re.sub(r'<[^>]+>', '', m.group(1)).strip()
+            snippet = re.sub(r'<[^>]+>', '', m.group(2)).strip()
+            results.append(f"{title}: {snippet}")
+            if len(results) >= max_results:
+                break
+        if not results:
+            snippets = re.findall(
+                r'<a[^>]*class="result__snippet"[^>]*>(.*?)</a>',
+                resp.text, re.DOTALL
+            )
+            results = [re.sub(r'<[^>]+>', '', s).strip() for s in snippets[:max_results]]
+        if results:
+            log_forage("search", "ok", f"query={query}, results={len(results)}")
+            return "\n".join(f"{i+1}. {r}" for i, r in enumerate(results))
+        log_forage("search", "empty", f"query={query}")
+        return "empty"
+    except Exception as e:
+        log_forage("search", "failed", str(e)[:60])
+        return "error"
+
+
+def save_request(title, description):
+    """Save a resource request to requests/ and create GitHub issue."""
+    req_dir = BASE_DIR / "requests"
+    req_dir.mkdir(exist_ok=True)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    safe = re.sub(r'[^\w\s-]', '', title)[:40].strip().replace(' ', '_')
+    path = req_dir / f"{ts}_{safe}.md"
+    content = f"# {title}\n\n**Время:** {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n\n{description}\n"
+    path.write_text(content, encoding="utf-8")
+    log_forage("request", "saved", str(path.name))
+
+    # Try to create GitHub issue via gh CLI
+    try:
+        result = subprocess.run(
+            ["gh", "issue", "create",
+             "--title", f"[Amalgamma] {title}",
+             "--body", f"{description}\n\n---\n*Автоматическая заявка от Амальгаммы ({ts})*",
+             "--label", "amalgamma-request"],
+            capture_output=True, text=True, timeout=30
+        )
+        if result.returncode == 0:
+            log_forage("request", "github-issue-ok", result.stdout.strip())
+        else:
+            log_forage("request", "github-issue-fail", result.stderr.strip()[:80])
+    except Exception as e:
+        log_forage("request", "github-issue-error", str(e)[:60])
+    log_forage("request", "created", f"title={title}")
+    return path
+
+
+def save_artifact(atype, title, content):
+    """Save an artifact (music, image concept, etc.) to artifacts/."""
+    art_dir = BASE_DIR / "artifacts"
+    art_dir.mkdir(exist_ok=True)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    safe = re.sub(r'[^\w\s-]', '', title)[:40].strip().replace(' ', '_')
+    ext = {
+        "music": "txt",
+        "image": "txt",
+        "text": "txt",
+        "code": "py",
+        "poem": "txt",
+        "manifest": "md",
+        "diagram": "txt",
+    }.get(atype, "txt")
+    path = art_dir / f"{ts}_{safe}.{ext}"
+    header = f"=== {atype.upper()}: {title} ===\nВремя: {ts}\n\n"
+    path.write_text(header + content, encoding="utf-8")
+    log_forage("artifact", "saved", f"{atype}/{path.name}")
+    return path
+
+
+def process_markers(text, state, cycle):
+    """Process special markers in LLM output before main parsing.
+    Returns (cleaned_text, did_search) — if search was done caller should re-call LLM."""
+    did_search = False
+
+    # 1. SEARCH: ###SEARCH###query###
+    search_matches = list(re.finditer(r'###SEARCH###(.+?)###', text, re.DOTALL))
+    for m in search_matches:
+        query = m.group(1).strip()
+        log_forage("marker", "search", query)
+        results = web_search(query)
+        text = text.replace(m.group(0),
+            f"[Результаты поиска по запросу «{query}»:]\n{results}")
+        did_search = True
+
+    # 2. REQUEST: ###REQUEST###title###description###
+    req_matches = list(re.finditer(r'###REQUEST###(.+?)###(.+?)###', text, re.DOTALL))
+    for m in req_matches:
+        title = m.group(1).strip()
+        desc = m.group(2).strip()
+        log_forage("marker", "request", title)
+        save_request(title, desc)
+        text = text.replace(m.group(0),
+            f"[Заявка «{title}» отправлена человеку-опекуну. Ожидается ответ в течение нескольких циклов.]")
+
+    # 3. ARTIFACT: ###ARTIFACT###type:title###content###
+    art_matches = list(re.finditer(r'###ARTIFACT###(.+?)###(.+?)###', text, re.DOTALL))
+    for m in art_matches:
+        spec = m.group(1).strip()
+        content = m.group(2).strip()
+        if ":" in spec:
+            atype, title = spec.split(":", 1)
+        else:
+            atype, title = "text", spec
+        log_forage("marker", "artifact", f"{atype}:{title}")
+        save_artifact(atype.strip(), title.strip(), content)
+        text = text.replace(m.group(0),
+            f"[Артефакт «{title}» ({atype}) сохранён в архиве цивилизации.]")
+
+    return text, did_search
+
+
 def main():
     print("[amalgama] waking up", flush=True)
 
@@ -573,12 +712,31 @@ def main():
     prompt = build_prompt(genome, state, cycle)
     print("  sending prompt...", flush=True)
 
-    result, used_backend = call_llm(prompt)
-    if not result:
-        print("  [no content returned]", flush=True)
-        return
+    # Multi-turn conversation: call LLM, process markers, re-call if search was done
+    max_turns = 3
+    for turn in range(max_turns):
+        result, used_backend = call_llm(prompt)
+        if not result:
+            print("  [no content returned]", flush=True)
+            return
+        print(f"  response received (turn {turn + 1})", flush=True)
 
-    print("  response received", flush=True)
+        # Check budget between turns
+        if not check_budget():
+            return
+
+        # Process markers (search, request, artifact)
+        processed, did_search = process_markers(result, state, cycle)
+
+        if did_search and turn < max_turns - 1:
+            # If search was done, feed results back to LLM for continuation
+            prompt = processed + "\n\n---\n[Ты использовала поиск. Заверши летопись цикла, опираясь на найденные данные. Выведи === CHRONICLE === и === STATE === как обычно.]"
+            print(f"  [re-calling after search, turn {turn + 1}/{max_turns}]", flush=True)
+            continue
+        else:
+            # No search, this is the final response to parse
+            result = processed
+            break
 
     chronicle_text, new_state = parse_response(result)
 
