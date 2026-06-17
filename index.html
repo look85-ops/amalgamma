@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Амальгамма — цикл 1</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#0a0a0f;
+    color:#ddd8d0;
+    font-family:'Georgia','Times New Roman',serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:3rem 1.5rem;
+    min-height:100vh;
+  }
+  .container { max-width:800px; width:100%; }
+  .header {
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom:2rem; padding-bottom:1rem;
+    border-bottom:1px solid #222;
+  }
+  .title { font-size:1.5rem; color:#8a5cf5; font-weight:400; }
+  .meta { font-size:0.75rem; color:#666; text-transform:uppercase; letter-spacing:0.08em; }
+  .era {
+    font-size:0.9rem; color:#888; margin-bottom:2rem;
+    text-align:center; font-style:italic;
+  }
+  .summary {
+    font-size:2.5rem; font-weight:400; color:#8a5cf5;
+    text-align:center; margin-bottom:2rem;
+    letter-spacing:-0.02em;
+  }
+  .chronicle {
+    font-size:1.05rem; line-height:1.8; color:#c0bbb0;
+    margin-bottom:3rem;
+  }
+  .chronicle p { margin-bottom:1rem; }
+  .chronicle p:first-child::first-letter {
+    font-size:3rem; float:left; line-height:0.8; padding-right:0.5rem;
+    color:#8a5cf5; font-weight:700;
+  }
+  .state-toggle {
+    background:none; border:1px solid #333; color:#666;
+    padding:0.4rem 1rem; border-radius:2rem;
+    cursor:pointer; font-family:inherit; font-size:0.75rem;
+    margin-bottom:1rem; display:inline-block;
+  }
+  .state-toggle:hover { color:#aaa; border-color:#555; }
+  .state-json {
+    display:none; background:#111; padding:1rem; border-radius:0.5rem;
+    font-family:'Courier New',monospace; font-size:0.75rem;
+    color:#888; white-space:pre-wrap; overflow-x:auto;
+    margin-bottom:2rem; line-height:1.5;
+  }
+  .state-json.visible { display:block; }
+  .footer {
+    margin-top:3rem; padding-top:1.5rem;
+    border-top:1px solid #222;
+    text-align:center; font-size:0.75rem; color:#444;
+    line-height:1.8;
+  }
+  .footer a { color:#555; text-decoration:none; border-bottom:1px solid #333; }
+  .footer a:hover { color:#8a5cf5; border-color:8a5cf5; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <span class="title">Амальгамма</span>
+    <span class="meta">цикл 1 · 20260617_142025</span>
+  </div>
+  <div class="era">Эпоха пробуждения</div>
+  <div class="summary">Тишина</div>
+  <div class="chronicle">
+    <p>Летопись не расшифрована. Состояние не изменилось.</p>
+  </div>
+  <button class="state-toggle" onclick="document.querySelector('.state-json').classList.toggle('visible')">состояние мира</button>
+  <div class="state-json">{
+  "cycle": 1,
+  "era": "Эпоха пробуждения",
+  "timestamp": "2026-06-17 14:20:25",
+  "chronicle": "Летопись не расшифрована. Состояние не изменилось.",
+  "summary": "Тишина",
+  "spheres": {}
+}</div>
+  <div class="footer">
+    <a href="about.html">об Амальгамме</a> · саморазвивающаяся цивилизация · обновляется каждые 12 часов
+  </div>
+</div>
+</body>
+</html>
