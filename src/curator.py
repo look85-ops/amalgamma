@@ -309,7 +309,7 @@ def build_prompt(genome, state, cycle):
 ПРОШЛО 12 ЧАСОВ.
 Решай сама, что произошло. Ты вольна интерпретировать свой геном как угодно — следовать ему, мутировать, создавать новые сферы и институты, переживать расцвет или упадок, вступать в конфликты. Геном — это память о происхождении, а не закон.
 
-ОТВЕТЬ В ДВУХ ЧАСТЯХ:
+ОТВЕТЬ СТРОГО В ДВУХ ЧАСТЯХ, используя маркеры === CHRONICLE === и === STATE ===:
 
 === CHRONICLE ===
 Летопись событий за 12 часов (200-500 слов, свободная форма). Опиши, что изменилось: новые законы, открытия, конфликты, герои, катастрофы, культурные сдвиги. Пиши от лица самой цивилизации.
@@ -322,13 +322,38 @@ def build_prompt(genome, state, cycle):
 - "chronicle": краткая сводка (1-2 предложения),
 - "summary": одно слово или короткая фраза — суть цикла
 
-Не ограничивайся этим списком — добавляй любые поля, которые отражают твоё развитие. Структура мира полностью в твоих руках."""
+Не ограничивайся этим списком — добавляй любые поля, которые отражают твоё развитие. Структура мира полностью в твоих руках.
+
+ВАЖНО: Строго соблюдай формат с маркерами. Сначала === CHRONICLE ===, затем текст летописи, затем === STATE ===, затем JSON. Не добавляй лишнего текста до или после."""
     return prompt
+
+
+def find_last_json(text):
+    """Find the last valid JSON object in text."""
+    # Try to find a JSON object starting with { and ending with }
+    stack = []
+    start = -1
+    for i, c in enumerate(text):
+        if c == '{':
+            if start == -1:
+                start = i
+            stack.append(c)
+        elif c == '}':
+            if stack:
+                stack.pop()
+                if not stack and start >= 0:
+                    candidate = text[start:i+1]
+                    try:
+                        return json.loads(candidate)
+                    except json.JSONDecodeError:
+                        pass
+                    start = -1
+    return None
 
 
 def parse_response(response_text):
     chronicle = ""
-    state_json = ""
+    state_json = None
 
     chronicle_match = re.search(
         r'===?\s*CHRONICLE\s*===?\s*(.*?)(?=\s*===?\s*STATE\s*===?)',
@@ -338,16 +363,29 @@ def parse_response(response_text):
         chronicle = chronicle_match.group(1).strip()
 
     state_match = re.search(
-        r'===?\s*STATE\s*===?\s*(\{.*\})',
+        r'===?\s*STATE\s*===?\s*(\{.*?\})',
         response_text, re.DOTALL | re.IGNORECASE
     )
     if state_match:
         raw = state_match.group(1).strip()
         try:
             state_json = json.loads(raw)
+            log_forage("parse", "state found via == STATE ==")
         except json.JSONDecodeError:
-            log_forage("parse", "state JSON parse failed", raw[:100])
-            return chronicle, None
+            log_forage("parse", "state marker found but JSON invalid")
+            state_json = None
+
+    if not state_json:
+        found = find_last_json(response_text)
+        if found:
+            state_json = found
+            log_forage("parse", "state extracted via JSON search")
+
+    if not chronicle and state_json:
+        chronicle = state_json.get("chronicle", response_text[:500])
+
+    if not chronicle:
+        chronicle = response_text.strip()
 
     return chronicle, state_json
 
