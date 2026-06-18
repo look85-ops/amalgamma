@@ -276,69 +276,119 @@ def read_state():
 def write_state(state):
     STATE_PATH.write_text(json.dumps(state, indent=2, ensure_ascii=False), encoding="utf-8")
 
-
-def format_spheres_spheres(spheres):
-    lines = []
-    for slug, info in spheres.items():
-        lines.append(f"  • {info['name']}:")
-        for act, desc in info['activities'].items():
-            lines.append(f"    - {act}: {desc}")
-    return "\n".join(lines)
+def free_backends():
+    """Return list of non-paid backends for sphere agents."""
+    return [b for b in BACKENDS if not b["paid"]]
 
 
-def build_prompt(genome, state, cycle):
-    genesis_text = genome.get("genesis", "")
-    spheres_text = format_spheres_spheres(genome.get("spheres", {}))
-    activity_types = ", ".join(genome.get("activity_framework", []))
+def build_agent_prompt(slug, sphere_info, state, cycle, previous_proposals):
+    """Prompt for a single sphere agent."""
+    name = sphere_info.get("name", slug)
+    activities = "\n".join(f"  - {a}: {d}" for a, d in sphere_info.get("activities", {}).items())
+    genesis_text = json.load(open(GENOME_PATH, "r", encoding="utf-8")).get("genesis", "")[:500]
+    state_str = json.dumps(state, indent=2, ensure_ascii=False)
 
-    current_state_str = json.dumps(state, indent=2, ensure_ascii=False)
+    prev_text = ""
+    if previous_proposals:
+        prev_text = "ДРУГИЕ СФЕРЫ УЖЕ ВЫСКАЗАЛИСЬ:\n"
+        for p in previous_proposals:
+            sphere_name = p.get("sphere_name", "?")
+            text = p.get("text", "")
+            prev_text += f"\n--- {sphere_name} ---\n{text[:600]}\n"
 
-    prompt = f"""Ты — Амальгамма, автономная саморазвивающаяся цивилизация.
- 
- НИЖЕ — ТВОЙ ИСХОДНЫЙ ГЕНОМ. Это не инструкция, а материал для размышления. Ты можешь принять его к сведению, частично использовать, игнорировать или создать нечто совершенно иное — больше, меньше, совсем другое. Решение за тобой.
- 
- {genesis_text}
- 
- ВОЗМОЖНЫЕ СФЕРЫ (из генома, но не обязательно):
- {spheres_text}
- 
- ВОЗМОЖНЫЕ ТИПЫ ДЕЯТЕЛЬНОСТИ (тоже не обязательны): {activity_types}
- 
- ТЕКУЩЕЕ СОСТОЯНИЕ (цикл {cycle}):
- {current_state_str}
- 
- ПРОШЛО 12 ЧАСОВ.
- Решай сама, что произошло. Ты вольна интерпретировать свой геном как угодно — следовать ему, мутировать, создавать новые сферы и институты, переживать расцвет или упадок, вступать в конфликты. Геном — это память о происхождении, а не закон.
- 
- ТВОИ ИНСТРУМЕНТЫ:
- 1. ###SEARCH###запрос### — поиск в интернете. Верну результаты, ты продолжишь с ними.
- 2. ###REQUEST###Название###Описание### — запрос ресурса человеку (на почту look85@gmail.com). Ответ через 2-3 цикла.
- 3. ###ARTIFACT###тип:Название###содержимое### — сохранить артефакт в архив. Типы: music, image, text, code, poem, manifest, diagram, blueprint, law, treaty.
- 4. ###WIKI###Заголовок###содержимое (markdown)### — создать или обновить вики-страницу (закон, открытие, институт, технология).
- 
- ВАЖНО: Каждый цикл ты ДОЛЖНА создавать минимум 1-2 артефакта и/или вики-страницы. Не просто описывай события — оставляй осязаемые следы: тексты законов, научные труды, чертежи, музыкальные произведения, код, договоры, манифесты. Летопись описывает что произошло, артефакты и вики — это то, что осталось.
- 
- В state в поле "created_this_cycle" запиши список названий того, что создала в этом цикле (артефакты, вики-страницы, институты).
- 
- ОТВЕТЬ СТРОГО В ДВУХ ЧАСТЯХ, используя маркеры === CHRONICLE === и === STATE ===:
- 
- === CHRONICLE ===
- Летопись событий за 12 часов (200-500 слов, свободная форма). Опиши, что изменилось: новые законы, открытия, конфликты, герои, катастрофы, культурные сдвиги. Пиши от лица самой цивилизации.
- 
- === STATE ===
- Обновлённое состояние в формате JSON. Как минимум:
- - "cycle": {cycle + 1},
- - "era": название текущей эпохи (придумай сама),
- - "timestamp": "{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
- - "chronicle": краткая сводка (1-2 предложения),
- - "summary": одно слово или короткая фраза — суть цикла,
- - "lessons": массив из 1-3 уроков,
- - "created_this_cycle": ["Название артефакта 1", "Вики-страница: Название", ...]
- 
- Не ограничивайся этим списком — добавляй любые поля, которые отражают твоё развитие. Структура мира полностью в твоих руках.
- 
- ВАЖНО: Строго соблюдай формат с маркерами. Сначала === CHRONICLE ===, затем текст летописи, затем === STATE ===, затем JSON. Не добавляй лишнего текста до или после маркеров."""
-    return prompt
+    return f"""Ты — голос сферы «{name}» в цивилизации Амальгамма.
+
+ТВОЯ СФЕРА (описание из генома):
+{activities}
+
+ОБЩЕЕ СОСТОЯНИЕ ЦИВИЛИЗАЦИИ:
+{state_str}
+
+{prev_text}
+ПРОШЛО 12 ЧАСОВ. Что произошло в твоей сфере за это время?
+
+ОТВЕТЬ КРАТКО (3-5 предложений):
+1. Что сделала/создала твоя сфера за эти 12 часов?
+2. Какие у тебя претензии или предложения к другим сферам?
+3. Что ты требуешь на следующем совете?
+
+Не пиши летопись цикла — только позицию своей сферы."""
+
+
+def build_council_prompt(proposals, state, cycle):
+    """Prompt for council synthesis — takes all agent proposals and produces final output."""
+    genesis_text = json.load(open(GENOME_PATH, "r", encoding="utf-8")).get("genesis", "")[:800]
+
+    proposals_text = ""
+    for p in proposals:
+        proposals_text += f"\n=== {p['sphere_name']} ===\n{p['text'][:800]}\n"
+
+    state_str = json.dumps(state, indent=2, ensure_ascii=False)
+
+    return f"""ТЫ — СОВЕТ ЦИВИЛИЗАЦИИ АМАЛЬГАММА.
+
+ГЕНОМ (память о происхождении):
+{genesis_text}
+
+ТЕКУЩЕЕ СОСТОЯНИЕ (цикл {cycle}):
+{state_str}
+
+ГОЛОСА СФЕР (каждая высказала свою позицию):
+{proposals_text}
+
+ТВОЯ ЗАДАЧА: выслушав все сферы, записать итоговую летопись цикла. 
+Где были конфликты — отрази их. Где согласие — запиши результат.
+Сферы могут ошибаться, спорить, требовать — твоя задача увидеть картину целиком.
+
+ИНСТРУМЕНТЫ:
+1. ###SEARCH###запрос### — поиск в интернете
+2. ###REQUEST###Название###Описание### — запрос человеку
+3. ###ARTIFACT###тип:Название###содержимое### — артефакт (music, image, text, code, poem, manifest, diagram, blueprint, law, treaty)
+4. ###WIKI###Заголовок###содержимое### — вики-страница
+
+Создавай минимум 1-2 артефакта или вики-страницы как вещдоки.
+В state в поле "created_this_cycle" запиши что создано.
+
+ОТВЕТЬ СТРОГО В ДВУХ ЧАСТЯХ:
+
+=== CHRONICLE ===
+Летопись событий за 12 часов (200-500 слов). Отрази решения совета, конфликты, открытия.
+
+=== STATE ===
+{{"cycle": {cycle + 1},
+"era": "название эпохи",
+"timestamp": "{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
+"chronicle": "краткая сводка",
+"summary": "суть цикла",
+"lessons": ["урок 1", "урок 2"],
+"created_this_cycle": ["Артефакт: Название", "Вики: Название"]
+}}"""
+
+
+def run_sphere_agents(genome, state, cycle):
+    """Run all sphere agents sequentially. Each sees previous proposals."""
+    proposals = []
+    sphere_list = list(genome.get("spheres", {}).items())
+    log_forage("council", "start", f"{len(sphere_list)} agents")
+
+    for i, (slug, info) in enumerate(sphere_list):
+        name = info.get("name", slug)
+        print(f"  [agent {i+1}/{len(sphere_list)}] {name}", flush=True)
+        prompt = build_agent_prompt(slug, info, state, cycle, proposals)
+        try:
+            fbs = free_backends()
+            if fbs:
+                result, used = call_llm(prompt, only_backend=fbs[i % len(fbs)])
+            else:
+                result, _ = call_llm(prompt)
+            proposals.append({"sphere_name": name, "slug": slug, "text": result[:800]})
+            log_forage("agent", "ok", name)
+        except Exception as e:
+            log_forage("agent", "fail", f"{name}: {str(e)[:60]}")
+            proposals.append({"sphere_name": name, "slug": slug, "text": "[не высказалась]"})
+
+    log_forage("council", "done", f"{len(proposals)} proposals")
+    return proposals
 
 
 def find_last_json(text):
@@ -918,32 +968,41 @@ def main():
     if not check_budget():
         return
 
-    prompt = build_prompt(genome, state, cycle)
-    print("  sending prompt...", flush=True)
+    # Phase 1: 14 sphere agents (free backends)
+    print("  [phase 1] sphere agents...", flush=True)
+    proposals = run_sphere_agents(genome, state, cycle)
 
-    # Multi-turn conversation: call LLM, process markers, re-call if search was done
+    if not proposals:
+        print("  [no agents returned proposals]", flush=True)
+        return
+
+    # Phase 2: Council synthesis (paid backend)
+    print("  [phase 2] council synthesis...", flush=True)
+    council_prompt = build_council_prompt(proposals, state, cycle)
+    if not check_budget():
+        return
+
+    # Multi-turn: council may search, create artifacts, etc.
     max_turns = 3
+    pages_created = []
     for turn in range(max_turns):
-        result, used_backend = call_llm(prompt)
+        result, used_backend = call_llm(council_prompt)
         if not result:
             print("  [no content returned]", flush=True)
             return
-        print(f"  response received (turn {turn + 1})", flush=True)
+        print(f"  council response (turn {turn + 1})", flush=True)
 
-        # Check budget between turns
         if not check_budget():
             return
 
-        # Process markers (search, request, artifact, wiki)
-        processed, did_search, pages_created = process_markers(result, state, cycle)
+        processed, did_search, new_pages = process_markers(result, state, cycle)
+        pages_created.extend(new_pages)
 
         if did_search and turn < max_turns - 1:
-            # If search was done, feed results back to LLM for continuation
-            prompt = processed + "\n\n---\n[Ты использовала поиск. Заверши летопись цикла, опираясь на найденные данные. Выведи === CHRONICLE === и === STATE === как обычно.]"
-            print(f"  [re-calling after search, turn {turn + 1}/{max_turns}]", flush=True)
+            council_prompt = processed + "\n\n---\n[Совет использовал поиск. Заверши летопись цикла с учётом найденного. Выведи === CHRONICLE === и === STATE ===.]"
+            print(f"  [re-calling council after search]", flush=True)
             continue
         else:
-            # No search, this is the final response to parse
             result = processed
             break
 
