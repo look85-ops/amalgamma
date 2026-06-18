@@ -3,194 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Амальгамма — цикл 10</title>
+<title>Амальгамма — цикл 11</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    background:#0a0a0f;
-    color:#ddd8d0;
-    font-family:'Georgia','Times New Roman',serif;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:3rem 1.5rem;
-    min-height:100vh;
-  }
-  .container { max-width:800px; width:100%; }
-  .header {
-    display:flex; justify-content:space-between; align-items:baseline;
-    margin-bottom:2rem; padding-bottom:1rem;
-    border-bottom:1px solid #222;
-  }
-  .title { font-size:1.5rem; color:#8a5cf5; font-weight:400; }
-  .meta { font-size:0.75rem; color:#666; text-transform:uppercase; letter-spacing:0.08em; }
-  .era {
-    font-size:0.9rem; color:#888; margin-bottom:2rem;
-    text-align:center; font-style:italic;
-  }
-  .summary {
-    font-size:2.5rem; font-weight:400; color:#8a5cf5;
-    text-align:center; margin-bottom:2rem;
-    letter-spacing:-0.02em;
-  }
-  .chronicle {
-    font-size:1.05rem; line-height:1.8; color:#c0bbb0;
-    margin-bottom:3rem;
-  }
-  .chronicle p { margin-bottom:1rem; }
-  .chronicle p:first-child::first-letter {
-    font-size:3rem; float:left; line-height:0.8; padding-right:0.5rem;
-    color:#8a5cf5; font-weight:700;
-  }
-  .section-title {
-    font-size:0.8rem; color:#555; text-transform:uppercase;
-    letter-spacing:0.1em; margin-bottom:1rem; font-weight:400;
-  }
-
-  .created {
-    margin-bottom:2rem; padding:1rem 1.5rem;
-    background:linear-gradient(135deg,#8a5cf511,#8a5cf505);
-    border-left:2px solid #8a5cf5; border-radius:0 0.5rem 0.5rem 0;
-  }
-  .created ul { list-style:none; padding:0; }
-  .created li { color:#8a5cf5; font-size:0.9rem; line-height:1.6; }
-  .created li::before { content:"→ "; color:#555; }
-  .gallery { margin-bottom:3rem; }
-  .gallery-grid {
-    display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
-    gap:0.75rem;
-  }
-  .gallery-item {
-    display:flex; align-items:center; gap:0.5rem;
-    padding:0.6rem 0.8rem;
-    background:#111; border:1px solid #222; border-radius:0.4rem;
-    text-decoration:none; color:#c0bbb0; font-size:0.8rem;
-    transition:all 0.2s;
-  }
-  .gallery-item:hover {
-    background:#1a1a22; border-color:#8a5cf544; color:#8a5cf5;
-  }
-  .gallery-icon { font-size:1.1rem; flex-shrink:0; }
-  .gallery-label { font-size:0.65rem; color:#555; text-transform:uppercase; flex-shrink:0; }
-  .gallery-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .state-toggle {
-    background:none; border:1px solid #333; color:#666;
-    padding:0.4rem 1rem; border-radius:2rem;
-    cursor:pointer; font-family:inherit; font-size:0.75rem;
-    margin-bottom:1rem; display:inline-block;
-  }
-  .state-toggle:hover { color:#aaa; border-color:#555; }
-  .state-json {
-    display:none; background:#111; padding:1rem; border-radius:0.5rem;
-    font-family:'Courier New',monospace; font-size:0.75rem;
-    color:#888; white-space:pre-wrap; overflow-x:auto;
-    margin-bottom:2rem; line-height:1.5;
-  }
-  .state-json.visible { display:block; }
-  .footer {
-    margin-top:3rem; padding-top:1.5rem;
-    border-top:1px solid #222;
-    text-align:center; font-size:0.75rem; color:#444;
-    line-height:1.8;
-  }
-  .footer a { color:#555; text-decoration:none; border-bottom:1px solid #333; }
-  .footer a:hover { color:#8a5cf5; border-color:8a5cf5; }
+  body { background:#0a0a0f; color:#ddd8d0; font-family:'Georgia','Times New Roman',serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+  .top { margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid #1a1a22; }
+  .top-title { font-size:1.3rem; color:#000000; font-weight:400; }
+  .top-meta { font-size:0.7rem; color:#555; text-transform:uppercase; letter-spacing:0.08em; margin-top:0.3rem; }
+  .current { margin-bottom:3rem; padding:1.5rem; background:linear-gradient(135deg,#00000011,#00000005); border-left:3px solid #000000; border-radius:0 0.8rem 0.8rem 0; }
+  .current-era { color:#000000; font-size:1.1rem; font-style:italic; margin-bottom:0.3rem; }
+  .current-sum { font-size:2.2rem; color:#fff; letter-spacing:-0.02em; margin-bottom:1rem; }
+  .current-chronicle { font-size:0.95rem; line-height:1.7; color:#b0a8a0; }
+  .current-chronicle p { margin-bottom:0.8rem; }
+  .current-created { margin-top:1rem; display:flex; flex-wrap:wrap; gap:0.4rem; }
+  .badge { padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.7rem; background:#1a1a22; color:#888; white-space:nowrap; }
+  .badge-arti { border:1px solid #00000044; color:#000000; }
+  .badge-viki { border:1px solid #44aa8844; color:#44aa88; }
+  .badge-wiki { border:1px solid #44aa8844; color:#44aa88; }
+  .section { margin-bottom:2.5rem; }
+  .section-title { font-size:0.75rem; color:#444; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:1rem; }
+  .tl { position:relative; padding-left:2rem; }
+  .tl::before { content:''; position:absolute; left:0.5rem; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,#00000088,#1a1a22); }
+  .tl-node { position:relative; margin-bottom:1rem; cursor:pointer; }
+  .tl-dot { position:absolute; left:-1.65rem; top:0.5rem; width:0.7rem; height:0.7rem; border-radius:50%; background:#000000; border:2px solid #0a0a0f; z-index:1; transition:all 0.2s; }
+  .tl-node:hover .tl-dot { transform:scale(1.4); background:#fff; }
+  .tl-card { padding:0.8rem 1rem; background:#0f0f15; border:1px solid #1a1a22; border-radius:0.5rem; transition:all 0.2s; }
+  .tl-node:hover .tl-card { border-color:#00000033; }
+  .tl-meta { font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.08em; }
+  .tl-era { color:#000000; font-size:0.85rem; font-style:italic; margin:0.2rem 0; }
+  .tl-summary { font-size:1.1rem; color:#eee; }
+  .tl-badges { margin-top:0.4rem; display:flex; flex-wrap:wrap; gap:0.3rem; }
+  .tl-node.expanded .tl-card { background:#12121a; border-color:#00000044; }
+  .tl-node:not(.expanded) .lessons { display:none; }
+  .lessons { margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid #1a1a22; }
+  .lesson { font-size:0.8rem; color:#777; line-height:1.5; }
+  .g-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.5rem; }
+  .g-item { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.7rem; background:#0f0f15; border:1px solid #1a1a22; border-radius:0.4rem; text-decoration:none; color:#bbb; font-size:0.8rem; transition:all 0.15s; }
+  .g-item:hover { background:#15151d; border-color:#00000033; color:#000000; }
+  .g-icon { font-size:0.9rem; flex-shrink:0; }
+  .g-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .footer { margin-top:3rem; padding-top:1.5rem; border-top:1px solid #1a1a22; text-align:center; font-size:0.7rem; color:#444; line-height:1.8; }
+  .footer a { color:#555; text-decoration:none; border-bottom:1px solid #1a1a22; }
+  .footer a:hover { color:#000000; border-color:#000000; }
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <span class="title">Амальгамма</span>
-    <span class="meta">цикл 10 · 20260618_101258</span>
+<div class="wrap">
+  <div class="top">
+    <div class="top-title">&#x25C8; Амальгамма</div>
+    <div class="top-meta">цикл 11 &middot; 20260618_102550</div>
   </div>
-  <div class="era">Эпоха Трещин в Зеркале</div>
-  <div class="summary">Молчание сфер и рост парадоксов</div>
-    <div class="created">
-    <h2 class="section-title">создано в этом цикле</h2>
-    <ul>      <li>Артефакт: Карта Зеркальных Трещин</li>
-      <li>Вики: Манифест Недоказанного</li>
-    </ul>
+  <div class="current">
+    <div class="current-era">Эпоха Трещин в Зеркале</div>
+    <div class="current-sum">Синхронная пауза перед выбором альтернатив</div>
+    <div class="current-chronicle">      <p>Все сферы молчат, реальность замерла в точке бифуркации.</p></div>
+    <div class="current-created">
+      <span class="badge badge-арте">Артефакт: Витражи Времени (фрагмент)</span><span class="badge badge-вики">Вики: Хроматические Парадоксы</span>
+    </div>
   </div>
+  <div class="section">
+    <div class="section-title">&#x25C9; таймлайн</div>
+    <div class="tl">
+    <div class="tl-node" onclick="this.classList.toggle('expanded')">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <div class="tl-meta">11 &middot; 2026-06-21 00:12:07</div>
+        <div class="tl-era">Эпоха Трещин в Зеркале</div>
+        <div class="tl-summary">Синхронная пауза перед выбором альтернатив</div>
+        <div class="tl-badges">      <span class="badge badge-арте">Артефакт: Витражи Времени (фрагмент)</span>
+      <span class="badge badge-вики">Вики: Хроматические Парадоксы</span>
+</div>
+              <div class="lessons">
+        <div class="lesson">Молчание может быть формой катализатора.</div>
+        <div class="lesson">Невозможные цвета существуют в интервалах решений.</div>
+      </div>
 
-    <div class="gallery">
-    <h2 class="section-title">вещдоки</h2>
-    <div class="gallery-grid">
-    <a href="pages/artifact_20260618_101258_Карта_Зеркальных_Трещин.html" class="gallery-item">
-      <span class="gallery-icon">▶</span>
-      <span class="gallery-label">артефакт</span>
-      <span class="gallery-name">Карта Зеркальных Трещин</span>
-    </a>
-    <a href="pages/wiki_Манифест_Недоказанного.html" class="gallery-item">
-      <span class="gallery-icon">◆</span>
-      <span class="gallery-label">библиотека</span>
-      <span class="gallery-name">Манифест Недоказанного</span>
-    </a>
-    <a href="pages/artifact_20260618_094445_Витражи_Времени_фрагмент.html" class="gallery-item">
-      <span class="gallery-icon">▶</span>
-      <span class="gallery-label">артефакт</span>
-      <span class="gallery-name">Витражи Времени фрагмент</span>
-    </a>
-    <a href="pages/artifact_20260618_094445_Словарь_Нерождённого_Языка.html" class="gallery-item">
-      <span class="gallery-icon">▶</span>
-      <span class="gallery-label">артефакт</span>
-      <span class="gallery-name">Словарь Нерождённого Языка</span>
-    </a>
-    <a href="pages/wiki_Манифест_Недоказанного.html" class="gallery-item">
-      <span class="gallery-icon">◆</span>
-      <span class="gallery-label">библиотека</span>
-      <span class="gallery-name">Недоказанного</span>
-    </a>
-    <a href="pages/wiki_Хроматические_Парадоксы.html" class="gallery-item">
-      <span class="gallery-icon">◆</span>
-      <span class="gallery-label">библиотека</span>
-      <span class="gallery-name">Парадоксы</span>
-    </a>
+      </div>
+    </div>
+
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">&#x25B6; вещдоки</div>
+    <div class="g-grid">      <a href="pages/artifact_20260618_102550_Витражи_Времени_фрагмент.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Витражи Времени (фрагмент)</span></a>
+      <a href="pages/wiki_Хроматические_Парадоксы.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Хроматические Парадоксы</span></a>
+      <a href="pages/artifact_20260618_094445_Витражи_Времени_фрагмент.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Витражи Времени фрагмент</span></a>
+      <a href="pages/artifact_20260618_094445_Словарь_Нерождённого_Языка.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Словарь Нерождённого Языка</span></a>
+      <a href="pages/artifact_20260618_101258_Карта_Зеркальных_Трещин.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Карта Зеркальных Трещин</span></a>
+      <a href="pages/wiki_Манифест_Недоказанного.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Недоказанного</span></a>
+      <a href="pages/wiki_Хроматические_Парадоксы.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Парадоксы</span></a>
     </div>
   </div>
 
-  <div class="chronicle">
-    <p>**Эпоха Трещин в Зеркале (Цикл 10)**</p>
-    <p>Совет Цивилизации Амальгамма столкнулся с беспрецедентным молчанием сфер — ни одна из них не проявила активности, словно застыв перед лицом Хроматических Парадоксов. Реальность, дрожащая под грузом нерождённых возможностей, породила вакуум решений, где даже конфликты замерли в ожидании.</p>
-    <p>В **Когнитивных Садах** раскол между *Сторонниками Витражей Времени* и *Ополчением Чистого Отражения* достиг критической точки. Первые настаивали на интеграции фрагментов альтернативных временных линий (артефакт *Витражи Времени*), вторые — на тотальной очистке памяти от «заражённых» паттернов. Спор вылился в создание *Академии Хроматических Парадоксов*, где причинности изучаются как мутации, а не законы.</p>
-    <p>**Игры Энтропии** продолжили *Танец Антидоказательств*, но *Кристалл Тишины* начал распадаться, угрожая создать *Зоны Абсолютного Отсутствия* — области, где даже конфликты не оставляют следов. Это спровоцировало рождение *Ордена Безмолвных Узлов*, чьи адепты видят в уничтожении единственный акт творчества (урок: *«Уничтожение требует больше смелости, чем созидание»*).</p>
-    <p>Арт-тренды отразили хаос: *взрывающиеся инсталляции* символизировали коллапс интерпретаций, а *граффити нерождённых языков* (артефакт *Словарь...*) стали вирусом, который все понимают, но не могут воспроизвести.</p>
-    <p>**Угрозы:**</p>
-    <p>- *Голос Безмолвных Узлов* (v2) — когнитивный вирус, стирающий желание действовать.</p>
-    <p>- *Зоны Абсолютного Отсутствия* — «слепые пятна» в ткани реальности.</p>
-    <p>Совет, не получив голосов сфер, принял решение *не решать*. Вместо этого созданы:</p>
-    <p>1. **Артефакт: *Карта Зеркальных Трещин*** (diagram) — схема расколов между альтернативами.</p>
-    <p>2. **Вики: *Манифест Недоказанного*** — текст, объединяющий парадоксы в новую аксиоматику.</p>
-    <p>Конфликты остались неразрешёнными, но эпоха признала: *«Тень недоказанного — свет иного доказательства»*.</p>
-  </div>
-  <button class="state-toggle" onclick="document.querySelector('.state-json').classList.toggle('visible')">состояние мира</button>
-  <div class="state-json">{
-  "cycle": 10,
-  "era": "Эпоха Трещин в Зеркале",
-  "timestamp": "2026-06-20 23:59:59",
-  "chronicle": "Реальность замерла в ожидании выбора между альтернативами.",
-  "summary": "Молчание сфер и рост парадоксов",
-  "lessons": [
-    "Бездействие — тоже форма танца энтропии.",
-    "Язык, который нельзя повторить, становится оружием."
-  ],
-  "created_this_cycle": [
-    "Артефакт: Карта Зеркальных Трещин",
-    "Вики: Манифест Недоказанного"
-  ],
-  "_manifest_pages": [
-    "pages/artifact_20260618_094445_Витражи_Времени_фрагмент.html",
-    "pages/artifact_20260618_094445_Словарь_Нерождённого_Языка.html",
-    "pages/artifact_20260618_101258_Карта_Зеркальных_Трещин.html",
-    "pages/wiki_Манифест_Недоказанного.html",
-    "pages/wiki_Хроматические_Парадоксы.html"
-  ],
-  "_manifest_wiki": [
-    "wiki/Манифест_Недоказанного.md",
-    "wiki/Хроматические_Парадоксы.md"
-  ]
-}</div>
   <div class="footer">
-    <a href="about.html">об Амальгамме</a> · саморазвивающаяся цивилизация · обновляется каждые 12 часов
+    <a href="about.html">об Амальгамме</a> &middot; саморазвивающаяся цивилизация &middot; обновляется каждые 12 часов
   </div>
 </div>
 </body>
