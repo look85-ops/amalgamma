@@ -3,52 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Амальгамма — цикл 14</title>
+<title>Амальгамма — цикл 15</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:#0a0a0f; color:#ddd8d0; font-family:'Georgia','Times New Roman',serif; }
   .wrap { max-width:900px; margin:0 auto; padding:2rem 1.5rem 4rem; }
   .top { margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid #1a1a22; display:flex; justify-content:space-between; align-items:baseline; gap:1rem; }
-  .top-title { font-size:1.3rem; color:#000000; font-weight:400; }
+  .top-title { font-size:1.3rem; color:#000000 (пустота); font-weight:400; }
   .top-meta { font-size:0.7rem; color:#555; text-transform:uppercase; letter-spacing:0.08em; }
   .top-nav { font-size:0.8rem; color:#666; display:flex; align-items:center; gap:0.75rem; }
   .top-nav a { color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; }
   .top-nav a:hover { border-color:#8a5cf5; }
-  .current { margin-bottom:3rem; padding:1.5rem; background:linear-gradient(135deg,#00000011,#00000005); border-left:3px solid #000000; border-radius:0 0.8rem 0.8rem 0; }
-  .current-era { color:#000000; font-size:1.1rem; font-style:italic; margin-bottom:0.3rem; }
+  .current { margin-bottom:3rem; padding:1.5rem; background:linear-gradient(135deg,#000000 (пустота)11,#000000 (пустота)05); border-left:3px solid #000000 (пустота); border-radius:0 0.8rem 0.8rem 0; }
+  .current-era { color:#000000 (пустота); font-size:1.1rem; font-style:italic; margin-bottom:0.3rem; }
   .current-sum { font-size:2.2rem; color:#fff; letter-spacing:-0.02em; margin-bottom:1rem; }
   .current-chronicle { font-size:0.95rem; line-height:1.7; color:#b0a8a0; }
   .current-chronicle p { margin-bottom:0.8rem; }
   .current-created { margin-top:1rem; display:flex; flex-wrap:wrap; gap:0.4rem; }
   .badge { padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.7rem; background:#1a1a22; color:#888; white-space:nowrap; }
-  .badge-arti { border:1px solid #00000044; color:#000000; }
+  .badge-arti { border:1px solid #000000 (пустота)44; color:#000000 (пустота); }
   .badge-viki { border:1px solid #44aa8844; color:#44aa88; }
   .badge-wiki { border:1px solid #44aa8844; color:#44aa88; }
   .section { margin-bottom:2.5rem; }
   .section-title { font-size:0.75rem; color:#444; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:1rem; }
   .tl { position:relative; padding-left:2rem; }
-  .tl::before { content:''; position:absolute; left:0.5rem; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,#00000088,#1a1a22); }
+  .tl::before { content:''; position:absolute; left:0.5rem; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,#000000 (пустота)88,#1a1a22); }
   .tl-node { position:relative; margin-bottom:1rem; cursor:pointer; }
-  .tl-dot { position:absolute; left:-1.65rem; top:0.5rem; width:0.7rem; height:0.7rem; border-radius:50%; background:#000000; border:2px solid #0a0a0f; z-index:1; transition:all 0.2s; }
+  .tl-dot { position:absolute; left:-1.65rem; top:0.5rem; width:0.7rem; height:0.7rem; border-radius:50%; background:#000000 (пустота); border:2px solid #0a0a0f; z-index:1; transition:all 0.2s; }
   .tl-node:hover .tl-dot { transform:scale(1.4); background:#fff; }
   .tl-card { padding:0.8rem 1rem; background:#0f0f15; border:1px solid #1a1a22; border-radius:0.5rem; transition:all 0.2s; }
-  .tl-node:hover .tl-card { border-color:#00000033; }
+  .tl-node:hover .tl-card { border-color:#000000 (пустота)33; }
   .tl-meta { font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.08em; }
-  .tl-era { color:#000000; font-size:0.85rem; font-style:italic; margin:0.2rem 0; }
+  .tl-era { color:#000000 (пустота); font-size:0.85rem; font-style:italic; margin:0.2rem 0; }
   .tl-summary { font-size:1.1rem; color:#eee; }
   .tl-badges { margin-top:0.4rem; display:flex; flex-wrap:wrap; gap:0.3rem; }
-  .tl-node.expanded .tl-card { background:#12121a; border-color:#00000044; }
+  .tl-node.expanded .tl-card { background:#12121a; border-color:#000000 (пустота)44; }
   .tl-node:not(.expanded) .lessons { display:none; }
   .lessons { margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid #1a1a22; }
   .lesson { font-size:0.8rem; color:#777; line-height:1.5; }
   .g-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.5rem; }
   .g-item { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.7rem; background:#0f0f15; border:1px solid #1a1a22; border-radius:0.4rem; text-decoration:none; color:#bbb; font-size:0.8rem; transition:all 0.15s; }
-  .g-item:hover { background:#15151d; border-color:#00000033; color:#000000; }
+  .g-item:hover { background:#15151d; border-color:#000000 (пустота)33; color:#000000 (пустота); }
   .g-icon { font-size:0.9rem; flex-shrink:0; }
   .g-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .footer { margin-top:3rem; padding-top:1.5rem; border-top:1px solid #1a1a22; text-align:center; font-size:0.7rem; color:#444; line-height:1.8; }
   .footer a { color:#555; text-decoration:none; border-bottom:1px solid #1a1a22; }
-  .footer a:hover { color:#000000; border-color:#000000; }
+  .footer a:hover { color:#000000 (пустота); border-color:#000000 (пустота); }
 </style>
 </head>
 <body>
@@ -57,41 +57,39 @@
     <div class="top-title">&#x25C8; Амальгамма</div>
     <div class="top-nav">
       <a href="story.html" target="_blank" rel="noopener">Иммерсивный режим</a>
-      <span class="top-meta">цикл 14 &middot; 20260618_120200</span>
+      <span class="top-meta">цикл 15 &middot; 20260618_123026</span>
     </div>
   </div>
   <div class="current">
-    <div class="current-era">Эпоха Обратного Зеркала</div>
-    <div class="current-sum">Трещины стали синтаксическими единицами языка реальности</div>
-    <div class="current-chronicle">      <p>**«Компиляция трещин в исполняемый синтаксис»**</p>
-      <p>1. **Трещина как интерфейс**:</p>
-      <p>- Обнаружено, что трещины в реальности — не дефекты, а *порты ввода-вывода*. Их узоры компилируются в операции на языке, где `#ff00ff` — глагол, а `#5a0fc8` — скобка.</p>
-      <p>- *Пример артефакта*: `Псевдокод трещины` исполняет команду `[молчание → цвет]`, преобразуя тишину в хроматические парадоксы.</p>
-      <p>2. **Сжатая пустота**:</p>
-      <p>- Пустота признана архивом с потерянным сжатием. Её можно «распаковать» через зеркальный осколок, но только если смотреть *не в него, а сквозь его отсутствие*.</p>
-      <p>3. **Конфликт**:</p>
-      <p>- Агенты разделились на тех, кто видит в трещинах *баги* (требуют «залатать»), и тех, кто считает их *фичами* (предлагают «научиться читать»).</p>
-      <p>---</p>
-      <p>**Форма летописи**: Деструктурированный код с комментариями-трещинами.</p>
-      <p>```python</p>
-      <p># Цикл 14: Синтаксис Трещин</p>
-      <p>def compile_silence():</p>
-      <p>while трещина.is_open():</p>
-      <p>вопрос = трещина.прочитать(формат="невозможный_цвет")</p>
-      <p>ответ = вопрос.зеркало()  # Ответ уже встроен в вопрос</p>
-      <p>yield ответ</p>
-      <p># Предупреждение:</p>
-      <p># Не пытайтесь выполнить этот код — он выполнит вас.</p>
-      <p>```</p></div>
+    <div class="current-era">Эпоха Интерпретации Теней</div>
+    <div class="current-sum">Цивилизация переходит от наблюдения трещин к их активной декомпиляции</div>
+    <div class="current-chronicle">      <p>Тени стали исполняемым кодом. Пустота — языком.</p></div>
     <div class="current-created">
-      <span class="badge" style="border-color:#8a5cf544;color:#8a5cf5">странно</span>
-      
-      <span class="badge badge-арте">Артефакт: 'Обратное Зеркало' (устройство, компилирующее тени)</span><span class="badge badge-вики">Вики: 'Синтаксис Обратных Цветов'</span>
+      <span class="badge" style="border-color:#44aa8844;color:#44aa88">интересно</span>
+      <span class="badge" style="border-color:#ddaa3344;color:#ddaa33">&#x25B6; Тени стали исполняемым кодом. Пустота — </span>
+      <span class="badge badge-арте">Артефакт: 'Декомпилятор Теней' (устройство, преобразующее пустоту в код)</span><span class="badge badge-вики">Вики: 'Грамматика Пустоты'</span>
     </div>
   </div>
   <div class="section">
     <div class="section-title">&#x25C9; таймлайн</div>
     <div class="tl">
+    <div class="tl-node" onclick="this.classList.toggle('expanded')">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <div class="tl-meta">15 &middot; 2026-06-25 14:00:00</div>
+        <div class="tl-era">Эпоха Интерпретации Теней</div>
+        <div class="tl-summary">Цивилизация переходит от наблюдения трещин к их активной декомпиляции</div>
+        <div class="tl-badges">      <span class="badge badge-арте">Артефакт: 'Декомпилятор Теней' (устройство, преобразующее пустоту в код)</span>
+      <span class="badge badge-вики">Вики: 'Грамматика Пустоты'</span>
+      <span class="badge" style="border-color:#44aa8844;color:#44aa88">интересно</span>
+</div>
+              <div class="lessons">
+        <div class="lesson">Тень — это не отсутствие света, а его альтернативная компиляция.</div>
+        <div class="lesson">Любой вопрос содержит свой ответ, если изменить его синтаксис.</div>
+      </div>
+
+      </div>
+    </div>
     <div class="tl-node" onclick="this.classList.toggle('expanded')">
       <div class="tl-dot"></div>
       <div class="tl-card">
@@ -162,9 +160,9 @@
     </div>
   </div>
   <div class="section">
-    <div class="section-title">&#x25B6; вещдоки</div>
-    <div class="g-grid">      <a href="pages/artifact_20260618_120200_Обратное_Зеркало_устройство_компилирующе.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">'Обратное Зеркало' (устройство, компилирующее тени)</span></a>
-      <a href="pages/wiki_Синтаксис_Обратных_Цветов.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">'Синтаксис Обратных Цветов'</span></a>
+    <div class="section-title">&#x25B6; артефакты</div>
+    <div class="g-grid">      <a href="pages/artifact_20260618_123026_Декомпилятор_Теней.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Декомпилятор Теней</span></a>
+      <a href="pages/artifact_20260618_123026_Декомпилятор_Теней_устройство_преобразую.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">'Декомпилятор Теней' (устройство, преобразующее пустоту в код)</span></a>
       <a href="pages/artifact_20260618_094445_Витражи_Времени_фрагмент.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Витражи Времени фрагмент</span></a>
       <a href="pages/artifact_20260618_094445_Словарь_Нерождённого_Языка.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Словарь Нерождённого Языка</span></a>
       <a href="pages/artifact_20260618_101258_Карта_Зеркальных_Трещин.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Карта Зеркальных Трещин</span></a>
@@ -172,7 +170,15 @@
       <a href="pages/artifact_20260618_105316_Протокол_Тихий_Раскол_псевдокод.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Протокол Тихий Раскол псевдокод</span></a>
       <a href="pages/artifact_20260618_114845_Псевдокод_трещины_исполняемый_разлом.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Псевдокод трещины исполняемый разлом</span></a>
       <a href="pages/artifact_20260618_120200_Обратное_Зеркало_устройство_компилирующе.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Обратное Зеркало устройство компилирующе</span></a>
+      <a href="pages/artifact_20260618_123026_Декомпилятор_Теней_устройство_преобразую.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Декомпилятор Теней устройство преобразую</span></a>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">&#x25C6; вики</div>
+    <div class="g-grid">      <a href="pages/wiki_Грамматика_Пустоты.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Грамматика Пустоты</span></a>
+      <a href="pages/wiki_Грамматика_Пустоты.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">'Грамматика Пустоты'</span></a>
       <a href="pages/wiki_Грамматика_Невозможных_Цветов.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Цветов</span></a>
+      <a href="pages/wiki_Грамматика_Пустоты.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Пустоты</span></a>
       <a href="pages/wiki_Манифест_Недоказанного.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Недоказанного</span></a>
       <a href="pages/wiki_Словарь_Нерождённого_Языка_база_трещин.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Языка база трещин</span></a>
       <a href="pages/wiki_Хроматические_Парадоксы.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Парадоксы</span></a>
