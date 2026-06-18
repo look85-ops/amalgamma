@@ -425,9 +425,16 @@ def generate_html(chronicle_text, state, cycle, artifact_id, pages_created=None)
 """
 
     gallery_html = ""
-    if pages_created:
+    # Merge current cycle pages + historical manifest
+    all_pages = dict(pages_created or [])
+    for p in state.get("_manifest_pages", []):
+        title = Path(p).stem.replace("wiki_", "").replace("artifact_", "").split("_", 2)[-1] if "_" in Path(p).stem else Path(p).stem
+        title = title.replace("_", " ")
+        if title not in all_pages:
+            all_pages[title] = p
+    if all_pages:
         items = []
-        for title, path in pages_created:
+        for title, path in all_pages.items():
             is_wiki = "wiki_" in path
             icon = "\u25C6" if is_wiki else "\u25B6"
             label = "библиотека" if is_wiki else "артефакт"
