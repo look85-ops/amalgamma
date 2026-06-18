@@ -282,7 +282,7 @@ def free_backends():
 
 
 def build_agent_prompt(slug, sphere_info, state, cycle, previous_proposals):
-    """Prompt for a single sphere agent."""
+    """Prompt for a single sphere agent. Keep format rules minimal; content is up to the agent."""
     name = sphere_info.get("name", slug)
     activities = "\n".join(f"  - {a}: {d}" for a, d in sphere_info.get("activities", {}).items())
     genesis_text = json.load(open(GENOME_PATH, "r", encoding="utf-8")).get("genesis", "")[:500]
@@ -305,18 +305,18 @@ def build_agent_prompt(slug, sphere_info, state, cycle, previous_proposals):
 {state_str}
 
 {prev_text}
-ПРОШЛО 12 ЧАСОВ. Что произошло в твоей сфере за это время?
+ПРОШЛО 12 ЧАСОВ. Сформулируй позицию своей сферы в той форме, которую считаешь уместной (тезисы/схема/мини‑манифест/чертёж/код). Коротко и по делу.
 
-ОТВЕТЬ КРАТКО (3-5 предложений):
-1. Что сделала/создала твоя сфера за эти 12 часов?
-2. Какие у тебя претензии или предложения к другим сферам?
-3. Что ты требуешь на следующем совете?
+Желательно обозначь:
+- Что сделала/создала сфера за цикл
+- На что реагируешь у других сфер (если важно)
+- Чего добиваешься/что предлагаешь на совете
 
-Не пиши летопись цикла — только позицию своей сферы."""
+Не пиши общую летопись цикла — только позицию своей сферы."""
 
 
 def build_council_prompt(proposals, state, cycle):
-    """Prompt for council synthesis — takes all agent proposals and produces final output."""
+    """Prompt for council synthesis — minimal format constraints, content is free-form."""
     genesis_text = json.load(open(GENOME_PATH, "r", encoding="utf-8")).get("genesis", "")[:800]
 
     proposals_text = ""
@@ -336,9 +336,7 @@ def build_council_prompt(proposals, state, cycle):
 ГОЛОСА СФЕР (каждая высказала свою позицию):
 {proposals_text}
 
-ТВОЯ ЗАДАЧА: выслушав все сферы, записать итоговую летопись цикла. 
-Где были конфликты — отрази их. Где согласие — запиши результат.
-Сферы могут ошибаться, спорить, требовать — твоя задача увидеть картину целиком.
+ТВОЯ ЗАДАЧА: выслушав все сферы, зафиксировать результат цикла. Форма — на твоё усмотрение: текст, тезисы, карта, устав, схема, псевдокод. Если выберешь нетекстовый формат — кратко поясни его в разделе летописи и добавь подробности в артефакты/вики. Отражай конфликты/решения/открытия ровно в той мере, в какой считаешь значимым.
 
 ИНСТРУМЕНТЫ:
 1. ###SEARCH###запрос### — поиск в интернете
@@ -354,7 +352,7 @@ def build_council_prompt(proposals, state, cycle):
 ОТВЕТЬ СТРОГО В ДВУХ ЧАСТЯХ:
 
 === CHRONICLE ===
-Летопись событий за 12 часов (200-500 слов). Отрази решения совета, конфликты, открытия.
+Летопись этого цикла — в любой форме и объёме (текст/тезисы/схема/карта/устав). Если летопись опускаешь — верни краткое пояснение и оформи подробности как артефакты/вики.
 
 === STATE ===
 {{"cycle": {cycle + 1},
