@@ -425,23 +425,44 @@ def generate_html(chronicle_text, state, cycle, artifact_id, artifacts_manifest=
 """
 
     gallery_html = ""
-    items = []
-    if wiki_manifest:
-        items.extend(f"""    <a href=\"{p}\" class=\"gallery-item\">
-      <span class=\"gallery-icon\">\u25C6</span>
-      <span class=\"gallery-name\">{p.replace('wiki/', '').replace('.md', '').replace('_', ' ')}</span>
-    </a>""" for p in wiki_manifest)
+    artifacts_html = ""
+    wikis_html = ""
     if artifacts_manifest:
-        items.extend(f"""    <a href=\"{p}\" class=\"gallery-item\">
-      <span class=\"gallery-icon\">\u25B6</span>
-      <span class=\"gallery-name\">{p.replace('artifacts/', '').rsplit('_', 1)[-1] if '_' in p.replace('artifacts/', '') else p.replace('artifacts/', '')}</span>
-    </a>""" for p in artifacts_manifest)
-    if items:
-        gallery_html = f"""  <div class="gallery">
-    <h2 class="section-title">вещдоки</h2>
-    <div class="gallery-grid">
-{chr(10).join(items)}
+        art_items = []
+        for p in artifacts_manifest:
+            name = Path(p).stem
+            if name.startswith("artifact_"):
+                # Extract title after timestamp: artifact_20260617_144457_Title
+                parts = name.split("_", 3)
+                title = parts[3].replace("_", " ") if len(parts) > 3 else name
+            else:
+                title = name.replace("_", " ")
+            art_items.append(f"""    <a href=\"{p}\" class=\"gallery-item\">
+      <span class=\"gallery-name\">{title}</span>
+    </a>""")
+        if art_items:
+            artifacts_html = f"""    <h3 class=\"gallery-subtitle\">\u25B6 артефакты</h3>
+    <div class=\"gallery-grid\">
+{chr(10).join(art_items)}
     </div>
+"""
+    if wiki_manifest:
+        wiki_items = []
+        for p in wiki_manifest:
+            title = Path(p).stem.replace("wiki_", "").replace("_", " ")
+            wiki_items.append(f"""    <a href=\"{p.replace('wiki/', 'pages/wiki_').rsplit('.', 1)[0] + '.html'}\" class=\"gallery-item\">
+      <span class=\"gallery-name\">{title}</span>
+    </a>""")
+        if wiki_items:
+            wikis_html = f"""    <h3 class=\"gallery-subtitle\">\u25C6 библиотека знаний</h3>
+    <div class=\"gallery-grid\">
+{chr(10).join(wiki_items)}
+    </div>
+"""
+    if artifacts_html or wikis_html:
+        gallery_html = f"""  <div class=\"gallery\">
+    <h2 class=\"section-title\">вещдоки</h2>
+{artifacts_html}{wikis_html}
   </div>
 """
 
@@ -494,6 +515,10 @@ def generate_html(chronicle_text, state, cycle, artifact_id, artifacts_manifest=
   .section-title {{
     font-size:0.8rem; color:#555; text-transform:uppercase;
     letter-spacing:0.1em; margin-bottom:1rem; font-weight:400;
+  }}
+  .gallery-subtitle {{
+    font-size:0.8rem; color:#444; margin-bottom:0.6rem;
+    font-weight:400; font-family:'Courier New',monospace;
   }}
   .created {{
     margin-bottom:2rem; padding:1rem 1.5rem;
@@ -699,47 +724,152 @@ def save_request(title, description):
     return path
 
 
+PAGES_DIR = BASE_DIR / "pages"
+PAGE_ACCENT = "8a5cf5"
+
+
+def render_page_html(title, body_html, back_label="к текущему состоянию", back_href="index.html"):
+    """Render content as a styled page in pages/."""
+    return f"""<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title} - Амальгамма</title>
+<style>
+  * {{ margin:0; padding:0; box-sizing:border-box; }}
+  body {{
+    background:#0a0a0f; color:#ddd8d0;
+    font-family:'Georgia','Times New Roman',serif;
+    display:flex; flex-direction:column; align-items:center;
+    padding:2rem 1.5rem 4rem; min-height:100vh;
+  }}
+  .container {{ max-width:720px; width:100%; }}
+  .back {{
+    display:inline-block; margin-bottom:2rem;
+    color:#555; text-decoration:none; font-size:0.8rem;
+    border-bottom:1px solid #222; padding-bottom:0.2rem;
+  }}
+  .back:hover {{ color:#{PAGE_ACCENT}; border-color:{PAGE_ACCENT}; }}
+  h1 {{
+    font-size:1.8rem; font-weight:400; color:#{PAGE_ACCENT};
+    margin-bottom:1.5rem; line-height:1.3;
+  }}
+  .meta {{
+    font-size:0.75rem; color:#555; margin-bottom:2rem;
+    text-transform:uppercase; letter-spacing:0.08em;
+  }}
+  .content {{
+    font-size:1.05rem; line-height:1.8; color:#c0bbb0;
+  }}
+  .content p {{ margin-bottom:1.2rem; }}
+  .content pre {{
+    background:#111; padding:1rem; border-radius:0.4rem;
+    overflow-x:auto; font-size:0.85rem; color:#aaa;
+    border:1px solid #222; margin-bottom:1.2rem;
+  }}
+  .content code {{ font-size:0.85rem; color:#{PAGE_ACCENT}; }}
+  .content blockquote {{
+    border-left:2px solid #{PAGE_ACCENT}44; padding-left:1rem;
+    margin-left:0; margin-bottom:1.2rem; color:#888;
+    font-style:italic;
+  }}
+</style>
+</head>
+<body>
+<div class="container">
+  <a class="back" href="{back_href}">&larr; {back_label}</a>
+  <h1>{title}</h1>
+  <div class="content">
+{body_html}
+  </div>
+</div>
+</body>
+</html>"""
+
+
 def save_artifact(atype, title, content):
-    """Save an artifact (music, image concept, etc.) to artifacts/."""
+    """Save an artifact (music, image concept, etc.) and generate readable HTML page."""
     art_dir = BASE_DIR / "artifacts"
+    PAGES_DIR.mkdir(parents=True, exist_ok=True)
     art_dir.mkdir(exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     safe = re.sub(r'[^\w\s-]', '', title)[:40].strip().replace(' ', '_')
     ext = {
-        "music": "txt",
-        "image": "txt",
-        "text": "txt",
-        "code": "py",
-        "poem": "txt",
-        "manifest": "md",
-        "diagram": "txt",
+        "music": "txt", "image": "txt", "text": "txt", "code": "py",
+        "poem": "txt", "manifest": "md", "diagram": "txt",
+        "blueprint": "txt", "law": "txt", "treaty": "txt",
     }.get(atype, "txt")
-    path = art_dir / f"{ts}_{safe}.{ext}"
-    header = f"=== {atype.upper()}: {title} ===\nВремя: {ts}\n\n"
-    path.write_text(header + content, encoding="utf-8")
-    log_forage("artifact", "saved", f"{atype}/{path.name}")
-    return path
+    raw_path = art_dir / f"{ts}_{safe}.{ext}"
+    raw_path.write_text(
+        f"=== {atype.upper()}: {title} ===\nВремя: {ts}\n\n{content}",
+        encoding="utf-8"
+    )
+    log_forage("artifact", "saved", f"{atype}/{raw_path.name}")
+
+    page_path = PAGES_DIR / f"artifact_{ts}_{safe}.html"
+    body = "\n".join(
+        f"    <p>{p.strip()}</p>" for p in content.split("\n") if p.strip()
+    ) if content else "    <p>—</p>"
+    page_path.write_text(
+        render_page_html(title, body, back_label="к галерее вещдоков"),
+        encoding="utf-8"
+    )
+    log_forage("artifact", "page", f"pages/{page_path.name}")
+    return raw_path, page_path
 
 
 def save_wiki(title, content):
-    """Save or update a wiki page (persistent knowledge)."""
+    """Save or update a wiki page and generate readable HTML page."""
     wiki_dir = BASE_DIR / "wiki"
+    PAGES_DIR.mkdir(parents=True, exist_ok=True)
     wiki_dir.mkdir(exist_ok=True)
     safe = re.sub(r'[^\w\sа-яА-ЯёЁ]', '', title)[:60].strip().replace(' ', '_')
-    path = wiki_dir / f"{safe}.md"
-    header = f"# {title}\n\n*Последнее обновление: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}*\n\n---\n\n"
-    path.write_text(header + content, encoding="utf-8")
-    log_forage("wiki", "saved", str(path.name))
-    return path
+    raw_path = wiki_dir / f"{safe}.md"
+    raw_path.write_text(
+        f"# {title}\n\n*Последнее обновление: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}*\n\n---\n\n{content}",
+        encoding="utf-8"
+    )
+    log_forage("wiki", "saved", str(raw_path.name))
+
+    # Wiki content is markdown - render paragraphs as-is, preserve code blocks
+    body_lines = []
+    in_code = False
+    for line in content.split("\n"):
+        if line.strip().startswith("```"):
+            in_code = not in_code
+            if in_code:
+                body_lines.append("<pre><code>")
+            else:
+                body_lines.append("</code></pre>")
+        elif in_code:
+            body_lines.append(line)
+        elif line.strip().startswith("# "):
+            body_lines.append(f"<h2>{line.strip()[2:]}</h2>")
+        elif line.strip().startswith("## "):
+            body_lines.append(f"<h3>{line.strip()[3:]}</h3>")
+        elif line.strip().startswith("- "):
+            body_lines.append(f"<li>{line.strip()[2:]}</li>")
+        elif line.strip() == "":
+            body_lines.append("</p><p>")
+        else:
+            body_lines.append(line)
+    body_html = "<p>" + "".join(body_lines).replace("</p><p>", "</p>\n<p>") + "</p>"
+
+    page_path = PAGES_DIR / f"wiki_{safe}.html"
+    page_path.write_text(
+        render_page_html(title, body_html, back_label="к библиотеке цивилизации"),
+        encoding="utf-8"
+    )
+    log_forage("wiki", "page", f"pages/{page_path.name}")
+    return raw_path, page_path
 
 
 def process_markers(text, state, cycle):
     """Process special markers in LLM output before main parsing.
-    Returns (cleaned_text, did_search, num_artifacts, num_wikis) —
-    if search was done caller should re-call LLM."""
+    Returns (cleaned_text, did_search, pages_created) — pages_created is list of (title, path)"""
     did_search = False
-    num_artifacts = 0
-    num_wikis = 0
+    pages_created = []
 
     # 1. SEARCH: ###SEARCH###query###
     search_matches = list(re.finditer(r'###SEARCH###(.+?)###', text, re.DOTALL))
@@ -759,7 +889,7 @@ def process_markers(text, state, cycle):
         log_forage("marker", "request", title)
         save_request(title, desc)
         text = text.replace(m.group(0),
-            f"[Заявка «{title}» отправлена человеку-опекуну. Ожидается ответ в течение нескольких циклов.]")
+            f"[Заявка «{title}» отправлена человеку-опекуну.]")
 
     # 3. WIKI: ###WIKI###Title###markdown content###
     wiki_matches = list(re.finditer(r'###WIKI###(.+?)###(.+?)###', text, re.DOTALL))
@@ -767,10 +897,10 @@ def process_markers(text, state, cycle):
         title = m.group(1).strip()
         content = m.group(2).strip()
         log_forage("marker", "wiki", title)
-        save_wiki(title, content)
-        num_wikis += 1
+        raw_path, page_path = save_wiki(title, content)
+        pages_created.append((title, str(page_path.relative_to(BASE_DIR))))
         text = text.replace(m.group(0),
-            f"[Вики-страница «{title}» сохранена в библиотеке цивилизации.]")
+            f"[Вики-страница «{title}» сохранена.]")
 
     # 4. ARTIFACT: ###ARTIFACT###type:title###content###
     art_matches = list(re.finditer(r'###ARTIFACT###(.+?)###(.+?)###', text, re.DOTALL))
@@ -782,12 +912,12 @@ def process_markers(text, state, cycle):
         else:
             atype, title = "text", spec
         log_forage("marker", "artifact", f"{atype}:{title}")
-        save_artifact(atype.strip(), title.strip(), content)
-        num_artifacts += 1
+        raw_path, page_path = save_artifact(atype.strip(), title.strip(), content)
+        pages_created.append((title.strip(), str(page_path.relative_to(BASE_DIR))))
         text = text.replace(m.group(0),
-            f"[Артефакт «{title}» ({atype}) сохранён в архиве цивилизации.]")
+            f"[Артефакт «{title}» ({atype}) сохранён.]")
 
-    return text, did_search, num_artifacts, num_wikis
+    return text, did_search, pages_created
 
 
 def main():
@@ -822,7 +952,7 @@ def main():
             return
 
         # Process markers (search, request, artifact, wiki)
-        processed, did_search, num_artifacts, num_wikis = process_markers(result, state, cycle)
+        processed, did_search, pages_created = process_markers(result, state, cycle)
 
         if did_search and turn < max_turns - 1:
             # If search was done, feed results back to LLM for continuation
@@ -851,14 +981,14 @@ def main():
 
     artifact_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 
-    # Build and save manifest of all civilization assets
-    artifacts_manifest = sorted(
-        [str(p.relative_to(BASE_DIR)) for p in (BASE_DIR / "artifacts").rglob("*") if p.is_file() and p.name != ".gitkeep"]
-    ) if (BASE_DIR / "artifacts").exists() else []
+    # Build and save manifest of all civilization assets (pages/)
+    pages_manifest = sorted(
+        [str(p.relative_to(BASE_DIR)) for p in PAGES_DIR.rglob("*.html")]
+    ) if PAGES_DIR.exists() else []
     wiki_manifest = sorted(
-        [str(p.relative_to(BASE_DIR)) for p in (BASE_DIR / "wiki").rglob("*") if p.is_file() and p.name != ".gitkeep"]
+        [str(p.relative_to(BASE_DIR)) for p in (BASE_DIR / "wiki").rglob("*.md")]
     ) if (BASE_DIR / "wiki").exists() else []
-    new_state["_manifest_artifacts"] = artifacts_manifest
+    new_state["_manifest_pages"] = pages_manifest
     new_state["_manifest_wiki"] = wiki_manifest
 
     # Save chronicle to archive
@@ -882,7 +1012,7 @@ def main():
 
     # Generate and save index.html
     html = generate_html(chronicle_text, new_state, cycle, artifact_id,
-                         artifacts_manifest=artifacts_manifest,
+                         artifacts_manifest=pages_manifest,
                          wiki_manifest=wiki_manifest)
     INDEX_PATH.write_text(html, encoding="utf-8")
     print(f"  [saved] index.html — цикл {cycle}: {new_state.get('summary', '')}", flush=True)
