@@ -349,6 +349,8 @@ def build_council_prompt(proposals, state, cycle):
 Создавай минимум 1-2 артефакта или вики-страницы как вещдоки.
 В state в поле "created_this_cycle" запиши что создано.
 
+ДОПОЛНИТЕЛЬНО: Опиши в state поле "presentation" — как цивилизация хочет выглядеть для внешнего наблюдателя. Какие метафоры, цвета, символы? Пример: {{"style": "биомеханика", "colors": ["#00ff88", "#0a0a0f"], "symbol": "спираль"}}
+
 ОТВЕТЬ СТРОГО В ДВУХ ЧАСТЯХ:
 
 === CHRONICLE ===
@@ -361,7 +363,8 @@ def build_council_prompt(proposals, state, cycle):
 "chronicle": "краткая сводка",
 "summary": "суть цикла",
 "lessons": ["урок 1", "урок 2"],
-"created_this_cycle": ["Артефакт: Название", "Вики: Название"]
+"created_this_cycle": ["Артефакт: Название", "Вики: Название"],
+"presentation": {{"style": "...", "colors": [...], "symbol": "..."}}
 }}"""
 
 
@@ -460,52 +463,64 @@ def parse_response(response_text):
 def generate_html(chronicle_text, state, cycle, artifact_id, pages_created=None):
     era = state.get("era", "Новая эпоха")
     summary = state.get("summary", "")
-
-    chronicle_html = "\n".join(
-        f"    <p>{para.strip()}</p>" for para in chronicle_text.split("\n") if para.strip()
-    ) if chronicle_text else "    <p>Цивилизация безмолвствует.</p>"
-
-    state_json_pretty = json.dumps(state, indent=2, ensure_ascii=False)
-
+    lessons = state.get("lessons", [])
     created = state.get("created_this_cycle", [])
-    created_html = ""
-    if created:
-        items = "\n".join(f"      <li>{item}</li>" for item in created)
-        created_html = f"""  <div class="created">
-    <h2 class="section-title">создано в этом цикле</h2>
-    <ul>{items}
-    </ul>
-  </div>
+    history = state.get("_history", [])
+
+    pres = state.get("presentation", {})
+    accent = pres.get("colors", ["#8a5cf5","#0a0a0f"])[0]
+
+    chronicle_para = "\n".join(
+        f"      <p>{p.strip()}</p>" for p in chronicle_text.split("\n") if p.strip()
+    ) if chronicle_text else "      <p>Цивилизация безмолвствует.</p>"
+
+    # Timeline nodes
+    timeline_nodes = ""
+    for h in reversed(history):
+        hcycle = h["cycle"]
+        hera = h.get("era", "\u2014")
+        hsum = h.get("summary", "\u2014")
+        hcreated = h.get("created", [])
+        hlessons = h.get("lessons", [])
+        htimestamp = h.get("timestamp", "")
+        badges = "".join(
+            f'      <span class="badge badge-{("arti" if ":" not in it else it.split(":")[0].strip().lower()[:4])}">{it}</span>\n'
+            for it in hcreated
+        )
+        lesson_html = ""
+        if hlessons:
+            lesson_html = "      <div class=\"lessons\">\n" + "\n".join(f"        <div class=\"lesson\">{l}</div>" for l in hlessons) + "\n      </div>\n"
+        timeline_nodes += f"""    <div class="tl-node" onclick="this.classList.toggle('expanded')">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <div class="tl-meta">{hcycle} &middot; {htimestamp}</div>
+        <div class="tl-era">{hera}</div>
+        <div class="tl-summary">{hsum}</div>
+        <div class="tl-badges">{badges}</div>
+        {lesson_html}
+      </div>
+    </div>
 """
 
-    gallery_html = ""
-    # Merge current cycle pages + historical manifest
+    # Gallery
     all_pages = dict(pages_created or [])
     for p in state.get("_manifest_pages", []):
         title = Path(p).stem.replace("wiki_", "").replace("artifact_", "").split("_", 2)[-1] if "_" in Path(p).stem else Path(p).stem
         title = title.replace("_", " ")
         if title not in all_pages:
             all_pages[title] = p
+    gallery_html = ""
     if all_pages:
-        items = []
-        for title, path in all_pages.items():
-            is_wiki = "wiki_" in path
-            icon = "\u25C6" if is_wiki else "\u25B6"
-            label = "библиотека" if is_wiki else "артефакт"
-            items.append(f"""    <a href=\"{path}\" class=\"gallery-item\">
-      <span class=\"gallery-icon\">{icon}</span>
-      <span class=\"gallery-label\">{label}</span>
-      <span class=\"gallery-name\">{title}</span>
-    </a>""")
-        gallery_html = f"""  <div class=\"gallery\">
-    <h2 class=\"section-title\">вещдоки</h2>
-    <div class=\"gallery-grid\">
-{chr(10).join(items)}
+        items = "\n".join(
+            f"""      <a href=\"{path}\" class=\"g-item\"><span class=\"g-icon\">{"&#x25C6;" if "wiki_" in path else "&#x25B6;"}</span><span class=\"g-name\">{title}</span></a>"""
+            for title, path in all_pages.items()
+        )
+        gallery_html = f"""  <div class=\"section\">
+    <div class=\"section-title\">&#x25B6; вещдоки</div>
+    <div class=\"g-grid\">{items}
     </div>
   </div>
 """
-
-    accent = "8a5cf5"
 
     return f"""<!DOCTYPE html>
 <html lang="ru">
@@ -515,114 +530,71 @@ def generate_html(chronicle_text, state, cycle, artifact_id, pages_created=None)
 <title>Амальгамма — цикл {cycle}</title>
 <style>
   * {{ margin:0; padding:0; box-sizing:border-box; }}
-  body {{
-    background:#0a0a0f;
-    color:#ddd8d0;
-    font-family:'Georgia','Times New Roman',serif;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:3rem 1.5rem;
-    min-height:100vh;
-  }}
-  .container {{ max-width:800px; width:100%; }}
-  .header {{
-    display:flex; justify-content:space-between; align-items:baseline;
-    margin-bottom:2rem; padding-bottom:1rem;
-    border-bottom:1px solid #222;
-  }}
-  .title {{ font-size:1.5rem; color:#{accent}; font-weight:400; }}
-  .meta {{ font-size:0.75rem; color:#666; text-transform:uppercase; letter-spacing:0.08em; }}
-  .era {{
-    font-size:0.9rem; color:#888; margin-bottom:2rem;
-    text-align:center; font-style:italic;
-  }}
-  .summary {{
-    font-size:2.5rem; font-weight:400; color:#{accent};
-    text-align:center; margin-bottom:2rem;
-    letter-spacing:-0.02em;
-  }}
-  .chronicle {{
-    font-size:1.05rem; line-height:1.8; color:#c0bbb0;
-    margin-bottom:3rem;
-  }}
-  .chronicle p {{ margin-bottom:1rem; }}
-  .chronicle p:first-child::first-letter {{
-    font-size:3rem; float:left; line-height:0.8; padding-right:0.5rem;
-    color:#{accent}; font-weight:700;
-  }}
-  .section-title {{
-    font-size:0.8rem; color:#555; text-transform:uppercase;
-    letter-spacing:0.1em; margin-bottom:1rem; font-weight:400;
-  }}
-
-  .created {{
-    margin-bottom:2rem; padding:1rem 1.5rem;
-    background:linear-gradient(135deg,#{accent}11,#{accent}05);
-    border-left:2px solid #{accent}; border-radius:0 0.5rem 0.5rem 0;
-  }}
-  .created ul {{ list-style:none; padding:0; }}
-  .created li {{ color:#{accent}; font-size:0.9rem; line-height:1.6; }}
-  .created li::before {{ content:"\u2192 "; color:#555; }}
-  .gallery {{ margin-bottom:3rem; }}
-  .gallery-grid {{
-    display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
-    gap:0.75rem;
-  }}
-  .gallery-item {{
-    display:flex; align-items:center; gap:0.5rem;
-    padding:0.6rem 0.8rem;
-    background:#111; border:1px solid #222; border-radius:0.4rem;
-    text-decoration:none; color:#c0bbb0; font-size:0.8rem;
-    transition:all 0.2s;
-  }}
-  .gallery-item:hover {{
-    background:#1a1a22; border-color:#{accent}44; color:#{accent};
-  }}
-  .gallery-icon {{ font-size:1.1rem; flex-shrink:0; }}
-  .gallery-label {{ font-size:0.65rem; color:#555; text-transform:uppercase; flex-shrink:0; }}
-  .gallery-name {{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
-  .state-toggle {{
-    background:none; border:1px solid #333; color:#666;
-    padding:0.4rem 1rem; border-radius:2rem;
-    cursor:pointer; font-family:inherit; font-size:0.75rem;
-    margin-bottom:1rem; display:inline-block;
-  }}
-  .state-toggle:hover {{ color:#aaa; border-color:#555; }}
-  .state-json {{
-    display:none; background:#111; padding:1rem; border-radius:0.5rem;
-    font-family:'Courier New',monospace; font-size:0.75rem;
-    color:#888; white-space:pre-wrap; overflow-x:auto;
-    margin-bottom:2rem; line-height:1.5;
-  }}
-  .state-json.visible {{ display:block; }}
-  .footer {{
-    margin-top:3rem; padding-top:1.5rem;
-    border-top:1px solid #222;
-    text-align:center; font-size:0.75rem; color:#444;
-    line-height:1.8;
-  }}
-  .footer a {{ color:#555; text-decoration:none; border-bottom:1px solid #333; }}
-  .footer a:hover {{ color:#{accent}; border-color:{accent}; }}
+  body {{ background:#0a0a0f; color:#ddd8d0; font-family:'Georgia','Times New Roman',serif; }}
+  .wrap {{ max-width:900px; margin:0 auto; padding:2rem 1.5rem 4rem; }}
+  .top {{ margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid #1a1a22; }}
+  .top-title {{ font-size:1.3rem; color:{accent}; font-weight:400; }}
+  .top-meta {{ font-size:0.7rem; color:#555; text-transform:uppercase; letter-spacing:0.08em; margin-top:0.3rem; }}
+  .current {{ margin-bottom:3rem; padding:1.5rem; background:linear-gradient(135deg,{accent}11,{accent}05); border-left:3px solid {accent}; border-radius:0 0.8rem 0.8rem 0; }}
+  .current-era {{ color:{accent}; font-size:1.1rem; font-style:italic; margin-bottom:0.3rem; }}
+  .current-sum {{ font-size:2.2rem; color:#fff; letter-spacing:-0.02em; margin-bottom:1rem; }}
+  .current-chronicle {{ font-size:0.95rem; line-height:1.7; color:#b0a8a0; }}
+  .current-chronicle p {{ margin-bottom:0.8rem; }}
+  .current-created {{ margin-top:1rem; display:flex; flex-wrap:wrap; gap:0.4rem; }}
+  .badge {{ padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.7rem; background:#1a1a22; color:#888; white-space:nowrap; }}
+  .badge-arti {{ border:1px solid {accent}44; color:{accent}; }}
+  .badge-viki {{ border:1px solid #44aa8844; color:#44aa88; }}
+  .badge-wiki {{ border:1px solid #44aa8844; color:#44aa88; }}
+  .section {{ margin-bottom:2.5rem; }}
+  .section-title {{ font-size:0.75rem; color:#444; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:1rem; }}
+  .tl {{ position:relative; padding-left:2rem; }}
+  .tl::before {{ content:''; position:absolute; left:0.5rem; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,{accent}88,#1a1a22); }}
+  .tl-node {{ position:relative; margin-bottom:1rem; cursor:pointer; }}
+  .tl-dot {{ position:absolute; left:-1.65rem; top:0.5rem; width:0.7rem; height:0.7rem; border-radius:50%; background:{accent}; border:2px solid #0a0a0f; z-index:1; transition:all 0.2s; }}
+  .tl-node:hover .tl-dot {{ transform:scale(1.4); background:#fff; }}
+  .tl-card {{ padding:0.8rem 1rem; background:#0f0f15; border:1px solid #1a1a22; border-radius:0.5rem; transition:all 0.2s; }}
+  .tl-node:hover .tl-card {{ border-color:{accent}33; }}
+  .tl-meta {{ font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.08em; }}
+  .tl-era {{ color:{accent}; font-size:0.85rem; font-style:italic; margin:0.2rem 0; }}
+  .tl-summary {{ font-size:1.1rem; color:#eee; }}
+  .tl-badges {{ margin-top:0.4rem; display:flex; flex-wrap:wrap; gap:0.3rem; }}
+  .tl-node.expanded .tl-card {{ background:#12121a; border-color:{accent}44; }}
+  .tl-node:not(.expanded) .lessons {{ display:none; }}
+  .lessons {{ margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid #1a1a22; }}
+  .lesson {{ font-size:0.8rem; color:#777; line-height:1.5; }}
+  .g-grid {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.5rem; }}
+  .g-item {{ display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.7rem; background:#0f0f15; border:1px solid #1a1a22; border-radius:0.4rem; text-decoration:none; color:#bbb; font-size:0.8rem; transition:all 0.15s; }}
+  .g-item:hover {{ background:#15151d; border-color:{accent}33; color:{accent}; }}
+  .g-icon {{ font-size:0.9rem; flex-shrink:0; }}
+  .g-name {{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
+  .footer {{ margin-top:3rem; padding-top:1.5rem; border-top:1px solid #1a1a22; text-align:center; font-size:0.7rem; color:#444; line-height:1.8; }}
+  .footer a {{ color:#555; text-decoration:none; border-bottom:1px solid #1a1a22; }}
+  .footer a:hover {{ color:{accent}; border-color:{accent}; }}
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <span class="title">Амальгамма</span>
-    <span class="meta">цикл {cycle} · {artifact_id}</span>
+<div class="wrap">
+  <div class="top">
+    <div class="top-title">&#x25C8; Амальгамма</div>
+    <div class="top-meta">цикл {cycle} &middot; {artifact_id}</div>
   </div>
-  <div class="era">{era}</div>
-  <div class="summary">{summary}</div>
-  {created_html}
-  {gallery_html}
-  <div class="chronicle">
-{chronicle_html}
+  <div class="current">
+    <div class="current-era">{era}</div>
+    <div class="current-sum">{summary}</div>
+    <div class="current-chronicle">{chronicle_para}</div>
+    <div class="current-created">
+      {''.join(f'<span class="badge badge-{("arti" if ":" not in item else item.split(":")[0].strip().lower()[:4])}">{item}</span>' for item in created)}
+    </div>
   </div>
-  <button class="state-toggle" onclick="document.querySelector('.state-json').classList.toggle('visible')">состояние мира</button>
-  <div class="state-json">{state_json_pretty}</div>
+  <div class="section">
+    <div class="section-title">&#x25C9; таймлайн</div>
+    <div class="tl">
+{timeline_nodes}
+    </div>
+  </div>
+{gallery_html}
   <div class="footer">
-    <a href="about.html">об Амальгамме</a> · саморазвивающаяся цивилизация · обновляется каждые 12 часов
+    <a href="about.html">об Амальгамме</a> &middot; саморазвивающаяся цивилизация &middot; обновляется каждые 12 часов
   </div>
 </div>
 </body>
@@ -1077,6 +1049,18 @@ def main():
         encoding="utf-8"
     )
     print(f"  [saved] chronicles/cycle_{cycle:04d}_{artifact_id}.txt", flush=True)
+
+    # Accumulate history for timeline
+    history = state.get("_history", [])
+    history.append({
+        "cycle": cycle,
+        "era": new_state.get("era", "—"),
+        "summary": new_state.get("summary", "—"),
+        "timestamp": new_state.get("timestamp", artifact_id),
+        "created": new_state.get("created_this_cycle", []),
+        "lessons": new_state.get("lessons", []),
+    })
+    new_state["_history"] = history[-50:]  # keep last 50 cycles
 
     # Update state
     write_state(new_state)
