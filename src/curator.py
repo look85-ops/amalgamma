@@ -1312,38 +1312,48 @@ def generate_story_html(state):
     BASE_DIR = Path(__file__).resolve().parent.parent
     art_dir = BASE_DIR / "artifacts"
     wiki_dir = BASE_DIR / "wiki"
-    html = ""
+    cards = []
 
     for f in sorted(art_dir.iterdir()) if art_dir.exists() else []:
         if f.suffix not in (".txt", ".md", ".py"):
             continue
         raw = f.read_text("utf-8").strip()
         title = f.stem
-        for pfx in ("20260618_", "20260617_"):
-            if title.startswith(pfx):
-                title = title[len(pfx):]
-        type_badge = {"py": "code", "md": "manifest", "txt": "text"}.get(f.suffix, "text")
-        snippet = "\n".join(raw.split("\n")[:8])
-        html += f"""  <div class="card">
+        title = re.sub(r'^\d{8}_\d{6}_', '', title)
+        head = raw.split("\n")[0] if raw else ""
+        m = re.match(r'===?\s*(\w+):\s*(.*?)\s*===?', head)
+        if m:
+            type_badge = m.group(1).lower()
+            title = m.group(2).strip()
+        else:
+            type_badge = {"py": "code", "md": "manifest", "txt": "text"}.get(f.suffix, "text")
+        snippet = "\n".join(raw.split("\n")[1:8])
+        snippet = snippet.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        card_class = "card-wiki" if type_badge == "wiki" else ""
+        cards.append(f"""  <div class="card {card_class}">
     <div class="card-badge">{type_badge}</div>
-    <div class="card-title">{title[:50]}</div>
+    <div class="card-title">{title[:80]}</div>
     <pre class="card-text">{snippet[:600]}</pre>
-  </div>
-"""
+  </div>""")
 
     for f in sorted(wiki_dir.iterdir()) if wiki_dir.exists() else []:
         if f.suffix != ".md":
             continue
         raw = f.read_text("utf-8").strip()
         title = f.stem
-        snippet = "\n".join(raw.split("\n")[:8])
-        html += f"""  <div class="card card-wiki">
+        head = raw.split("\n")[0] if raw else ""
+        h1 = re.match(r'^#\s+(.+)', head)
+        if h1:
+            title = h1.group(1).strip()
+        snippet = "\n".join(raw.split("\n")[1:8])
+        snippet = snippet.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        cards.append(f"""  <div class="card card-wiki">
     <div class="card-badge">wiki</div>
-    <div class="card-title">{title[:50]}</div>
+    <div class="card-title">{title[:80]}</div>
     <pre class="card-text">{snippet[:600]}</pre>
-  </div>
-"""
+  </div>""")
 
+    html = "\n".join(cards)
     if not html:
         html = """  <div class="card" style="grid-column:1/-1;border-color:#333;background:#0d0d14;padding:2rem;text-align:center;">
     <div style="color:#666;">Цивилизация ещё не создала артефактов. Они появятся, когда она решит действовать.</div>
