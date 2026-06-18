@@ -533,9 +533,12 @@ def generate_html(chronicle_text, state, cycle, artifact_id, pages_created=None)
   * {{ margin:0; padding:0; box-sizing:border-box; }}
   body {{ background:#0a0a0f; color:#ddd8d0; font-family:'Georgia','Times New Roman',serif; }}
   .wrap {{ max-width:900px; margin:0 auto; padding:2rem 1.5rem 4rem; }}
-  .top {{ margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid #1a1a22; }}
+  .top {{ margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid #1a1a22; display:flex; justify-content:space-between; align-items:baseline; gap:1rem; }}
   .top-title {{ font-size:1.3rem; color:{accent}; font-weight:400; }}
-  .top-meta {{ font-size:0.7rem; color:#555; text-transform:uppercase; letter-spacing:0.08em; margin-top:0.3rem; }}
+  .top-meta {{ font-size:0.7rem; color:#555; text-transform:uppercase; letter-spacing:0.08em; }}
+  .top-nav {{ font-size:0.8rem; color:#666; display:flex; align-items:center; gap:0.75rem; }}
+  .top-nav a {{ color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; }}
+  .top-nav a:hover {{ border-color:#8a5cf5; }}
   .current {{ margin-bottom:3rem; padding:1.5rem; background:linear-gradient(135deg,{accent}11,{accent}05); border-left:3px solid {accent}; border-radius:0 0.8rem 0.8rem 0; }}
   .current-era {{ color:{accent}; font-size:1.1rem; font-style:italic; margin-bottom:0.3rem; }}
   .current-sum {{ font-size:2.2rem; color:#fff; letter-spacing:-0.02em; margin-bottom:1rem; }}
@@ -577,7 +580,10 @@ def generate_html(chronicle_text, state, cycle, artifact_id, pages_created=None)
 <div class="wrap">
   <div class="top">
     <div class="top-title">&#x25C8; Амальгамма</div>
-    <div class="top-meta">цикл {cycle} &middot; {artifact_id}</div>
+    <div class="top-nav">
+      <a href="story.html" target="_blank" rel="noopener">Иммерсивный режим</a>
+      <span class="top-meta">цикл {cycle} &middot; {artifact_id}</span>
+    </div>
   </div>
   <div class="current">
     <div class="current-era">{era}</div>
