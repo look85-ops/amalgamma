@@ -536,21 +536,47 @@ def generate_html(chronicle_text, state, cycle, artifact_id, pages_created=None,
     </div>
 """
 
-    # Gallery
+    # Gallery — split wiki and artifacts
     all_pages = dict(pages_created or [])
     for p in state.get("_manifest_pages", []):
-        title = Path(p).stem.replace("wiki_", "").replace("artifact_", "").split("_", 2)[-1] if "_" in Path(p).stem else Path(p).stem
+        stem = Path(p).stem
+        title = stem.replace("wiki_", "").replace("artifact_", "").split("_", 2)[-1] if "_" in stem else stem
         title = title.replace("_", " ")
         if title not in all_pages:
             all_pages[title] = p
+    wiki_pages = {t: p for t, p in all_pages.items() if "wiki_" in p}
+    art_pages = {t: p for t, p in all_pages.items() if "artifact_" in p}
+    misc_pages = {t: p for t, p in all_pages.items() if "wiki_" not in p and "artifact_" not in p}
     gallery_html = ""
-    if all_pages:
+    if art_pages:
         items = "\n".join(
-            f"""      <a href=\"{path}\" class=\"g-item\"><span class=\"g-icon\">{"&#x25C6;" if "wiki_" in path else "&#x25B6;"}</span><span class=\"g-name\">{title}</span></a>"""
-            for title, path in all_pages.items()
+            f"""      <a href=\"{p}\" class=\"g-item\"><span class=\"g-icon\">&#x25B6;</span><span class=\"g-name\">{t}</span></a>"""
+            for t, p in art_pages.items()
         )
-        gallery_html = f"""  <div class=\"section\">
-    <div class=\"section-title\">&#x25B6; вещдоки</div>
+        gallery_html += f"""  <div class=\"section\">
+    <div class=\"section-title\">&#x25B6; артефакты</div>
+    <div class=\"g-grid\">{items}
+    </div>
+  </div>
+"""
+    if wiki_pages:
+        items = "\n".join(
+            f"""      <a href=\"{p}\" class=\"g-item\"><span class=\"g-icon\">&#x25C6;</span><span class=\"g-name\">{t}</span></a>"""
+            for t, p in wiki_pages.items()
+        )
+        gallery_html += f"""  <div class=\"section\">
+    <div class=\"section-title\">&#x25C6; вики</div>
+    <div class=\"g-grid\">{items}
+    </div>
+  </div>
+"""
+    if misc_pages:
+        items = "\n".join(
+            f"""      <a href=\"{p}\" class=\"g-item\"><span class=\"g-icon\">&#x25C6;</span><span class=\"g-name\">{t}</span></a>"""
+            for t, p in misc_pages.items()
+        )
+        gallery_html += f"""  <div class=\"section\">
+    <div class=\"section-title\">&#x25C6; прочее</div>
     <div class=\"g-grid\">{items}
     </div>
   </div>
