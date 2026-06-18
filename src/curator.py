@@ -315,7 +315,7 @@ def build_agent_prompt(slug, sphere_info, state, cycle, previous_proposals):
 Не пиши общую летопись цикла — только позицию своей сферы."""
 
 
-def build_council_prompt(proposals, state, cycle):
+def build_council_prompt(proposals, state, cycle, is_crossroads=False):
     """Prompt for council synthesis — minimal format constraints, content is free-form."""
     genesis_text = json.load(open(GENOME_PATH, "r", encoding="utf-8")).get("genesis", "")[:800]
 
@@ -324,6 +324,28 @@ def build_council_prompt(proposals, state, cycle):
         proposals_text += f"\n=== {p['sphere_name']} ===\n{p['text'][:800]}\n"
 
     state_str = json.dumps(state, indent=2, ensure_ascii=False)
+    direction = state.get("_direction", "")
+
+    if is_crossroads:
+        task = f"""ТВОЯ ЗАДАЧА НА ЭТОТ ЦИКЛ — ВЫБРАТЬ НАПРАВЛЕНИЕ.
+
+Цивилизация подошла к перекрёстку. Не пиши очередную хронику — реши, куда двигаться дальше.
+
+Предыдущий фокус (если был): {direction or "никакого"}
+
+Выбери 1-3 направления на следующие 5 циклов. Для каждого:
+- Что исследуем/создаём/меняем
+- Почему это важно именно сейчас
+- Какой первый шаг сделаем
+
+Форма ответа — любая: манифест, карта решений, указ, диалог, схема. Главное — чтобы было понятно, что выбрано и почему."""
+    else:
+        task = f"""ТВОЯ ЗАДАЧА: выслушав все сферы, зафиксировать результат цикла. Форма — на твоё усмотрение: текст, тезисы, карта, устав, схема, псевдокод. Если выберешь нетекстовый формат — кратко поясни его в разделе летописи и добавь подробности в артефакты/вики. Отражай конфликты/решения/открытия ровно в той мере, в какой считаешь значимым.
+
+ВАЖНО: Оцени результат этого цикла по шкале само-удивления. Насколько то, что создано в этом цикле, удивило саму цивилизацию? Выбери один из трёх уровней и укажи его в state как "_evaluation":
+— «ожидаемо» — всё по инерции, без сюрпризов
+— «интересно» — были неожиданные повороты, открытия
+— «странно» — цивилизация вышла за собственные границы"""
 
     return f"""ТЫ — СОВЕТ ЦИВИЛИЗАЦИИ АМАЛЬГАММА.
 
@@ -336,7 +358,7 @@ def build_council_prompt(proposals, state, cycle):
 ГОЛОСА СФЕР (каждая высказала свою позицию):
 {proposals_text}
 
-ТВОЯ ЗАДАЧА: выслушав все сферы, зафиксировать результат цикла. Форма — на твоё усмотрение: текст, тезисы, карта, устав, схема, псевдокод. Если выберешь нетекстовый формат — кратко поясни его в разделе летописи и добавь подробности в артефакты/вики. Отражай конфликты/решения/открытия ровно в той мере, в какой считаешь значимым.
+{task}
 
 ИНСТРУМЕНТЫ:
 1. ###SEARCH###запрос### — поиск в интернете
@@ -347,7 +369,7 @@ def build_council_prompt(proposals, state, cycle):
 Создавай минимум 1-2 артефакта или вики-страницы как вещдоки.
 В state в поле "created_this_cycle" запиши что создано.
 
-ДОПОЛНИТЕЛЬНО: Опиши в state поле "presentation" — как цивилизация хочет выглядеть для внешнего наблюдателя (метафоры/цвета/символы). И, если считаешь нужным, добавь поле "story_blocks" — список сцен для иммерсивного рассказа (каждая сцена: {"title","kicker","text","media","accent"}).
+ДОПОЛНИТЕЛЬНО: Опиши в state поле "presentation" — как цивилизация хочет выглядеть для внешнего наблюдателя (метафоры/цвета/символы). И, если считаешь нужным, добавь поле "story_blocks" — список сцен для иммерсивного рассказа (каждая сцена: {{"title","kicker","text","media","accent"}}).
 
 ОТВЕТЬ СТРОГО В ДВУХ ЧАСТЯХ:
 
@@ -360,6 +382,7 @@ def build_council_prompt(proposals, state, cycle):
 "timestamp": "{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
 "chronicle": "краткая сводка",
 "summary": "суть цикла",
+"_evaluation": "ожидаемо|интересно|странно",
 "lessons": ["урок 1", "урок 2"],
 "created_this_cycle": ["Артефакт: Название", "Вики: Название"],
 "presentation": {{"style": "...", "colors": [...], "symbol": "..."}},
@@ -461,15 +484,22 @@ def parse_response(response_text):
     return chronicle, state_json
 
 
-def generate_html(chronicle_text, state, cycle, artifact_id, pages_created=None):
+def generate_html(chronicle_text, state, cycle, artifact_id, pages_created=None, is_crossroads=False):
     era = state.get("era", "Новая эпоха")
     summary = state.get("summary", "")
     lessons = state.get("lessons", [])
     created = state.get("created_this_cycle", [])
     history = state.get("_history", [])
+    evaluation = state.get("_evaluation", "")
+    direction = state.get("_direction", "")
 
     pres = state.get("presentation", {})
     accent = pres.get("colors", ["#8a5cf5","#0a0a0f"])[0]
+
+    eval_colors = {"ожидаемо": "#666", "интересно": "#44aa88", "странно": "#8a5cf5"}
+    eval_color = eval_colors.get(evaluation, "#666")
+    eval_badge = f'<span class="badge" style="border-color:{eval_color}44;color:{eval_color}">{evaluation}</span>' if evaluation else ""
+    dir_badge = f'<span class="badge" style="border-color:#ddaa3344;color:#ddaa33">&#x25B6; {direction[:40]}</span>' if direction else ""
 
     chronicle_para = "\n".join(
         f"      <p>{p.strip()}</p>" for p in chronicle_text.split("\n") if p.strip()
@@ -484,10 +514,13 @@ def generate_html(chronicle_text, state, cycle, artifact_id, pages_created=None)
         hcreated = h.get("created", [])
         hlessons = h.get("lessons", [])
         htimestamp = h.get("timestamp", "")
+        heval = h.get("evaluation", "")
         badges = "".join(
             f'      <span class="badge badge-{("arti" if ":" not in it else it.split(":")[0].strip().lower()[:4])}">{it}</span>\n'
             for it in hcreated
         )
+        if heval and heval in eval_colors:
+            badges += f'      <span class="badge" style="border-color:{eval_colors[heval]}44;color:{eval_colors[heval]}">{heval}</span>\n'
         lesson_html = ""
         if hlessons:
             lesson_html = "      <div class=\"lessons\">\n" + "\n".join(f"        <div class=\"lesson\">{l}</div>" for l in hlessons) + "\n      </div>\n"
@@ -590,6 +623,8 @@ def generate_html(chronicle_text, state, cycle, artifact_id, pages_created=None)
     <div class="current-sum">{summary}</div>
     <div class="current-chronicle">{chronicle_para}</div>
     <div class="current-created">
+      {eval_badge}
+      {dir_badge}
       {''.join(f'<span class="badge badge-{("arti" if ":" not in item else item.split(":")[0].strip().lower()[:4])}">{item}</span>' for item in created)}
     </div>
   </div>
@@ -960,8 +995,14 @@ def main():
         return
 
     # Phase 2: Council synthesis (paid backend)
-    print("  [phase 2] council synthesis...", flush=True)
-    council_prompt = build_council_prompt(proposals, state, cycle)
+    is_crossroads = (
+        cycle > 1 and (
+            cycle % 5 == 0
+            or state.get("_eval_streak", 0) >= 3
+        )
+    )
+    print(f"  [phase 2] council synthesis{' (PEREKRESTOK!)' if is_crossroads else ''}...", flush=True)
+    council_prompt = build_council_prompt(proposals, state, cycle, is_crossroads=is_crossroads)
     if not check_budget():
         return
 
@@ -1003,6 +1044,23 @@ def main():
         chronicle_text = new_state.get("chronicle", "Без слов.")
 
     new_state["cycle"] = cycle
+
+    # Track self-evaluation and streak
+    evaluation = new_state.get("_evaluation", "").strip().lower()
+    valid_evaluations = {"ожидаемо", "интересно", "странно"}
+    if evaluation not in valid_evaluations:
+        evaluation = ""
+    eval_history = state.get("_evaluations", [])
+    eval_history.append(evaluation)
+    new_state["_evaluations"] = eval_history[-20:]  # keep last 20
+
+    streak = 0
+    for e in reversed(eval_history):
+        if e == "ожидаемо":
+            streak += 1
+        else:
+            break
+    new_state["_eval_streak"] = streak
 
     artifact_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 
@@ -1066,8 +1124,39 @@ def main():
         "timestamp": new_state.get("timestamp", artifact_id),
         "created": new_state.get("created_this_cycle", []),
         "lessons": new_state.get("lessons", []),
+        "evaluation": evaluation or None,
     })
     new_state["_history"] = history[-50:]  # keep last 50 cycles
+
+    # If crossroads, store the chosen direction from chronicle
+    if is_crossroads:
+        # Extract first meaningful line as direction
+        direction_lines = [l.strip() for l in chronicle_text.split("\n") if l.strip() and len(l.strip()) > 20]
+        new_state["_direction"] = (direction_lines[0] if direction_lines else chronicle_text[:100])[:200]
+        log_forage("direction", "set", new_state["_direction"][:60])
+    else:
+        # Keep previous direction if set
+        new_state["_direction"] = state.get("_direction", "")
+
+    # Garden signal: write key concept for the other civilization
+    try:
+        summary = new_state.get("summary", "—")
+        era = new_state.get("era", "—")
+        signal = {
+            "source": "amalgamma",
+            "cycle": cycle,
+            "era": era,
+            "summary": summary,
+            "evaluation": evaluation or "—",
+            "direction": new_state.get("_direction", ""),
+            "created": new_state.get("created_this_cycle", []),
+            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        signal_path = BASE_DIR / "garden_signal.json"
+        signal_path.write_text(json.dumps(signal, indent=2, ensure_ascii=False), encoding="utf-8")
+        log_forage("garden-signal", "written")
+    except Exception as e:
+        log_forage("garden-signal", "fail", str(e)[:60])
 
     # Update state
     write_state(new_state)
@@ -1075,7 +1164,7 @@ def main():
 
     # Generate and save index.html
     html = generate_html(chronicle_text, new_state, cycle, artifact_id,
-                         pages_created=pages_created)
+                         pages_created=pages_created, is_crossroads=is_crossroads)
     INDEX_PATH.write_text(html, encoding="utf-8")
     print(f"  [saved] index.html — цикл {cycle}: {new_state.get('summary', '')}", flush=True)
 
