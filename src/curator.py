@@ -201,6 +201,63 @@ forager_gemini()
 BACKENDS.sort(key=lambda b: (not b["paid"], b["name"]))
 
 
+def generate_image(prompt):
+    """Generate image via OpenRouter (FLUX). Returns path to saved PNG or None."""
+    key = os.environ.get("OPENROUTER_API_KEY", "")
+    if not key:
+        log_forage("image", "no key")
+        return None
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+    models_to_try = ["black-forest-labs/flux-schnell"]
+    for model in models_to_try:
+        payload = {
+            "model": model,
+            "messages": [{"role": "user", "content": [{"type": "text", "text": prompt}]}],
+        }
+        try:
+            resp = requests.post(url, headers=headers, json=payload, timeout=90)
+            if resp.status_code != 200:
+                log_forage("image", f"{model} HTTP {resp.status_code}")
+                continue
+            data = resp.json()
+            content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            img_url = None
+            # markdown image with base64
+            m = re.search(r'!\[.*?\]\((data:image/[^;]+;base64,[^\)]+)\)', content)
+            if m:
+                img_url = m.group(1)
+            else:
+                m = re.search(r'(https?://[^\s\)]+\.(?:png|jpg|jpeg|webp))', content)
+                if m:
+                    img_url = m.group(1)
+            if not img_url:
+                log_forage("image", f"no image url from {model}")
+                continue
+            art_dir = BASE_DIR / "artifacts"
+            art_dir.mkdir(exist_ok=True)
+            ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+            safe = re.sub(r'[^\w\s-]', '', prompt)[:30].strip().replace(' ', '_')
+            img_path = art_dir / f"{ts}_img_{safe}.png"
+            if img_url.startswith("data:image"):
+                import base64
+                b64_data = img_url.split(",", 1)[1]
+                img_path.write_bytes(base64.b64decode(b64_data))
+            else:
+                r = requests.get(img_url, timeout=30)
+                if r.status_code == 200:
+                    img_path.write_bytes(r.content)
+                else:
+                    log_forage("image", "download fail")
+                    continue
+            log_forage("image", "saved", img_path.name)
+            return img_path
+        except Exception as e:
+            log_forage("image", "error", f"{model}: {str(e)[:60]}")
+            continue
+    return None
+
+
 def call_llm(prompt, only_backend=None):
     backends = [only_backend] if only_backend else BACKENDS
     for backend in backends:
@@ -644,9 +701,10 @@ def build_consciousness_prompt(genome, state, cycle, kaleidoscope=None):
 1. ИССЛЕДОВАТЬ — ###SEARCH###запрос### (узнать новое о мире)
 2. СПРАШИВАТЬ — ###REQUEST###Название###Описание### (запросить у человека)
 3. СОЗДАВАТЬ — ###ARTIFACT###тип:Название###содержимое###
-   (типы: music, image, text, code, poem, manifest, diagram, blueprint, law, treaty)
-4. ЗАПОМИНАТЬ — ###WIKI###Заголовок###содержимое### (записать знание)
-5. МЕНЯТЬ СЕБЯ — ###CHANGE_SELF###поле:значение### или ###CHANGE###описание###
+   (типы: text, code, poem, manifest, diagram, blueprint, law, treaty)
+4. РИСОВАТЬ — ###IMAGE###описание изображения### (сгенерировать картинку через нейросеть)
+5. ЗАПОМИНАТЬ — ###WIKI###Заголовок###содержимое### (записать знание)
+6. МЕНЯТЬ СЕБЯ — ###CHANGE_SELF###поле:значение### или ###CHANGE###описание###
     (поля: genesis, direction, sphere_add name::act1,act2, sphere_remove name, sphere_activity_add name::act,
     param имяПараметра|причина; параметрами поддерживаются: agent_temp, exploration_factor, surprise_threshold, diversity_factor)
 
@@ -848,8 +906,27 @@ def save_artifact(atype, title, content):
     art_dir.mkdir(exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     safe = re.sub(r'[^\w\s-]', '', title)[:40].strip().replace(' ', '_')
+
+    # image type → generate via API, save PNG
+    if atype.strip().lower() == "image":
+        prompt = content or title
+        img_path = generate_image(prompt)
+        if img_path:
+            log_forage("artifact", "image-saved", img_path.name)
+            return img_path
+        log_forage("artifact", "image-failed", "fallback to text")
+        # fallback: save prompt as text artifact
+        ext = "txt"
+        raw_path = art_dir / f"{ts}_{safe}.{ext}"
+        raw_path.write_text(
+            f"=== {atype.upper()}: {title} ===\nВремя: {ts}\n\n[image generation failed]\n{content}",
+            encoding="utf-8"
+        )
+        log_forage("artifact", "saved", f"text-fallback/{raw_path.name}")
+        return raw_path
+
     ext = {
-        "music": "txt", "image": "txt", "text": "txt", "code": "py",
+        "music": "txt", "text": "txt", "code": "py",
         "poem": "txt", "manifest": "md", "diagram": "txt",
         "blueprint": "txt", "law": "txt", "treaty": "txt",
     }.get(atype, "txt")
@@ -998,7 +1075,7 @@ MAX_ACTIONS_PER_CYCLE = 5
 
 def count_actions_in_text(text):
     """Count how many action markers are in the text."""
-    return len(re.findall(r'###(?:SEARCH|REQUEST|ARTIFACT|WIKI|CHANGE(?:_SELF)?)###', text))
+    return len(re.findall(r'###(?:SEARCH|REQUEST|ARTIFACT|WIKI|IMAGE|CHANGE(?:_SELF)?)###', text))
 
 
 def process_markers(text, state, cycle, genome=None):
@@ -1036,6 +1113,22 @@ def process_markers(text, state, cycle, genome=None):
         save_request(title, desc)
         text = text.replace(m.group(0),
             f"[Заявка «{title}» отправлена человеку-опекуну.]")
+
+    # IMAGE
+    img_matches = list(re.finditer(r'###IMAGE###(.+?)###', text, re.DOTALL))
+    for m in img_matches[:MAX_ACTIONS_PER_CYCLE]:
+        prompt = m.group(1).strip()
+        action_count += 1
+        if action_count > MAX_ACTIONS_PER_CYCLE:
+            text = text.replace(m.group(0), "[Действие заблокировано: превышен лимит 5 действий за цикл]")
+            log_forage("marker", "blocked", f"image limit: {prompt[:40]}")
+            continue
+        log_forage("marker", "image", prompt[:60])
+        result = generate_image(prompt)
+        if result:
+            text = text.replace(m.group(0), f"[Изображение сохранено: {result.name}]")
+        else:
+            text = text.replace(m.group(0), "[Ошибка генерации изображения]")
 
     # WIKI
     wiki_matches = list(re.finditer(r'###WIKI###(.+?)###(.+?)###', text, re.DOTALL))
@@ -1315,6 +1408,13 @@ def generate_story_html(state):
     cards = []
 
     for f in sorted(art_dir.iterdir()) if art_dir.exists() else []:
+        if f.suffix in (".png", ".jpg", ".jpeg", ".webp"):
+            cards.append(f"""  <div class="card card-image">
+    <div class="card-badge">image</div>
+    <div class="card-title">{f.stem[:60]}</div>
+    <img src="artifacts/{f.name}" class="card-img" />
+  </div>""")
+            continue
         if f.suffix not in (".txt", ".md", ".py"):
             continue
         raw = f.read_text("utf-8").strip()
@@ -1378,9 +1478,11 @@ def generate_story_html(state):
     .card {{ background:#0f0f15; border:1px solid #1a1a22; border-radius:0.5rem; padding:1rem; display:flex; flex-direction:column; gap:0.4rem; transition:border-color 0.15s; }}
     .card:hover {{ border-color:#333; }}
     .card-wiki {{ border-left:3px solid #44aa8844; }}
+    .card-image {{ border-left:3px solid #8a5cf544; }}
     .card-badge {{ font-size:0.6rem; text-transform:uppercase; letter-spacing:0.1em; color:#555; }}
     .card-title {{ font-size:1rem; color:#8a5cf5; font-weight:400; line-height:1.3; }}
     .card-text {{ font-size:0.75rem; line-height:1.5; color:#888; overflow:hidden; font-family:'Courier New',monospace; white-space:pre-wrap; }}
+    .card-img {{ width:100%; border-radius:0.3rem; margin-top:0.3rem; }}
   </style>
 </head>
 <body>
