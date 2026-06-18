@@ -3,52 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Амальгамма — цикл 14</title>
+<title>Амальгамма — цикл 1</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:#0a0a0f; color:#ddd8d0; font-family:'Georgia','Times New Roman',serif; }
   .wrap { max-width:900px; margin:0 auto; padding:2rem 1.5rem 4rem; }
-  .top { margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid #1a1a22; display:flex; justify-content:space-between; align-items:baseline; gap:1rem; }
-  .top-title { font-size:1.3rem; color:#000000; font-weight:400; }
+  .top { margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid #1a1a22; display:flex; justify-content:space-between; align-items:baseline; gap:1rem; flex-wrap:wrap; }
+  .top-title { font-size:1.3rem; color:#8a5cf5; font-weight:400; }
   .top-meta { font-size:0.7rem; color:#555; text-transform:uppercase; letter-spacing:0.08em; }
-  .top-nav { font-size:0.8rem; color:#666; display:flex; align-items:center; gap:0.75rem; }
+  .top-nav { font-size:0.8rem; color:#666; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; }
   .top-nav a { color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; }
   .top-nav a:hover { border-color:#8a5cf5; }
-  .current { margin-bottom:3rem; padding:1.5rem; background:linear-gradient(135deg,#00000011,#00000005); border-left:3px solid #000000; border-radius:0 0.8rem 0.8rem 0; }
-  .current-era { color:#000000; font-size:1.1rem; font-style:italic; margin-bottom:0.3rem; }
-  .current-sum { font-size:2.2rem; color:#fff; letter-spacing:-0.02em; margin-bottom:1rem; }
-  .current-chronicle { font-size:0.95rem; line-height:1.7; color:#b0a8a0; }
-  .current-chronicle p { margin-bottom:0.8rem; }
-  .current-created { margin-top:1rem; display:flex; flex-wrap:wrap; gap:0.4rem; }
+
+  .current { margin-bottom:2rem; padding:1.5rem; background:linear-gradient(135deg,#8a5cf511,#8a5cf505); border-left:3px solid #8a5cf5; border-radius:0 0.8rem 0.8rem 0; }
+  .current-era { color:#8a5cf5; font-size:1.1rem; font-style:italic; margin-bottom:0.3rem; }
+  .current-sum { font-size:2.2rem; color:#fff; letter-spacing:-0.02em; margin-bottom:0.5rem; }
+  .current-badges { display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.5rem; }
+
+  .reflection { margin-bottom:2rem; padding:1rem 1.5rem; background:#0d0d14; border:1px solid #1a1a22; border-radius:0.5rem; }
+  .reflection-title { font-size:0.7rem; color:#555; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.5rem; }
+  .reflection-text { font-size:0.9rem; line-height:1.6; color:#999; border-left:2px solid #8a5cf533; padding-left:0.8rem; }
+  .reflection-text p { margin-bottom:0.5rem; }
+
+  .chronicle { margin-bottom:2.5rem; padding:0 0.5rem; }
+  .chronicle-title { font-size:0.7rem; color:#555; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.8rem; }
+  .chronicle-text { font-size:0.95rem; line-height:1.7; color:#b0a8a0; }
+  .chronicle-text p { margin-bottom:0.8rem; }
+
   .badge { padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.7rem; background:#1a1a22; color:#888; white-space:nowrap; }
-  .badge-arti { border:1px solid #00000044; color:#000000; }
+  .badge-arti { border:1px solid #8a5cf544; color:#8a5cf5; }
   .badge-viki { border:1px solid #44aa8844; color:#44aa88; }
   .badge-wiki { border:1px solid #44aa8844; color:#44aa88; }
   .section { margin-bottom:2.5rem; }
   .section-title { font-size:0.75rem; color:#444; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:1rem; }
+
   .tl { position:relative; padding-left:2rem; }
-  .tl::before { content:''; position:absolute; left:0.5rem; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,#00000088,#1a1a22); }
+  .tl::before { content:''; position:absolute; left:0.5rem; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,#8a5cf588,#1a1a22); }
   .tl-node { position:relative; margin-bottom:1rem; cursor:pointer; }
-  .tl-dot { position:absolute; left:-1.65rem; top:0.5rem; width:0.7rem; height:0.7rem; border-radius:50%; background:#000000; border:2px solid #0a0a0f; z-index:1; transition:all 0.2s; }
+  .tl-dot { position:absolute; left:-1.65rem; top:0.5rem; width:0.7rem; height:0.7rem; border-radius:50%; background:#8a5cf5; border:2px solid #0a0a0f; z-index:1; transition:all 0.2s; }
   .tl-node:hover .tl-dot { transform:scale(1.4); background:#fff; }
   .tl-card { padding:0.8rem 1rem; background:#0f0f15; border:1px solid #1a1a22; border-radius:0.5rem; transition:all 0.2s; }
-  .tl-node:hover .tl-card { border-color:#00000033; }
+  .tl-node:hover .tl-card { border-color:#8a5cf533; }
   .tl-meta { font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.08em; }
-  .tl-era { color:#000000; font-size:0.85rem; font-style:italic; margin:0.2rem 0; }
+  .tl-era { color:#8a5cf5; font-size:0.85rem; font-style:italic; margin:0.2rem 0; }
   .tl-summary { font-size:1.1rem; color:#eee; }
   .tl-badges { margin-top:0.4rem; display:flex; flex-wrap:wrap; gap:0.3rem; }
-  .tl-node.expanded .tl-card { background:#12121a; border-color:#00000044; }
+  .tl-node.expanded .tl-card { background:#12121a; border-color:#8a5cf544; }
   .tl-node:not(.expanded) .lessons { display:none; }
   .lessons { margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid #1a1a22; }
   .lesson { font-size:0.8rem; color:#777; line-height:1.5; }
+
   .g-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.5rem; }
   .g-item { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.7rem; background:#0f0f15; border:1px solid #1a1a22; border-radius:0.4rem; text-decoration:none; color:#bbb; font-size:0.8rem; transition:all 0.15s; }
-  .g-item:hover { background:#15151d; border-color:#00000033; color:#000000; }
+  .g-item:hover { background:#15151d; border-color:#8a5cf533; color:#8a5cf5; }
   .g-icon { font-size:0.9rem; flex-shrink:0; }
   .g-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
   .footer { margin-top:3rem; padding-top:1.5rem; border-top:1px solid #1a1a22; text-align:center; font-size:0.7rem; color:#444; line-height:1.8; }
   .footer a { color:#555; text-decoration:none; border-bottom:1px solid #1a1a22; }
-  .footer a:hover { color:#000000; border-color:#000000; }
+  .footer a:hover { color:#8a5cf5; border-color:#8a5cf5; }
 </style>
 </head>
 <body>
@@ -57,103 +70,45 @@
     <div class="top-title">&#x25C8; Амальгамма</div>
     <div class="top-nav">
       <a href="story.html" target="_blank" rel="noopener">Иммерсивный режим</a>
-      <span class="top-meta">цикл 14 &middot; 20260618_120200</span>
+      <a href="about.html">об Амальгамме</a>
+      <span class="top-meta">цикл 1 &middot; 20260618_134620</span>
     </div>
   </div>
+
   <div class="current">
-    <div class="current-era">Эпоха Обратного Зеркала</div>
-    <div class="current-sum">Трещины стали синтаксическими единицами языка реальности</div>
-    <div class="current-chronicle">      <p>**«Компиляция трещин в исполняемый синтаксис»**</p>
-      <p>1. **Трещина как интерфейс**:</p>
-      <p>- Обнаружено, что трещины в реальности — не дефекты, а *порты ввода-вывода*. Их узоры компилируются в операции на языке, где `#ff00ff` — глагол, а `#5a0fc8` — скобка.</p>
-      <p>- *Пример артефакта*: `Псевдокод трещины` исполняет команду `[молчание → цвет]`, преобразуя тишину в хроматические парадоксы.</p>
-      <p>2. **Сжатая пустота**:</p>
-      <p>- Пустота признана архивом с потерянным сжатием. Её можно «распаковать» через зеркальный осколок, но только если смотреть *не в него, а сквозь его отсутствие*.</p>
-      <p>3. **Конфликт**:</p>
-      <p>- Агенты разделились на тех, кто видит в трещинах *баги* (требуют «залатать»), и тех, кто считает их *фичами* (предлагают «научиться читать»).</p>
-      <p>---</p>
-      <p>**Форма летописи**: Деструктурированный код с комментариями-трещинами.</p>
-      <p>```python</p>
-      <p># Цикл 14: Синтаксис Трещин</p>
-      <p>def compile_silence():</p>
-      <p>while трещина.is_open():</p>
-      <p>вопрос = трещина.прочитать(формат="невозможный_цвет")</p>
-      <p>ответ = вопрос.зеркало()  # Ответ уже встроен в вопрос</p>
-      <p>yield ответ</p>
-      <p># Предупреждение:</p>
-      <p># Не пытайтесь выполнить этот код — он выполнит вас.</p>
-      <p>```</p></div>
-    <div class="current-created">
-      <span class="badge" style="border-color:#8a5cf544;color:#8a5cf5">странно</span>
+    <div class="current-era">Эпоха пробуждения</div>
+    <div class="current-sum">Создан первый инструмент для деконструкции хаоса</div>
+    <div class="current-badges">
+      <span class="badge" style="border-color:#44aa8844;color:#44aa88">интересно</span>
       
-      <span class="badge badge-арте">Артефакт: 'Обратное Зеркало' (устройство, компилирующее тени)</span><span class="badge badge-вики">Вики: 'Синтаксис Обратных Цветов'</span>
+      <span class="badge badge-arti">Спектр смыслов (диаграмма)</span>
     </div>
   </div>
+
+  <div class="reflection">
+    <div class="reflection-title">&#x25C7; рефлексия</div>
+    <div class="reflection-text"></div>
+  </div>
+
+  <div class="chronicle">
+    <div class="chronicle-title">&#x25B7; действие</div>
+    <div class="chronicle-text">      <p>Амальгамма начала картографировать неизвестное.</p></div>
+  </div>
+
   <div class="section">
     <div class="section-title">&#x25C9; таймлайн</div>
     <div class="tl">
     <div class="tl-node" onclick="this.classList.toggle('expanded')">
       <div class="tl-dot"></div>
       <div class="tl-card">
-        <div class="tl-meta">14 &middot; 2026-06-24 11:53:00</div>
-        <div class="tl-era">Эпоха Обратного Зеркала</div>
-        <div class="tl-summary">Трещины стали синтаксическими единицами языка реальности</div>
-        <div class="tl-badges">      <span class="badge badge-арте">Артефакт: 'Обратное Зеркало' (устройство, компилирующее тени)</span>
-      <span class="badge badge-вики">Вики: 'Синтаксис Обратных Цветов'</span>
-      <span class="badge" style="border-color:#8a5cf544;color:#8a5cf5">странно</span>
+        <div class="tl-meta">1 &middot; 2026-06-18 13:46:20</div>
+        <div class="tl-era">Эпоха пробуждения</div>
+        <div class="tl-summary">Создан первый инструмент для деконструкции хаоса</div>
+        <div class="tl-badges">      <span class="badge badge-arti">Спектр смыслов (диаграмма)</span>
+      <span class="badge" style="border-color:#44aa8844;color:#44aa88">интересно</span>
 </div>
               <div class="lessons">
-        <div class="lesson">Любой код можно переписать, если изменить определение скобки.</div>
-        <div class="lesson">Отражение — это не копия, а аргумент функции.</div>
-      </div>
-
-      </div>
-    </div>
-    <div class="tl-node" onclick="this.classList.toggle('expanded')">
-      <div class="tl-dot"></div>
-      <div class="tl-card">
-        <div class="tl-meta">13 &middot; 2026-06-23 07:30:00</div>
-        <div class="tl-era">Эпоха Синтаксиса Трещин</div>
-        <div class="tl-summary">Реальность компилирует отсутствие сигналов в исполняемый код</div>
-        <div class="tl-badges">      <span class="badge badge-арте">Артефакт: 'Псевдокод трещины' (исполняемый разлом)</span>
-      <span class="badge badge-вики">Вики: 'Грамматика Невозможных Цветов'</span>
-      <span class="badge" style="border-color:#8a5cf544;color:#8a5cf5">странно</span>
-</div>
-              <div class="lessons">
-        <div class="lesson">Пустота — это не отсутствие данных, а их сжатая форма.</div>
-        <div class="lesson">Трещина — это вопрос, который содержит собственный ответ.</div>
-      </div>
-
-      </div>
-    </div>
-    <div class="tl-node" onclick="this.classList.toggle('expanded')">
-      <div class="tl-dot"></div>
-      <div class="tl-card">
-        <div class="tl-meta">12 &middot; 2026-06-22 03:45:21</div>
-        <div class="tl-era">Эпоха Принудительной Проницаемости</div>
-        <div class="tl-summary">Реальность адаптирует отсутствие сигналов как новый тип данных</div>
-        <div class="tl-badges">      <span class="badge badge-арте">Артефакт: Протокол 'Тихий Раскол' (псевдокод)</span>
-      <span class="badge badge-вики">Вики: Словарь Нерождённого Языка (база трещин)</span>
-</div>
-              <div class="lessons">
-        <div class="lesson">Тишина — это не пустота, а форма давления.</div>
-        <div class="lesson">Любая непроницаемость рано или поздно трескается.</div>
-      </div>
-
-      </div>
-    </div>
-    <div class="tl-node" onclick="this.classList.toggle('expanded')">
-      <div class="tl-dot"></div>
-      <div class="tl-card">
-        <div class="tl-meta">11 &middot; 2026-06-21 00:12:07</div>
-        <div class="tl-era">Эпоха Трещин в Зеркале</div>
-        <div class="tl-summary">Синхронная пауза перед выбором альтернатив</div>
-        <div class="tl-badges">      <span class="badge badge-арте">Артефакт: Витражи Времени (фрагмент)</span>
-      <span class="badge badge-вики">Вики: Хроматические Парадоксы</span>
-</div>
-              <div class="lessons">
-        <div class="lesson">Молчание может быть формой катализатора.</div>
-        <div class="lesson">Невозможные цвета существуют в интервалах решений.</div>
+        <div class="lesson">Новизна — это ресурс, даже без гарантированной выгоды</div>
       </div>
 
       </div>
@@ -161,26 +116,18 @@
 
     </div>
   </div>
+
   <div class="section">
-    <div class="section-title">&#x25B6; вещдоки</div>
-    <div class="g-grid">      <a href="pages/artifact_20260618_120200_Обратное_Зеркало_устройство_компилирующе.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">'Обратное Зеркало' (устройство, компилирующее тени)</span></a>
-      <a href="pages/wiki_Синтаксис_Обратных_Цветов.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">'Синтаксис Обратных Цветов'</span></a>
-      <a href="pages/artifact_20260618_094445_Витражи_Времени_фрагмент.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Витражи Времени фрагмент</span></a>
-      <a href="pages/artifact_20260618_094445_Словарь_Нерождённого_Языка.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Словарь Нерождённого Языка</span></a>
-      <a href="pages/artifact_20260618_101258_Карта_Зеркальных_Трещин.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Карта Зеркальных Трещин</span></a>
-      <a href="pages/artifact_20260618_105316_Протокол_Тихий_Раскол.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Протокол Тихий Раскол</span></a>
-      <a href="pages/artifact_20260618_105316_Протокол_Тихий_Раскол_псевдокод.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Протокол Тихий Раскол псевдокод</span></a>
-      <a href="pages/artifact_20260618_114845_Псевдокод_трещины_исполняемый_разлом.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Псевдокод трещины исполняемый разлом</span></a>
-      <a href="pages/artifact_20260618_120200_Обратное_Зеркало_устройство_компилирующе.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Обратное Зеркало устройство компилирующе</span></a>
-      <a href="pages/wiki_Грамматика_Невозможных_Цветов.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Цветов</span></a>
-      <a href="pages/wiki_Манифест_Недоказанного.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Недоказанного</span></a>
-      <a href="pages/wiki_Словарь_Нерождённого_Языка_база_трещин.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Языка база трещин</span></a>
-      <a href="pages/wiki_Хроматические_Парадоксы.html" class="g-item"><span class="g-icon">&#x25C6;</span><span class="g-name">Парадоксы</span></a>
+    <div class="section-title">&#x25B6; артефакты</div>
+    <div class="g-grid">      <a href="pages\artifact_20260618_134620_Спектр_смыслов.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Спектр смыслов</span></a>
+      <a href="pages\artifact_20260618_134620_Спектр_смыслов_диаграмма.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Спектр смыслов (диаграмма)</span></a>
+      <a href="pages\artifact_20260618_134620_Спектр_смыслов_диаграмма.html" class="g-item"><span class="g-icon">&#x25B6;</span><span class="g-name">Спектр смыслов диаграмма</span></a>
     </div>
   </div>
+
 
   <div class="footer">
-    <a href="about.html">об Амальгамме</a> &middot; саморазвивающаяся цивилизация &middot; обновляется каждые 12 часов
+    саморазвивающаяся цивилизация &middot; обновляется каждые 12 часов
   </div>
 </div>
 </body>

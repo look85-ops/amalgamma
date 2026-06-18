@@ -8,7 +8,7 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     body { background:#0a0a0f; color:#ddd8d0; font-family:'Georgia','Times New Roman',serif; }
     .wrap { max-width:980px; margin:0 auto; padding:1.5rem; }
-    .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem; }
     .top a { color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; }
     .top a:hover { border-color:#8a5cf5; }
     .scene { position:relative; display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem; padding:2rem 0; border-bottom:1px solid #16161c; }
@@ -31,22 +31,16 @@
       <div>Амальгамма — иммерсивный режим</div>
       <a href="index.html">к текущему состоянию</a>
     </div>
-    <!--
-      Этот файл — статический контейнер.
-      Сцены берём из state.story_blocks (если есть) и подставляем вручную или скриптом CI в будущем.
-      Пока выводится плейсхолдер.
-    -->
     <div class="scene">
-      <div class="accent"></div>
+      <div class="accent" style="background:#8a5cf5;"></div>
       <div>
-        <div class="kicker">пример</div>
-        <h2>Генеральная ветвь</h2>
-        <div class="text">
-          Здесь будет иммерсивный рассказ цивилизации в сценах: каждая сцена — заголовок, лид, текст и артефакт/ссылка. Формируем из story_blocks в state или автоматически — из таймлайна и галереи.
-        </div>
+        <div class="kicker">Эпоха пробуждения</div>
+        <h2>Первая карта хаоса</h2>
+        <div class="text">Амальгамма создала инструмент, чтобы найти точки, где рождаются смыслы.</div>
       </div>
-      <div class="media">Медиа/артефакт: <a href="index.html">к галерее на главной</a></div>
+      <div class="media"><a href="pages/spectrum_diagram" target="_blank" rel="noopener">читать артефакт</a></div>
     </div>
+
   </div>
 </body>
 </html>
