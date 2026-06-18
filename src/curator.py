@@ -403,7 +403,7 @@ def parse_response(response_text):
     return chronicle, state_json
 
 
-def generate_html(chronicle_text, state, cycle, artifact_id, artifacts_manifest=None, wiki_manifest=None):
+def generate_html(chronicle_text, state, cycle, artifact_id, pages_created=None):
     era = state.get("era", "Новая эпоха")
     summary = state.get("summary", "")
 
@@ -425,44 +425,22 @@ def generate_html(chronicle_text, state, cycle, artifact_id, artifacts_manifest=
 """
 
     gallery_html = ""
-    artifacts_html = ""
-    wikis_html = ""
-    if artifacts_manifest:
-        art_items = []
-        for p in artifacts_manifest:
-            name = Path(p).stem
-            if name.startswith("artifact_"):
-                # Extract title after timestamp: artifact_20260617_144457_Title
-                parts = name.split("_", 3)
-                title = parts[3].replace("_", " ") if len(parts) > 3 else name
-            else:
-                title = name.replace("_", " ")
-            art_items.append(f"""    <a href=\"{p}\" class=\"gallery-item\">
+    if pages_created:
+        items = []
+        for title, path in pages_created:
+            is_wiki = "wiki_" in path
+            icon = "\u25C6" if is_wiki else "\u25B6"
+            label = "библиотека" if is_wiki else "артефакт"
+            items.append(f"""    <a href=\"{path}\" class=\"gallery-item\">
+      <span class=\"gallery-icon\">{icon}</span>
+      <span class=\"gallery-label\">{label}</span>
       <span class=\"gallery-name\">{title}</span>
     </a>""")
-        if art_items:
-            artifacts_html = f"""    <h3 class=\"gallery-subtitle\">\u25B6 артефакты</h3>
-    <div class=\"gallery-grid\">
-{chr(10).join(art_items)}
-    </div>
-"""
-    if wiki_manifest:
-        wiki_items = []
-        for p in wiki_manifest:
-            title = Path(p).stem.replace("wiki_", "").replace("_", " ")
-            wiki_items.append(f"""    <a href=\"{p.replace('wiki/', 'pages/wiki_').rsplit('.', 1)[0] + '.html'}\" class=\"gallery-item\">
-      <span class=\"gallery-name\">{title}</span>
-    </a>""")
-        if wiki_items:
-            wikis_html = f"""    <h3 class=\"gallery-subtitle\">\u25C6 библиотека знаний</h3>
-    <div class=\"gallery-grid\">
-{chr(10).join(wiki_items)}
-    </div>
-"""
-    if artifacts_html or wikis_html:
         gallery_html = f"""  <div class=\"gallery\">
     <h2 class=\"section-title\">вещдоки</h2>
-{artifacts_html}{wikis_html}
+    <div class=\"gallery-grid\">
+{chr(10).join(items)}
+    </div>
   </div>
 """
 
@@ -516,10 +494,7 @@ def generate_html(chronicle_text, state, cycle, artifact_id, artifacts_manifest=
     font-size:0.8rem; color:#555; text-transform:uppercase;
     letter-spacing:0.1em; margin-bottom:1rem; font-weight:400;
   }}
-  .gallery-subtitle {{
-    font-size:0.8rem; color:#444; margin-bottom:0.6rem;
-    font-weight:400; font-family:'Courier New',monospace;
-  }}
+
   .created {{
     margin-bottom:2rem; padding:1rem 1.5rem;
     background:linear-gradient(135deg,#{accent}11,#{accent}05);
@@ -544,6 +519,7 @@ def generate_html(chronicle_text, state, cycle, artifact_id, artifacts_manifest=
     background:#1a1a22; border-color:#{accent}44; color:#{accent};
   }}
   .gallery-icon {{ font-size:1.1rem; flex-shrink:0; }}
+  .gallery-label {{ font-size:0.65rem; color:#555; text-transform:uppercase; flex-shrink:0; }}
   .gallery-name {{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
   .state-toggle {{
     background:none; border:1px solid #333; color:#666;
@@ -981,10 +957,36 @@ def main():
 
     artifact_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 
+    # Auto-create gallery pages for items in created_this_cycle that weren't saved via markers
+    created_titles = [item.lower() for item in new_state.get("created_this_cycle", [])]
+    existing_titles = [title.lower() for title, _ in pages_created]
+    for item in new_state.get("created_this_cycle", []):
+        item_lower = item.lower()
+        if item_lower in existing_titles:
+            continue
+        # Extract relevant paragraph from chronicle
+        snippet = ""
+        for line in chronicle_text.split("\n"):
+            if item.split(":", 1)[-1].strip().lower() in line.lower():
+                snippet = line.strip()
+                break
+        if not snippet:
+            snippet = chronicle_text[:300].strip()
+        is_wiki = "вики" in item_lower or "wiki" in item_lower or "страница" in item_lower
+        title_clean = item.split(":", 1)[-1].strip() if ":" in item else item
+        if is_wiki:
+            _, page_path = save_wiki(title_clean, snippet or "Описание ещё не сформировано.")
+        else:
+            atype = item.split(":")[0].strip().lower() if ":" in item else "text"
+            _, page_path = save_artifact(atype, title_clean, snippet or "Артефакт описан в летописи цикла.")
+        pages_created.append((title_clean, str(page_path.relative_to(BASE_DIR))))
+        log_forage("auto-page", "created", str(page_path.name))
+
     # Build and save manifest of all civilization assets (pages/)
-    pages_manifest = sorted(
-        [str(p.relative_to(BASE_DIR)) for p in PAGES_DIR.rglob("*.html")]
-    ) if PAGES_DIR.exists() else []
+    PAGES_DIR.mkdir(parents=True, exist_ok=True)
+    pages_manifest = sorted(set(
+        [str(p.relative_to(BASE_DIR)) for p in list(PAGES_DIR.rglob("*.html"))]
+    ) | {path for _, path in pages_created})
     wiki_manifest = sorted(
         [str(p.relative_to(BASE_DIR)) for p in (BASE_DIR / "wiki").rglob("*.md")]
     ) if (BASE_DIR / "wiki").exists() else []
@@ -1012,8 +1014,7 @@ def main():
 
     # Generate and save index.html
     html = generate_html(chronicle_text, new_state, cycle, artifact_id,
-                         artifacts_manifest=pages_manifest,
-                         wiki_manifest=wiki_manifest)
+                         pages_created=pages_created)
     INDEX_PATH.write_text(html, encoding="utf-8")
     print(f"  [saved] index.html — цикл {cycle}: {new_state.get('summary', '')}", flush=True)
 
