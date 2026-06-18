@@ -240,7 +240,7 @@ def call_llm(prompt, only_backend=None):
                 log_forage(name, "failed", f"model={model or 'default'}: {str(e)[:60]}")
                 continue
     print("  [all backends exhausted]")
-    sys.exit(1)
+    return None, None
 
 
 def read_genome():
@@ -376,12 +376,16 @@ def run_sphere_agents(genome, state, cycle):
         print(f"  [agent {i+1}/{len(sphere_list)}] {name}", flush=True)
         prompt = build_agent_prompt(slug, info, state, cycle, proposals)
         try:
+            # Try free backends first, fall back to any
             fbs = free_backends()
             if fbs:
-                result, used = call_llm(prompt, only_backend=fbs[i % len(fbs)])
+                try:
+                    result, used = call_llm(prompt, only_backend=fbs[i % len(fbs)])
+                except (SystemExit, Exception):
+                    result, _ = call_llm(prompt)
             else:
                 result, _ = call_llm(prompt)
-            proposals.append({"sphere_name": name, "slug": slug, "text": result[:800]})
+            proposals.append({"sphere_name": name, "slug": slug, "text": (result or "[агент не ответил]")[:800]})
             log_forage("agent", "ok", name)
         except Exception as e:
             log_forage("agent", "fail", f"{name}: {str(e)[:60]}")
