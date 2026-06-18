@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Амальгамма — Иммерсивный режим</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#0a0a0f; color:#ddd8d0; font-family:'Georgia','Times New Roman',serif; }
+    .wrap { max-width:980px; margin:0 auto; padding:1.5rem; }
+    .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    .top a { color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; }
+    .top a:hover { border-color:#8a5cf5; }
+    .scene { position:relative; display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem; padding:2rem 0; border-bottom:1px solid #16161c; }
+    .scene h2 { font-weight:400; color:#8a5cf5; font-size:1.6rem; }
+    .scene .kicker { font-size:0.8rem; color:#666; text-transform:uppercase; margin:0.2rem 0 0.6rem; letter-spacing:0.08em; }
+    .scene .text { font-size:1.05rem; line-height:1.8; color:#c0bbb0; }
+    .scene .media { background:#0f0f15; border:1px solid #1a1a22; border-radius:0.5rem; padding:1rem; min-height:180px; display:flex; align-items:center; justify-content:center; color:#666; }
+    .scene .media a { color:#8a5cf5; }
+    .scene .media a:hover { text-decoration:none; border-bottom:1px solid #8a5cf5; }
+    .scene .accent { position:absolute; left:-0.5rem; top:2rem; width:4px; height:2rem; background:#8a5cf5; border-radius:4px; }
+    @media (max-width: 820px) {
+      .scene { grid-template-columns: 1fr; }
+      .scene .accent { left:0; top:0; height:4px; width:2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>Амальгамма — иммерсивный режим</div>
+      <a href="index.html">к текущему состоянию</a>
+    </div>
+    <!--
+      Этот файл — статический контейнер.
+      Сцены берём из state.story_blocks (если есть) и подставляем вручную или скриптом CI в будущем.
+      Пока выводится плейсхолдер.
+    -->
+    <div class="scene">
+      <div class="accent"></div>
+      <div>
+        <div class="kicker">пример</div>
+        <h2>Генеральная ветвь</h2>
+        <div class="text">
+          Здесь будет иммерсивный рассказ цивилизации в сценах: каждая сцена — заголовок, лид, текст и артефакт/ссылка. Формируем из story_blocks в state или автоматически — из таймлайна и галереи.
+        </div>
+      </div>
+      <div class="media">Медиа/артефакт: <a href="pages/">галерея</a></div>
+    </div>
+  </div>
+</body>
+</html>

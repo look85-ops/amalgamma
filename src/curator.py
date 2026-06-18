@@ -347,7 +347,7 @@ def build_council_prompt(proposals, state, cycle):
 Создавай минимум 1-2 артефакта или вики-страницы как вещдоки.
 В state в поле "created_this_cycle" запиши что создано.
 
-ДОПОЛНИТЕЛЬНО: Опиши в state поле "presentation" — как цивилизация хочет выглядеть для внешнего наблюдателя. Какие метафоры, цвета, символы? Пример: {{"style": "биомеханика", "colors": ["#00ff88", "#0a0a0f"], "symbol": "спираль"}}
+ДОПОЛНИТЕЛЬНО: Опиши в state поле "presentation" — как цивилизация хочет выглядеть для внешнего наблюдателя (метафоры/цвета/символы). И, если считаешь нужным, добавь поле "story_blocks" — список сцен для иммерсивного рассказа (каждая сцена: {"title","kicker","text","media","accent"}).
 
 ОТВЕТЬ СТРОГО В ДВУХ ЧАСТЯХ:
 
@@ -362,7 +362,10 @@ def build_council_prompt(proposals, state, cycle):
 "summary": "суть цикла",
 "lessons": ["урок 1", "урок 2"],
 "created_this_cycle": ["Артефакт: Название", "Вики: Название"],
-"presentation": {{"style": "...", "colors": [...], "symbol": "..."}}
+"presentation": {{"style": "...", "colors": [...], "symbol": "..."}},
+"story_blocks": [
+  {{"title": "...", "kicker": "цикл/эпоха", "text": "...", "media": "pages/...html", "accent": "#8a5cf5"}}
+]
 }}"""
 
 
