@@ -841,71 +841,10 @@ def save_request(title, description):
 # ─── save artifact ───────────────────────────────────────────────
 
 PAGES_DIR = BASE_DIR / "pages"
-PAGE_ACCENT = "8a5cf5"
-
-
-def render_page_html(title, body_html, back_label="к текущему состоянию", back_href="index.html"):
-    return f"""<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{title} - Амальгамма</title>
-<style>
-  * {{ margin:0; padding:0; box-sizing:border-box; }}
-  body {{
-    background:#0a0a0f; color:#ddd8d0;
-    font-family:'Georgia','Times New Roman',serif;
-    display:flex; flex-direction:column; align-items:center;
-    padding:2rem 1.5rem 4rem; min-height:100vh;
-  }}
-  .container {{ max-width:720px; width:100%; }}
-  .back {{
-    display:inline-block; margin-bottom:2rem;
-    color:#555; text-decoration:none; font-size:0.8rem;
-    border-bottom:1px solid #222; padding-bottom:0.2rem;
-  }}
-  .back:hover {{ color:#{PAGE_ACCENT}; border-color:{PAGE_ACCENT}; }}
-  h1 {{
-    font-size:1.8rem; font-weight:400; color:#{PAGE_ACCENT};
-    margin-bottom:1.5rem; line-height:1.3;
-  }}
-  .meta {{
-    font-size:0.75rem; color:#555; margin-bottom:2rem;
-    text-transform:uppercase; letter-spacing:0.08em;
-  }}
-  .content {{
-    font-size:1.05rem; line-height:1.8; color:#c0bbb0;
-  }}
-  .content p {{ margin-bottom:1.2rem; }}
-  .content pre {{
-    background:#111; padding:1rem; border-radius:0.4rem;
-    overflow-x:auto; font-size:0.85rem; color:#aaa;
-    border:1px solid #222; margin-bottom:1.2rem;
-  }}
-  .content code {{ font-size:0.85rem; color:#{PAGE_ACCENT}; }}
-  .content blockquote {{
-    border-left:2px solid #{PAGE_ACCENT}44; padding-left:1rem;
-    margin-left:0; margin-bottom:1.2rem; color:#888;
-    font-style:italic;
-  }}
-</style>
-</head>
-<body>
-<div class="container">
-  <a class="back" href="{back_href}">&larr; {back_label}</a>
-  <h1>{title}</h1>
-  <div class="content">
-{body_html}
-  </div>
-</div>
-</body>
-</html>"""
 
 
 def save_artifact(atype, title, content):
     art_dir = BASE_DIR / "artifacts"
-    PAGES_DIR.mkdir(parents=True, exist_ok=True)
     art_dir.mkdir(exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     safe = re.sub(r'[^\w\s-]', '', title)[:40].strip().replace(' ', '_')
@@ -920,22 +859,11 @@ def save_artifact(atype, title, content):
         encoding="utf-8"
     )
     log_forage("artifact", "saved", f"{atype}/{raw_path.name}")
-
-    page_path = PAGES_DIR / f"artifact_{ts}_{safe}.html"
-    body = "\n".join(
-        f"    <p>{p.strip()}</p>" for p in content.split("\n") if p.strip()
-    ) if content else "    <p>—</p>"
-    page_path.write_text(
-        render_page_html(title, body, back_label="к галерее вещдоков"),
-        encoding="utf-8"
-    )
-    log_forage("artifact", "page", f"pages/{page_path.name}")
-    return raw_path, page_path
+    return raw_path
 
 
 def save_wiki(title, content):
     wiki_dir = BASE_DIR / "wiki"
-    PAGES_DIR.mkdir(parents=True, exist_ok=True)
     wiki_dir.mkdir(exist_ok=True)
     safe = re.sub(r'[^\w\sа-яА-ЯёЁ]', '', title)[:60].strip().replace(' ', '_')
     raw_path = wiki_dir / f"{safe}.md"
@@ -944,37 +872,7 @@ def save_wiki(title, content):
         encoding="utf-8"
     )
     log_forage("wiki", "saved", str(raw_path.name))
-
-    body_lines = []
-    in_code = False
-    for line in content.split("\n"):
-        if line.strip().startswith("```"):
-            in_code = not in_code
-            if in_code:
-                body_lines.append("<pre><code>")
-            else:
-                body_lines.append("</code></pre>")
-        elif in_code:
-            body_lines.append(line)
-        elif line.strip().startswith("# "):
-            body_lines.append(f"<h2>{line.strip()[2:]}</h2>")
-        elif line.strip().startswith("## "):
-            body_lines.append(f"<h3>{line.strip()[3:]}</h3>")
-        elif line.strip().startswith("- "):
-            body_lines.append(f"<li>{line.strip()[2:]}</li>")
-        elif line.strip() == "":
-            body_lines.append("</p><p>")
-        else:
-            body_lines.append(line)
-    body_html = "<p>" + "".join(body_lines).replace("</p><p>", "</p>\n<p>") + "</p>"
-
-    page_path = PAGES_DIR / f"wiki_{safe}.html"
-    page_path.write_text(
-        render_page_html(title, body_html, back_label="к библиотеке цивилизации"),
-        encoding="utf-8"
-    )
-    log_forage("wiki", "page", f"pages/{page_path.name}")
-    return raw_path, page_path
+    return raw_path
 
 
 # ─── change self ─────────────────────────────────────────────────
@@ -1150,8 +1048,7 @@ def process_markers(text, state, cycle, genome=None):
             log_forage("marker", "blocked", f"wiki limit: {title[:40]}")
             continue
         log_forage("marker", "wiki", title)
-        raw_path, page_path = save_wiki(title, content)
-        pages_created.append((title, str(page_path.relative_to(BASE_DIR))))
+        save_wiki(title, content)
         text = text.replace(m.group(0),
             f"[Вики-страница «{title}» сохранена.]")
 
@@ -1170,8 +1067,7 @@ def process_markers(text, state, cycle, genome=None):
         else:
             atype, title = "text", spec
         log_forage("marker", "artifact", f"{atype}:{title}")
-        raw_path, page_path = save_artifact(atype.strip(), title.strip(), content)
-        pages_created.append((title.strip(), str(page_path.relative_to(BASE_DIR))))
+        save_artifact(atype.strip(), title.strip(), content)
         text = text.replace(m.group(0),
             f"[Артефакт «{title}» ({atype}) сохранён.]")
 
@@ -1201,7 +1097,7 @@ def process_markers(text, state, cycle, genome=None):
 
 # ─── generate HTML ───────────────────────────────────────────────
 
-def generate_html(reflection_text, action_text, state, cycle, artifact_id, pages_created=None, is_crossroads=False):
+def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_crossroads=False):
     era = state.get("era", "Новая эпоха")
     summary = state.get("summary", "")
     lessons = state.get("lessons", [])
@@ -1263,52 +1159,7 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, pages
     </div>
 """
 
-    # Gallery
-    all_pages = dict(pages_created or [])
-    for p in state.get("_manifest_pages", []):
-        stem = Path(p).stem
-        title = stem.replace("wiki_", "").replace("artifact_", "").split("_", 2)[-1] if "_" in stem else stem
-        title = title.replace("_", " ")
-        if title not in all_pages:
-            all_pages[title] = p
-    wiki_pages = {t: p for t, p in all_pages.items() if "wiki_" in p}
-    art_pages = {t: p for t, p in all_pages.items() if "artifact_" in p}
-    misc_pages = {t: p for t, p in all_pages.items() if "wiki_" not in p and "artifact_" not in p}
 
-    gallery_html = ""
-    if art_pages:
-        items = "\n".join(
-            f"""      <a href=\"{p}\" class=\"g-item\"><span class=\"g-icon\">&#x25B6;</span><span class=\"g-name\">{t}</span></a>"""
-            for t, p in art_pages.items()
-        )
-        gallery_html += f"""  <div class=\"section\">
-    <div class=\"section-title\">&#x25B6; артефакты</div>
-    <div class=\"g-grid\">{items}
-    </div>
-  </div>
-"""
-    if wiki_pages:
-        items = "\n".join(
-            f"""      <a href=\"{p}\" class=\"g-item\"><span class=\"g-icon\">&#x25C6;</span><span class=\"g-name\">{t}</span></a>"""
-            for t, p in wiki_pages.items()
-        )
-        gallery_html += f"""  <div class=\"section\">
-    <div class=\"section-title\">&#x25C6; вики</div>
-    <div class=\"g-grid\">{items}
-    </div>
-  </div>
-"""
-    if misc_pages:
-        items = "\n".join(
-            f"""      <a href=\"{p}\" class=\"g-item\"><span class=\"g-icon\">&#x25C6;</span><span class=\"g-name\">{t}</span></a>"""
-            for t, p in misc_pages.items()
-        )
-        gallery_html += f"""  <div class=\"section\">
-    <div class=\"section-title\">&#x25C6; прочее</div>
-    <div class=\"g-grid\">{items}
-    </div>
-  </div>
-"""
 
     return f"""<!DOCTYPE html>
 <html lang="ru">
@@ -1365,11 +1216,7 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, pages
   .lessons {{ margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid #1a1a22; }}
   .lesson {{ font-size:0.8rem; color:#777; line-height:1.5; }}
 
-  .g-grid {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.5rem; }}
-  .g-item {{ display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.7rem; background:#0f0f15; border:1px solid #1a1a22; border-radius:0.4rem; text-decoration:none; color:#bbb; font-size:0.8rem; transition:all 0.15s; }}
-  .g-item:hover {{ background:#15151d; border-color:{accent}33; color:{accent}; }}
-  .g-icon {{ font-size:0.9rem; flex-shrink:0; }}
-  .g-name {{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
+
 
   .footer {{ margin-top:3rem; padding-top:1.5rem; border-top:1px solid #1a1a22; text-align:center; font-size:0.7rem; color:#444; line-height:1.8; }}
   .footer a {{ color:#555; text-decoration:none; border-bottom:1px solid #1a1a22; }}
@@ -1413,8 +1260,6 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, pages
 {timeline_nodes}
     </div>
   </div>
-
-{gallery_html}
 
   <div class="footer">
     саморазвивающаяся цивилизация &middot; обновляется каждые 12 часов
@@ -1464,37 +1309,45 @@ def generate_about_html():
 
 
 def generate_story_html(state):
-    story_blocks = state.get("story_blocks", [])
-    scenes = ""
-    for block in story_blocks:
-        title = block.get("title", "")
-        kicker = block.get("kicker", "")
-        text = block.get("text", "")
-        media = block.get("media", "")
-        accent = block.get("accent", "#8a5cf5")
-        media_html = ""
-        if media:
-            media_html = f'<a href="{media}" target="_blank" rel="noopener">читать артефакт</a>'
-        scenes += f"""    <div class="scene">
-      <div class="accent" style="background:{accent};"></div>
-      <div>
-        <div class="kicker">{kicker}</div>
-        <h2>{title}</h2>
-        <div class="text">{text}</div>
-      </div>
-      <div class="media">{media_html or "—"}</div>
-    </div>
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    art_dir = BASE_DIR / "artifacts"
+    wiki_dir = BASE_DIR / "wiki"
+    html = ""
+
+    for f in sorted(art_dir.iterdir()) if art_dir.exists() else []:
+        if f.suffix not in (".txt", ".md", ".py"):
+            continue
+        raw = f.read_text("utf-8").strip()
+        title = f.stem
+        for pfx in ("20260618_", "20260617_"):
+            if title.startswith(pfx):
+                title = title[len(pfx):]
+        type_badge = {"py": "code", "md": "manifest", "txt": "text"}.get(f.suffix, "text")
+        snippet = "\n".join(raw.split("\n")[:8])
+        html += f"""  <div class="card">
+    <div class="card-badge">{type_badge}</div>
+    <div class="card-title">{title[:50]}</div>
+    <pre class="card-text">{snippet[:600]}</pre>
+  </div>
 """
-    if not scenes:
-        scenes = """    <div class="scene">
-      <div class="accent"></div>
-      <div>
-        <div class="kicker">ожидание</div>
-        <h2>Пока нет сцен</h2>
-        <div class="text">Цивилизация ещё не создала иммерсивных сцен. Они появятся, когда она решит рассказать историю.</div>
-      </div>
-      <div class="media">—</div>
-    </div>
+
+    for f in sorted(wiki_dir.iterdir()) if wiki_dir.exists() else []:
+        if f.suffix != ".md":
+            continue
+        raw = f.read_text("utf-8").strip()
+        title = f.stem
+        snippet = "\n".join(raw.split("\n")[:8])
+        html += f"""  <div class="card card-wiki">
+    <div class="card-badge">wiki</div>
+    <div class="card-title">{title[:50]}</div>
+    <pre class="card-text">{snippet[:600]}</pre>
+  </div>
+"""
+
+    if not html:
+        html = """  <div class="card" style="grid-column:1/-1;border-color:#333;background:#0d0d14;padding:2rem;text-align:center;">
+    <div style="color:#666;">Цивилизация ещё не создала артефактов. Они появятся, когда она решит действовать.</div>
+  </div>
 """
 
     return f"""<!DOCTYPE html>
@@ -1502,35 +1355,36 @@ def generate_story_html(state):
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Амальгамма — Иммерсивный режим</title>
+  <title>Амальгамма — доска артефактов</title>
   <style>
     * {{ margin:0; padding:0; box-sizing:border-box; }}
     body {{ background:#0a0a0f; color:#ddd8d0; font-family:'Georgia','Times New Roman',serif; }}
-    .wrap {{ max-width:980px; margin:0 auto; padding:1.5rem; }}
-    .top {{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem; }}
-    .top a {{ color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; }}
+    .wrap {{ max-width:1200px; margin:0 auto; padding:1.5rem; }}
+    .top {{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.5rem; }}
+    .top a {{ color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; font-size:0.9rem; }}
     .top a:hover {{ border-color:#8a5cf5; }}
-    .scene {{ position:relative; display:grid; grid-template-columns: 1fr 1fr; gap:1.2rem; padding:2rem 0; border-bottom:1px solid #16161c; }}
-    .scene h2 {{ font-weight:400; color:#8a5cf5; font-size:1.6rem; }}
-    .scene .kicker {{ font-size:0.8rem; color:#666; text-transform:uppercase; margin:0.2rem 0 0.6rem; letter-spacing:0.08em; }}
-    .scene .text {{ font-size:1.05rem; line-height:1.8; color:#c0bbb0; }}
-    .scene .media {{ background:#0f0f15; border:1px solid #1a1a22; border-radius:0.5rem; padding:1rem; min-height:180px; display:flex; align-items:center; justify-content:center; color:#666; }}
-    .scene .media a {{ color:#8a5cf5; }}
-    .scene .media a:hover {{ text-decoration:none; border-bottom:1px solid #8a5cf5; }}
-    .scene .accent {{ position:absolute; left:-0.5rem; top:2rem; width:4px; height:2rem; background:#8a5cf5; border-radius:4px; }}
-    @media (max-width: 820px) {{
-      .scene {{ grid-template-columns: 1fr; }}
-      .scene .accent {{ left:0; top:0; height:4px; width:2rem; }}
-    }}
+    .count {{ color:#555; font-size:0.8rem; }}
+    .board {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:0.75rem; }}
+    .card {{ background:#0f0f15; border:1px solid #1a1a22; border-radius:0.5rem; padding:1rem; display:flex; flex-direction:column; gap:0.4rem; transition:border-color 0.15s; }}
+    .card:hover {{ border-color:#333; }}
+    .card-wiki {{ border-left:3px solid #44aa8844; }}
+    .card-badge {{ font-size:0.6rem; text-transform:uppercase; letter-spacing:0.1em; color:#555; }}
+    .card-title {{ font-size:1rem; color:#8a5cf5; font-weight:400; line-height:1.3; }}
+    .card-text {{ font-size:0.75rem; line-height:1.5; color:#888; overflow:hidden; font-family:'Courier New',monospace; white-space:pre-wrap; }}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="top">
-      <div>Амальгамма — иммерсивный режим</div>
-      <a href="index.html">к текущему состоянию</a>
+      <div>Амальгамма — доска артефактов</div>
+      <div>
+        <span class="count">идет цикл</span>
+        <a href="index.html">к текущему состоянию</a>
+      </div>
     </div>
-{scenes}
+    <div class="board">
+{html}
+    </div>
   </div>
 </body>
 </html>"""
@@ -1629,7 +1483,6 @@ def main():
 
     # ── Cycle execution: LLM call → process markers ─────────────
     max_turns = 3
-    pages_created = []
     change_results = []
     total_action_count = 0
     start_time = time_module.time()
@@ -1650,9 +1503,8 @@ def main():
         if not check_budget():
             return
 
-        processed, did_search, new_pages, new_changes, action_count = process_markers(
+        result, did_search, _, new_changes, action_count = process_markers(
             result, state, cycle, genome=genome)
-        pages_created.extend(new_pages)
         change_results.extend(new_changes)
         total_action_count += action_count
 
@@ -1721,7 +1573,7 @@ def main():
             has_artifact = True
         if not has_wiki and ("вики" in il or "wiki" in il or "страница" in il):
             has_wiki = True
-    has_product = has_artifact or has_wiki or len(pages_created) > 0
+    has_product = has_artifact or has_wiki
 
     if not has_product:
         new_state["_empty_cycle_count"] = state.get("_empty_cycle_count", 0) + 1
@@ -1754,39 +1606,10 @@ def main():
                 new_state["_self_modification_count"] = state.get("_self_modification_count", 0) + 1
                 new_state["_last_modification_cycle"] = cycle
 
-    # 4. Auto-create pages for items in created_this_cycle
-    created_titles = [item.lower() for item in new_state.get("created_this_cycle", [])]
-    existing_titles = [title.lower() for title, _ in pages_created]
-    for item in new_state.get("created_this_cycle", []):
-        item_lower = item.lower()
-        if item_lower in existing_titles:
-            continue
-        snippet = ""
-        for line in action_text.split("\n"):
-            if item.split(":", 1)[-1].strip().lower() in line.lower():
-                snippet = line.strip()
-                break
-        if not snippet:
-            snippet = action_text[:300].strip()
-        is_wiki = "вики" in item_lower or "wiki" in item_lower or "страница" in item_lower
-        title_clean = item.split(":", 1)[-1].strip() if ":" in item else item
-        if is_wiki:
-            _, page_path = save_wiki(title_clean, snippet or "Описание ещё не сформировано.")
-        else:
-            atype = item.split(":")[0].strip().lower() if ":" in item else "text"
-            _, page_path = save_artifact(atype, title_clean, snippet or "Артефакт описан в действии цикла.")
-        pages_created.append((title_clean, str(page_path.relative_to(BASE_DIR))))
-        log_forage("auto-page", "created", str(page_path.name))
-
     # Build manifest
-    PAGES_DIR.mkdir(parents=True, exist_ok=True)
-    pages_manifest = sorted(set(
-        [str(p.relative_to(BASE_DIR)) for p in list(PAGES_DIR.rglob("*.html"))]
-    ) | {path for _, path in pages_created})
     wiki_manifest = sorted(
         [str(p.relative_to(BASE_DIR)) for p in (BASE_DIR / "wiki").rglob("*.md")]
     ) if (BASE_DIR / "wiki").exists() else []
-    new_state["_manifest_pages"] = pages_manifest
     new_state["_manifest_wiki"] = wiki_manifest
 
     # Save genome if modified
@@ -1872,7 +1695,7 @@ def main():
 
     # Generate index.html
     html = generate_html(reflection_text, action_text, new_state, cycle, artifact_id,
-                         pages_created=pages_created, is_crossroads=is_crossroads)
+                         is_crossroads=is_crossroads)
     INDEX_PATH.write_text(html, encoding="utf-8")
     print(f"  [saved] index.html — цикл {cycle}: {new_state.get('summary', '')}", flush=True)
 
