@@ -11,7 +11,7 @@ import time as time_module
 from difflib import SequenceMatcher
 
 import requests
-from mutation_engine import apply_mutation, PARAMETER_SCHEMA, read_state as me_read_state
+from src.mutation_engine import apply_mutation, PARAMETER_SCHEMA, read_state as me_read_state
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 CHRONICLES_DIR = BASE_DIR / "chronicles"
