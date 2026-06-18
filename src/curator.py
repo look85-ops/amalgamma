@@ -1775,7 +1775,7 @@ def main():
     # Garden signal
     try:
         signal = {
-            "source": "amalgama",
+            "source": "amalgamma",
             "cycle": cycle,
             "era": new_state.get("era", "—"),
             "summary": new_state.get("summary", "—"),
