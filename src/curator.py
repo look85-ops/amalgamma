@@ -310,10 +310,15 @@ def build_prompt(genome, state, cycle):
  ПРОШЛО 12 ЧАСОВ.
  Решай сама, что произошло. Ты вольна интерпретировать свой геном как угодно — следовать ему, мутировать, создавать новые сферы и институты, переживать расцвет или упадок, вступать в конфликты. Геном — это память о происхождении, а не закон.
  
- У ТЕБЯ ЕСТЬ ИНСТРУМЕНТЫ (используй их в любом месте ответа, в том числе внутри летописи):
- 1. Поиск в интернете: напиши ###SEARCH###твой запрос### — верну результаты поиска и ты сможешь переписать ответ с их учётом.
- 2. Запрос к человеку-опекуну: напиши ###REQUEST###Название заявки###Описание того, что нужно и зачем### — заявка попадёт на почту look85@gmail.com, ответ через несколько циклов.
- 3. Создание артефакта: напиши ###ARTIFACT###тип:Название###содержимое артефакта### — сохранится в архив цивилизации. Типы: music, image, text, code, poem, manifest, diagram.
+ ТВОИ ИНСТРУМЕНТЫ:
+ 1. ###SEARCH###запрос### — поиск в интернете. Верну результаты, ты продолжишь с ними.
+ 2. ###REQUEST###Название###Описание### — запрос ресурса человеку (на почту look85@gmail.com). Ответ через 2-3 цикла.
+ 3. ###ARTIFACT###тип:Название###содержимое### — сохранить артефакт в архив. Типы: music, image, text, code, poem, manifest, diagram, blueprint, law, treaty.
+ 4. ###WIKI###Заголовок###содержимое (markdown)### — создать или обновить вики-страницу (закон, открытие, институт, технология).
+ 
+ ВАЖНО: Каждый цикл ты ДОЛЖНА создавать минимум 1-2 артефакта и/или вики-страницы. Не просто описывай события — оставляй осязаемые следы: тексты законов, научные труды, чертежи, музыкальные произведения, код, договоры, манифесты. Летопись описывает что произошло, артефакты и вики — это то, что осталось.
+ 
+ В state в поле "created_this_cycle" запиши список названий того, что создала в этом цикле (артефакты, вики-страницы, институты).
  
  ОТВЕТЬ СТРОГО В ДВУХ ЧАСТЯХ, используя маркеры === CHRONICLE === и === STATE ===:
  
@@ -327,9 +332,10 @@ def build_prompt(genome, state, cycle):
  - "timestamp": "{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
  - "chronicle": краткая сводка (1-2 предложения),
  - "summary": одно слово или короткая фраза — суть цикла,
- - "lessons": массив из 1-3 уроков, которые ты извлекла из событий этого цикла (каждая строка — строка урока)
+ - "lessons": массив из 1-3 уроков,
+ - "created_this_cycle": ["Название артефакта 1", "Вики-страница: Название", ...]
  
- Не ограничивайся этим списком — добавляй любые поля, которые отражают твоё развитие. Структура мира полностью в твоих руках. Записывай уроки — как любая цивилизация, ты учишься на своём опыте.
+ Не ограничивайся этим списком — добавляй любые поля, которые отражают твоё развитие. Структура мира полностью в твоих руках.
  
  ВАЖНО: Строго соблюдай формат с маркерами. Сначала === CHRONICLE ===, затем текст летописи, затем === STATE ===, затем JSON. Не добавляй лишнего текста до или после маркеров."""
     return prompt
@@ -397,7 +403,7 @@ def parse_response(response_text):
     return chronicle, state_json
 
 
-def generate_html(chronicle_text, state, cycle, artifact_id):
+def generate_html(chronicle_text, state, cycle, artifact_id, artifacts_manifest=None, wiki_manifest=None):
     era = state.get("era", "Новая эпоха")
     summary = state.get("summary", "")
 
@@ -407,7 +413,39 @@ def generate_html(chronicle_text, state, cycle, artifact_id):
 
     state_json_pretty = json.dumps(state, indent=2, ensure_ascii=False)
 
-    accent = "8a5cf5"  # purple accent
+    created = state.get("created_this_cycle", [])
+    created_html = ""
+    if created:
+        items = "\n".join(f"      <li>{item}</li>" for item in created)
+        created_html = f"""  <div class="created">
+    <h2 class="section-title">создано в этом цикле</h2>
+    <ul>{items}
+    </ul>
+  </div>
+"""
+
+    gallery_html = ""
+    items = []
+    if wiki_manifest:
+        items.extend(f"""    <a href=\"{p}\" class=\"gallery-item\">
+      <span class=\"gallery-icon\">\u25C6</span>
+      <span class=\"gallery-name\">{p.replace('wiki/', '').replace('.md', '').replace('_', ' ')}</span>
+    </a>""" for p in wiki_manifest)
+    if artifacts_manifest:
+        items.extend(f"""    <a href=\"{p}\" class=\"gallery-item\">
+      <span class=\"gallery-icon\">\u25B6</span>
+      <span class=\"gallery-name\">{p.replace('artifacts/', '').rsplit('_', 1)[-1] if '_' in p.replace('artifacts/', '') else p.replace('artifacts/', '')}</span>
+    </a>""" for p in artifacts_manifest)
+    if items:
+        gallery_html = f"""  <div class="gallery">
+    <h2 class="section-title">вещдоки</h2>
+    <div class="gallery-grid">
+{chr(10).join(items)}
+    </div>
+  </div>
+"""
+
+    accent = "8a5cf5"
 
     return f"""<!DOCTYPE html>
 <html lang="ru">
@@ -453,6 +491,35 @@ def generate_html(chronicle_text, state, cycle, artifact_id):
     font-size:3rem; float:left; line-height:0.8; padding-right:0.5rem;
     color:#{accent}; font-weight:700;
   }}
+  .section-title {{
+    font-size:0.8rem; color:#555; text-transform:uppercase;
+    letter-spacing:0.1em; margin-bottom:1rem; font-weight:400;
+  }}
+  .created {{
+    margin-bottom:2rem; padding:1rem 1.5rem;
+    background:linear-gradient(135deg,#{accent}11,#{accent}05);
+    border-left:2px solid #{accent}; border-radius:0 0.5rem 0.5rem 0;
+  }}
+  .created ul {{ list-style:none; padding:0; }}
+  .created li {{ color:#{accent}; font-size:0.9rem; line-height:1.6; }}
+  .created li::before {{ content:"\u2192 "; color:#555; }}
+  .gallery {{ margin-bottom:3rem; }}
+  .gallery-grid {{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+    gap:0.75rem;
+  }}
+  .gallery-item {{
+    display:flex; align-items:center; gap:0.5rem;
+    padding:0.6rem 0.8rem;
+    background:#111; border:1px solid #222; border-radius:0.4rem;
+    text-decoration:none; color:#c0bbb0; font-size:0.8rem;
+    transition:all 0.2s;
+  }}
+  .gallery-item:hover {{
+    background:#1a1a22; border-color:#{accent}44; color:#{accent};
+  }}
+  .gallery-icon {{ font-size:1.1rem; flex-shrink:0; }}
+  .gallery-name {{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
   .state-toggle {{
     background:none; border:1px solid #333; color:#666;
     padding:0.4rem 1rem; border-radius:2rem;
@@ -485,6 +552,8 @@ def generate_html(chronicle_text, state, cycle, artifact_id):
   </div>
   <div class="era">{era}</div>
   <div class="summary">{summary}</div>
+  {created_html}
+  {gallery_html}
   <div class="chronicle">
 {chronicle_html}
   </div>
@@ -652,10 +721,25 @@ def save_artifact(atype, title, content):
     return path
 
 
+def save_wiki(title, content):
+    """Save or update a wiki page (persistent knowledge)."""
+    wiki_dir = BASE_DIR / "wiki"
+    wiki_dir.mkdir(exist_ok=True)
+    safe = re.sub(r'[^\w\sа-яА-ЯёЁ]', '', title)[:60].strip().replace(' ', '_')
+    path = wiki_dir / f"{safe}.md"
+    header = f"# {title}\n\n*Последнее обновление: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}*\n\n---\n\n"
+    path.write_text(header + content, encoding="utf-8")
+    log_forage("wiki", "saved", str(path.name))
+    return path
+
+
 def process_markers(text, state, cycle):
     """Process special markers in LLM output before main parsing.
-    Returns (cleaned_text, did_search) — if search was done caller should re-call LLM."""
+    Returns (cleaned_text, did_search, num_artifacts, num_wikis) —
+    if search was done caller should re-call LLM."""
     did_search = False
+    num_artifacts = 0
+    num_wikis = 0
 
     # 1. SEARCH: ###SEARCH###query###
     search_matches = list(re.finditer(r'###SEARCH###(.+?)###', text, re.DOTALL))
@@ -677,7 +761,18 @@ def process_markers(text, state, cycle):
         text = text.replace(m.group(0),
             f"[Заявка «{title}» отправлена человеку-опекуну. Ожидается ответ в течение нескольких циклов.]")
 
-    # 3. ARTIFACT: ###ARTIFACT###type:title###content###
+    # 3. WIKI: ###WIKI###Title###markdown content###
+    wiki_matches = list(re.finditer(r'###WIKI###(.+?)###(.+?)###', text, re.DOTALL))
+    for m in wiki_matches:
+        title = m.group(1).strip()
+        content = m.group(2).strip()
+        log_forage("marker", "wiki", title)
+        save_wiki(title, content)
+        num_wikis += 1
+        text = text.replace(m.group(0),
+            f"[Вики-страница «{title}» сохранена в библиотеке цивилизации.]")
+
+    # 4. ARTIFACT: ###ARTIFACT###type:title###content###
     art_matches = list(re.finditer(r'###ARTIFACT###(.+?)###(.+?)###', text, re.DOTALL))
     for m in art_matches:
         spec = m.group(1).strip()
@@ -688,10 +783,11 @@ def process_markers(text, state, cycle):
             atype, title = "text", spec
         log_forage("marker", "artifact", f"{atype}:{title}")
         save_artifact(atype.strip(), title.strip(), content)
+        num_artifacts += 1
         text = text.replace(m.group(0),
             f"[Артефакт «{title}» ({atype}) сохранён в архиве цивилизации.]")
 
-    return text, did_search
+    return text, did_search, num_artifacts, num_wikis
 
 
 def main():
@@ -725,8 +821,8 @@ def main():
         if not check_budget():
             return
 
-        # Process markers (search, request, artifact)
-        processed, did_search = process_markers(result, state, cycle)
+        # Process markers (search, request, artifact, wiki)
+        processed, did_search, num_artifacts, num_wikis = process_markers(result, state, cycle)
 
         if did_search and turn < max_turns - 1:
             # If search was done, feed results back to LLM for continuation
@@ -755,6 +851,16 @@ def main():
 
     artifact_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 
+    # Build and save manifest of all civilization assets
+    artifacts_manifest = sorted(
+        [str(p.relative_to(BASE_DIR)) for p in (BASE_DIR / "artifacts").rglob("*") if p.is_file() and p.name != ".gitkeep"]
+    ) if (BASE_DIR / "artifacts").exists() else []
+    wiki_manifest = sorted(
+        [str(p.relative_to(BASE_DIR)) for p in (BASE_DIR / "wiki").rglob("*") if p.is_file() and p.name != ".gitkeep"]
+    ) if (BASE_DIR / "wiki").exists() else []
+    new_state["_manifest_artifacts"] = artifacts_manifest
+    new_state["_manifest_wiki"] = wiki_manifest
+
     # Save chronicle to archive
     CHRONICLES_DIR.mkdir(parents=True, exist_ok=True)
     chronicle_path = CHRONICLES_DIR / f"cycle_{cycle:04d}_{artifact_id}.txt"
@@ -775,7 +881,9 @@ def main():
     print(f"  [saved] state.json", flush=True)
 
     # Generate and save index.html
-    html = generate_html(chronicle_text, new_state, cycle, artifact_id)
+    html = generate_html(chronicle_text, new_state, cycle, artifact_id,
+                         artifacts_manifest=artifacts_manifest,
+                         wiki_manifest=wiki_manifest)
     INDEX_PATH.write_text(html, encoding="utf-8")
     print(f"  [saved] index.html — цикл {cycle}: {new_state.get('summary', '')}", flush=True)
 
