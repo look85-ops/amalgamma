@@ -11,12 +11,13 @@ import time as time_module
 from difflib import SequenceMatcher
 
 import requests
-from src.mutation_engine import apply_mutation, PARAMETER_SCHEMA, read_state as me_read_state
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 # Ensure repository root is importable so that 'src.*' works when running as script
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
+
+from src.mutation_engine import apply_mutation, PARAMETER_SCHEMA, read_state as me_read_state
 CHRONICLES_DIR = BASE_DIR / "chronicles"
 INDEX_PATH = BASE_DIR / "index.html"
 STORY_PATH = BASE_DIR / "story.html"
