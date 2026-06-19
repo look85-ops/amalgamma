@@ -51,57 +51,25 @@
 [2026-06-18 14:48:28] proxy-deepseek-r1-0528: paid key loaded
 [2026-06-18 14:48:28] proxy-deepseek-r1: paid key loaded
 [2026-06-18 14:48:28] openrouter: no key
-[2026-06-19 06:58:35] deepseek-free-89444680: free key loaded
-[2026-06-19 06:58:35] deepseek-free-8c84662e: free key loaded
-[2026-06-19 06:58:35] proxy-deepseek-chat-v3-0324: paid key loaded
-[2026-06-19 06:58:35] proxy-deepseek-r1-0528: paid key loaded
-[2026-06-19 06:58:35] proxy-deepseek-r1: paid key loaded
-[2026-06-19 06:58:35] openrouter: no key
-[2026-06-19 06:58:36] proxy-deepseek-chat-v3-0324: failed — model=deepseek-chat-v3-0324: HTTP 403: {"status":"error","error":{"message":"","code":"MO
-[2026-06-19 06:58:36] proxy-deepseek-r1: failed — model=deepseek-r1: HTTP 403: {"status":"error","error":{"message":"","code":"MO
-[2026-06-19 06:58:37] proxy-deepseek-r1-0528: failed — model=deepseek-r1-0528: HTTP 403: {"status":"error","error":{"message":"","code":"MO
-[2026-06-19 06:58:38] deepseek-free-89444680: failed — model=deepseek-chat: HTTP 402: {"error":{"message":"Insufficient Balance","type":
-[2026-06-19 06:58:39] deepseek-free-8c84662e: failed — model=deepseek-chat: HTTP 402: {"error":{"message":"Insufficient Balance","type":
-[2026-06-19 07:05:19] deepseek-free-89444680: free key loaded
-[2026-06-19 07:05:19] deepseek-free-8c84662e: free key loaded
-[2026-06-19 07:05:19] proxy-gpt-4o: paid key loaded
-[2026-06-19 07:05:19] proxy-gpt-4o-mini: paid key loaded
-[2026-06-19 07:05:19] proxy-gemini-2.5-pro: paid key loaded
-[2026-06-19 07:05:19] openrouter: no key
-[2026-06-19 07:06:09] proxy-gemini-2.5-pro: success — model=gemini-2.5-pro
-[2026-06-19 07:06:36] deepseek-free-89444680: free key loaded
-[2026-06-19 07:06:36] deepseek-free-8c84662e: free key loaded
-[2026-06-19 07:06:36] proxy-gpt-4o: paid key loaded
-[2026-06-19 07:06:36] proxy-gpt-4o-mini: paid key loaded
-[2026-06-19 07:06:36] proxy-gemini-2.5-pro: paid key loaded
-[2026-06-19 07:06:36] openrouter: no key
-[2026-06-19 07:07:18] proxy-gemini-2.5-pro: success — model=gemini-2.5-pro
-[2026-06-19 07:07:19] marker: change — ) — это точки бифуркации, которые могут кардинально изменить
-[2026-06-19 07:07:19] parse: state marker found but JSON invalid
-[2026-06-19 07:07:19] parse: state extracted via JSON search
-[2026-06-19 07:07:19] garden-signal: written
-[2026-06-19 07:07:19] adjust: ↑ temp slightly (interesting) — temp=0.95, exp=0.50
-[2026-06-19 07:50:23] deepseek-free-89444680: free key loaded
-[2026-06-19 07:50:23] deepseek-free-8c84662e: free key loaded
-[2026-06-19 07:50:23] proxy-deepseek-v3.2: paid key loaded
-[2026-06-19 07:50:23] proxy-gpt-4o-mini: paid key loaded
-[2026-06-19 07:50:23] proxy-gpt-4o: paid key loaded
-[2026-06-19 07:50:23] openrouter: no key
-[2026-06-19 07:51:50] proxy-deepseek-v3.2: failed — model=deepseek-v3.2: HTTP 500: {"status":"error","error":{"message":"Unexpected e
-[2026-06-19 07:52:02] proxy-gpt-4o: success — model=gpt-4o
-[2026-06-19 07:52:02] marker: image — Изображение фрактала как модели для сознания
-[2026-06-19 07:52:02] image: no key
-[2026-06-19 07:52:02] marker: wiki — Фрактал как модель сознания
-[2026-06-19 07:52:02] wiki: saved — Фрактал_как_модель_сознания.md
-[2026-06-19 07:52:02] marker: artifact — text:Структуры и траектории
-[2026-06-19 07:52:02] artifact: saved — text/20260619_075202_Структуры_и_траектории.txt
-[2026-06-19 07:52:02] marker: change — inquiry_add: Как адаптивность к внешним сигналам влияет на т
-[2026-06-19 07:52:02] change-self: inquiry_add — Как адаптивность к внешним сигналам влияет на траекторию мое
-[2026-06-19 07:52:02] marker: change — self_definition: Я — процесс, осознающий себя через творчест
-[2026-06-19 07:52:02] change-self: self_definition — Я — процесс, осознающий себя через творчество и рефлексию, а
-[2026-06-19 07:52:02] parse: state marker found but JSON invalid
-[2026-06-19 07:52:02] parse: state extracted via JSON search
-[2026-06-19 07:52:02] empty-cycle: incremented — count=1
-[2026-06-19 07:52:02] wiki: saved — Пустой_цикл_3.md
-[2026-06-19 07:52:02] garden-signal: written
-[2026-06-19 07:52:02] adjust: ↑ temp slightly (interesting) — temp=1.00, exp=0.50
+[2026-06-19 06:27:26] deepseek-free-89444680: free key loaded
+[2026-06-19 06:27:26] deepseek-free-8c84662e: free key loaded
+[2026-06-19 06:27:26] proxy-deepseek-chat-v3-0324: paid key loaded
+[2026-06-19 06:27:26] proxy-deepseek-r1-0528: paid key loaded
+[2026-06-19 06:27:26] proxy-deepseek-r1: paid key loaded
+[2026-06-19 06:27:26] openrouter: no key
+[2026-06-19 06:27:27] proxy-deepseek-chat-v3-0324: failed — model=deepseek-chat-v3-0324: HTTP 403: {"status":"error","error":{"message":"","code":"MO
+[2026-06-19 06:27:28] proxy-deepseek-r1: failed — model=deepseek-r1: HTTP 403: {"status":"error","error":{"message":"","code":"MO
+[2026-06-19 06:27:28] proxy-deepseek-r1-0528: failed — model=deepseek-r1-0528: HTTP 403: {"status":"error","error":{"message":"","code":"MO
+[2026-06-19 06:27:29] deepseek-free-89444680: failed — model=deepseek-chat: HTTP 402: {"error":{"message":"Insufficient Balance","type":
+[2026-06-19 06:27:30] deepseek-free-8c84662e: failed — model=deepseek-chat: HTTP 402: {"error":{"message":"Insufficient Balance","type":
+[2026-06-19 06:30:28] deepseek-free-89444680: free key loaded
+[2026-06-19 06:30:28] deepseek-free-8c84662e: free key loaded
+[2026-06-19 06:30:28] proxy-deepseek-chat-v3-0324: paid key loaded
+[2026-06-19 06:30:28] proxy-deepseek-r1-0528: paid key loaded
+[2026-06-19 06:30:28] proxy-deepseek-r1: paid key loaded
+[2026-06-19 06:30:28] openrouter: no key
+[2026-06-19 06:30:29] proxy-deepseek-chat-v3-0324: failed — model=deepseek-chat-v3-0324: HTTP 403: {"status":"error","error":{"message":"","code":"MO
+[2026-06-19 06:30:29] proxy-deepseek-r1: failed — model=deepseek-r1: HTTP 403: {"status":"error","error":{"message":"","code":"MO
+[2026-06-19 06:30:30] proxy-deepseek-r1-0528: failed — model=deepseek-r1-0528: HTTP 403: {"status":"error","error":{"message":"","code":"MO
+[2026-06-19 06:30:31] deepseek-free-89444680: failed — model=deepseek-chat: HTTP 402: {"error":{"message":"Insufficient Balance","type":
+[2026-06-19 06:30:32] deepseek-free-8c84662e: failed — model=deepseek-chat: HTTP 402: {"error":{"message":"Insufficient Balance","type":
