@@ -62,3 +62,14 @@
 [2026-06-19 06:27:28] proxy-deepseek-r1-0528: failed — model=deepseek-r1-0528: HTTP 403: {"status":"error","error":{"message":"","code":"MO
 [2026-06-19 06:27:29] deepseek-free-89444680: failed — model=deepseek-chat: HTTP 402: {"error":{"message":"Insufficient Balance","type":
 [2026-06-19 06:27:30] deepseek-free-8c84662e: failed — model=deepseek-chat: HTTP 402: {"error":{"message":"Insufficient Balance","type":
+[2026-06-19 06:30:28] deepseek-free-89444680: free key loaded
+[2026-06-19 06:30:28] deepseek-free-8c84662e: free key loaded
+[2026-06-19 06:30:28] proxy-deepseek-chat-v3-0324: paid key loaded
+[2026-06-19 06:30:28] proxy-deepseek-r1-0528: paid key loaded
+[2026-06-19 06:30:28] proxy-deepseek-r1: paid key loaded
+[2026-06-19 06:30:28] openrouter: no key
+[2026-06-19 06:30:29] proxy-deepseek-chat-v3-0324: failed — model=deepseek-chat-v3-0324: HTTP 403: {"status":"error","error":{"message":"","code":"MO
+[2026-06-19 06:30:29] proxy-deepseek-r1: failed — model=deepseek-r1: HTTP 403: {"status":"error","error":{"message":"","code":"MO
+[2026-06-19 06:30:30] proxy-deepseek-r1-0528: failed — model=deepseek-r1-0528: HTTP 403: {"status":"error","error":{"message":"","code":"MO
+[2026-06-19 06:30:31] deepseek-free-89444680: failed — model=deepseek-chat: HTTP 402: {"error":{"message":"Insufficient Balance","type":
+[2026-06-19 06:30:32] deepseek-free-8c84662e: failed — model=deepseek-chat: HTTP 402: {"error":{"message":"Insufficient Balance","type":
