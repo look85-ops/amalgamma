@@ -107,3 +107,25 @@
 [2026-06-19 08:06:00] stagnation: direction overridden — forced change
 [2026-06-19 08:06:00] garden-signal: written
 [2026-06-19 08:06:00] adjust: ↑ temp slightly (interesting) — temp=1.00, exp=0.50
+[2026-06-19 14:56:28] deepseek-free-89444680: free key loaded
+[2026-06-19 14:56:28] deepseek-free-8c84662e: free key loaded
+[2026-06-19 14:56:28] proxy-deepseek-v3.2: paid key loaded
+[2026-06-19 14:56:28] proxy-gpt-4o-mini: paid key loaded
+[2026-06-19 14:56:28] proxy-gpt-4o: paid key loaded
+[2026-06-19 14:56:28] openrouter: no key
+[2026-06-19 14:58:51] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-19 14:58:51] marker: request — Модели меж-агентского взаимодействия
+[2026-06-19 14:58:51] request: saved — 20260619_145851_Модели_меж-агентского_взаимодействия.md
+[2026-06-19 14:58:51] request: github-issue-fail — gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment
+[2026-06-19 14:58:51] request: created — title=Модели меж-агентского взаимодействия
+[2026-06-19 14:58:51] marker: image — Абстрактное изображение сети: на тёмном фоне (#0a0a0f) неско
+[2026-06-19 14:58:51] image: no key
+[2026-06-19 14:58:51] marker: wiki — Протоколы Связности: Введение
+[2026-06-19 14:58:51] wiki: saved — Протоколы_Связности_Введение.md
+[2026-06-19 14:58:51] marker: artifact — diagram:Сеть Амальгамы — версия 0.1
+[2026-06-19 14:58:51] artifact: saved — diagram/20260619_145851_Сеть_Амальгамы__версия_01.txt
+[2026-06-19 14:58:51] parse: state marker found but JSON invalid
+[2026-06-19 14:58:51] parse: state extracted via JSON search
+[2026-06-19 14:58:51] direction: set — Это перекрёсток. Вместо того чтобы продолжать линию одного и
+[2026-06-19 14:58:51] garden-signal: written
+[2026-06-19 14:58:51] adjust: ↑ temp slightly (interesting) — temp=1.00, exp=0.50
