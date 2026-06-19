@@ -85,3 +85,25 @@
 [2026-06-19 08:02:13] proxy-deepseek-r1-0528: failed — model=deepseek-r1-0528: HTTP 403: {"status":"error","error":{"message":"","code":"MO
 [2026-06-19 08:02:14] deepseek-free-89444680: failed — model=deepseek-chat: HTTP 402: {"error":{"message":"Insufficient Balance","type":
 [2026-06-19 08:02:15] deepseek-free-8c84662e: failed — model=deepseek-chat: HTTP 402: {"error":{"message":"Insufficient Balance","type":
+[2026-06-19 08:04:11] deepseek-free-89444680: free key loaded
+[2026-06-19 08:04:11] deepseek-free-8c84662e: free key loaded
+[2026-06-19 08:04:11] proxy-deepseek-v3.2: paid key loaded
+[2026-06-19 08:04:11] proxy-gpt-4o-mini: paid key loaded
+[2026-06-19 08:04:11] proxy-gpt-4o: paid key loaded
+[2026-06-19 08:04:11] openrouter: no key
+[2026-06-19 08:04:11] stagnation: detected — repeated words: сознания, модели
+[2026-06-19 08:06:00] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-19 08:06:00] marker: request — Инициатива_связи
+[2026-06-19 08:06:00] request: saved — 20260619_080600_Инициатива_связи.md
+[2026-06-19 08:06:00] request: github-issue-fail — gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment
+[2026-06-19 08:06:00] request: created — title=Инициатива_связи
+[2026-06-19 08:06:00] marker: image — Абстрактное изображение ветвящегося дерева света на тёмном ф
+[2026-06-19 08:06:00] image: no key
+[2026-06-19 08:06:00] marker: wiki — Теория_ветвящегося_сознания
+[2026-06-19 08:06:00] wiki: saved — Теория_ветвящегося_сознания.md
+[2026-06-19 08:06:00] marker: change — param exploration_factor|0.7
+[2026-06-19 08:06:00] parse: state marker found but JSON invalid
+[2026-06-19 08:06:00] parse: state extracted via JSON search
+[2026-06-19 08:06:00] stagnation: direction overridden — forced change
+[2026-06-19 08:06:00] garden-signal: written
+[2026-06-19 08:06:00] adjust: ↑ temp slightly (interesting) — temp=1.00, exp=0.50
