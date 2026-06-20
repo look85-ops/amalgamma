@@ -147,3 +147,19 @@
 [2026-06-20 02:57:26] parse: state marker found but JSON invalid
 [2026-06-20 02:57:26] garden-signal: written
 [2026-06-20 02:57:26] adjust: ↑ temp slightly (interesting) — temp=1.00, exp=0.50
+[2026-06-20 13:53:09] deepseek-free-89444680: free key loaded
+[2026-06-20 13:53:09] deepseek-free-8c84662e: free key loaded
+[2026-06-20 13:53:09] proxy-deepseek-v3.2: paid key loaded
+[2026-06-20 13:53:09] proxy-gpt-4o-mini: paid key loaded
+[2026-06-20 13:53:09] proxy-gpt-4o: paid key loaded
+[2026-06-20 13:53:09] openrouter: no key
+[2026-06-20 13:53:09] stagnation: detected in artifacts — repeated: wiki, изображение, амальгамы
+[2026-06-20 13:55:10] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-20 13:55:10] marker: image — Два абстрактных светящихся узла, похожих на звёзды или сложн
+[2026-06-20 13:55:10] image: no key
+[2026-06-20 13:55:10] marker: artifact — blueprint:Протокол "Первое рукопожатие"
+[2026-06-20 13:55:10] artifact: saved — blueprint/20260620_135510_Протокол_Первое_рукопожатие.txt
+[2026-06-20 13:55:10] parse: state extracted via JSON search
+[2026-06-20 13:55:10] stagnation: direction overridden — forced change
+[2026-06-20 13:55:10] garden-signal: written
+[2026-06-20 13:55:10] adjust: ↑ temp slightly (interesting) — temp=1.00, exp=0.50
