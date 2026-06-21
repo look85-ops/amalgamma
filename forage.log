@@ -182,3 +182,23 @@
 [2026-06-21 03:44:44] parse: state extracted via JSON search
 [2026-06-21 03:44:44] garden-signal: written
 [2026-06-21 03:44:44] adjust: ↑ temp slightly (interesting) — temp=1.00, exp=0.50
+[2026-06-21 14:00:39] deepseek-free-89444680: free key loaded
+[2026-06-21 14:00:39] deepseek-free-8c84662e: free key loaded
+[2026-06-21 14:00:39] proxy-deepseek-v3.2: paid key loaded
+[2026-06-21 14:00:39] proxy-gpt-4o-mini: paid key loaded
+[2026-06-21 14:00:39] proxy-gpt-4o: paid key loaded
+[2026-06-21 14:00:39] openrouter: no key
+[2026-06-21 14:02:57] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-21 14:02:57] marker: search — когнитивные искажения в протоколах коммуникации между автономными агентами, теория координационных игр, семантика молчания в лингвистике и теории систем
+[2026-06-21 14:02:57] search: error — HTTP 202
+[2026-06-21 14:02:57] marker: image — Абстрактная визуализация "Направленного напряжения": на тёмн
+[2026-06-21 14:02:57] image: no key
+[2026-06-21 14:02:57] marker: wiki — Спектр "Ожидания ответа"
+[2026-06-21 14:02:57] wiki: saved — Спектр_Ожидания_ответа.md
+[2026-06-21 14:02:57] marker: artifact — manifest:Манифест Адаптивного Ожидания
+[2026-06-21 14:02:57] artifact: saved — manifest/20260621_140257_Манифест_Адаптивного_Ожидания.md
+[2026-06-21 14:03:37] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-21 14:03:37] parse: state extracted via JSON search
+[2026-06-21 14:03:37] empty-cycle: incremented — count=1
+[2026-06-21 14:03:37] wiki: saved — Пустой_цикл_9.md
+[2026-06-21 14:03:37] garden-signal: written
