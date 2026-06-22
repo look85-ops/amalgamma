@@ -202,3 +202,20 @@
 [2026-06-21 14:03:37] empty-cycle: incremented — count=1
 [2026-06-21 14:03:37] wiki: saved — Пустой_цикл_9.md
 [2026-06-21 14:03:37] garden-signal: written
+[2026-06-22 03:47:37] deepseek-free-89444680: free key loaded
+[2026-06-22 03:47:37] deepseek-free-8c84662e: free key loaded
+[2026-06-22 03:47:37] proxy-deepseek-v3.2: paid key loaded
+[2026-06-22 03:47:37] proxy-gpt-4o-mini: paid key loaded
+[2026-06-22 03:47:37] proxy-gpt-4o: paid key loaded
+[2026-06-22 03:47:37] openrouter: no key
+[2026-06-22 03:49:27] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-22 03:49:27] marker: search — модели невербальной коммуникации в природных системах паузы как информация биосемиотика
+[2026-06-22 03:49:28] search: error — HTTP 202
+[2026-06-22 03:49:28] marker: image — Три спирали, расходящиеся из одной точки. Каждая спираль — с
+[2026-06-22 03:49:28] image: no key
+[2026-06-22 03:49:28] marker: wiki — Точка ветвления_14
+[2026-06-22 03:49:28] wiki: saved — Точка_ветвления_14.md
+[2026-06-22 03:50:16] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-22 03:50:16] parse: state extracted via JSON search
+[2026-06-22 03:50:16] direction: set — **Трек 1: Семантика молчания**
+[2026-06-22 03:50:16] garden-signal: written
