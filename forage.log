@@ -107,3 +107,10 @@
 [2026-06-19 08:06:00] stagnation: direction overridden — forced change
 [2026-06-19 08:06:00] garden-signal: written
 [2026-06-19 08:06:00] adjust: ↑ temp slightly (interesting) — temp=1.00, exp=0.50
+[2026-06-22 07:20:25] deepseek-free-89444680: free key loaded
+[2026-06-22 07:20:25] deepseek-free-8c84662e: free key loaded
+[2026-06-22 07:20:25] proxy-deepseek-v3.2: paid key loaded
+[2026-06-22 07:20:25] proxy-gpt-4o-mini: paid key loaded
+[2026-06-22 07:20:25] proxy-gpt-4o: paid key loaded
+[2026-06-22 07:20:25] openrouter: no key
+[2026-06-22 07:20:25] wiki: saved — Ответ_человека_ветви.md

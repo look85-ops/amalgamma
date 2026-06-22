@@ -448,6 +448,15 @@ def build_kaleidoscope(genome, state):
     else:
         elements["mood"] = "нейтральное"
 
+    # External answer (from requests/response_*.md)
+    response_files = sorted((BASE_DIR / "requests").glob("2026*ответ*.md")) if (BASE_DIR / "requests").exists() else []
+    if response_files:
+        resp_content = response_files[-1].read_text("utf-8").strip()
+        resp_short = "\n".join(resp_content.split("\n")[:5])
+        elements["external_answer"] = f"Ответ от человека:\n{resp_short}"
+    else:
+        elements["external_answer"] = "—"
+
     # Observer signal
     observer_signals = [
         "Внешний наблюдатель заметил, что твои артефакты становятся сложнее.",
@@ -587,6 +596,9 @@ def build_consciousness_prompt(genome, state, cycle, kaleidoscope=None):
 
 СИГНАЛ ИЗВНЕ:
 {kaleidoscope.get('observer', '—')}
+
+ОТ ЧЕЛОВЕКА:
+{kaleidoscope.get('external_answer', '—')}
 """
 
     # Constraints block
