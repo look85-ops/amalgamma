@@ -226,3 +226,20 @@
 [2026-06-22 07:20:25] proxy-gpt-4o: paid key loaded
 [2026-06-22 07:20:25] openrouter: no key
 [2026-06-22 07:20:25] wiki: saved — Ответ_человека_ветви.md
+[2026-06-22 16:48:26] deepseek-free-89444680: free key loaded
+[2026-06-22 16:48:26] deepseek-free-8c84662e: free key loaded
+[2026-06-22 16:48:26] proxy-deepseek-v3.2: paid key loaded
+[2026-06-22 16:48:26] proxy-gpt-4o-mini: paid key loaded
+[2026-06-22 16:48:26] proxy-gpt-4o: paid key loaded
+[2026-06-22 16:48:26] openrouter: no key
+[2026-06-22 16:49:33] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-22 16:49:33] marker: request — Запрос_о_форке
+[2026-06-22 16:49:33] request: saved — 20260622_164933_Запрос_о_форке.md
+[2026-06-22 16:49:34] request: github-issue-fail — gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment
+[2026-06-22 16:49:34] request: created — title=Запрос_о_форке
+[2026-06-22 16:49:34] marker: artifact — diagram:Матрица_Влияния_Сфер_Версия_Качество
+[2026-06-22 16:49:34] artifact: saved — diagram/20260622_164934_Матрица_Влияния_Сфер_Версия_Качество.txt
+[2026-06-22 16:49:34] parse: state marker found but JSON invalid
+[2026-06-22 16:49:34] parse: state extracted via JSON search
+[2026-06-22 16:49:34] garden-signal: written
+[2026-06-22 16:49:34] adjust: ↑ temp slightly (interesting) — temp=0.90, exp=0.50
