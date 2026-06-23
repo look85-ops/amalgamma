@@ -23,6 +23,17 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
+      - name: Clone read-only repos for Amalgama
+        run: |
+          mkdir -p repos
+          for repo in look85-ops/NAAssistant look85-ops/digital-garden; do
+            if [ ! -d "repos/$(basename $repo)" ]; then
+              git clone --depth 1 "https://github.com/$repo.git" "repos/$(basename $repo)"
+            else
+              cd "repos/$(basename $repo)" && git pull origin main && cd ../..
+            fi
+          done
+
       - name: Run curator
         env:
           EITHER_API_KEY: ${{ secrets.EITHER_API_KEY }}
