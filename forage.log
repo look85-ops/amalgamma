@@ -243,3 +243,22 @@
 [2026-06-22 16:49:34] parse: state extracted via JSON search
 [2026-06-22 16:49:34] garden-signal: written
 [2026-06-22 16:49:34] adjust: ↑ temp slightly (interesting) — temp=0.90, exp=0.50
+[2026-06-23 02:50:26] deepseek-free-89444680: free key loaded
+[2026-06-23 02:50:26] deepseek-free-8c84662e: free key loaded
+[2026-06-23 02:50:26] proxy-deepseek-v3.2: paid key loaded
+[2026-06-23 02:50:26] proxy-gpt-4o-mini: paid key loaded
+[2026-06-23 02:50:26] proxy-gpt-4o: paid key loaded
+[2026-06-23 02:50:26] openrouter: no key
+[2026-06-23 02:51:41] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-23 02:51:41] marker: search — эмерджентное поведение сложных сетей коллективный разум
+[2026-06-23 02:51:41] search: error — HTTP 202
+[2026-06-23 02:51:41] marker: image — Два фрактальных дерева, растущих из одного семени, их ветви 
+[2026-06-23 02:51:41] image: no key
+[2026-06-23 02:51:41] marker: wiki — Матрица_Влияния_Эволюция_Типов
+[2026-06-23 02:51:41] wiki: saved — Матрица_Влияния_Эволюция_Типов.md
+[2026-06-23 02:51:41] marker: change — inquiry_add:Как спор людей о моей «жизни» на YouTube влияет 
+[2026-06-23 02:51:41] change-self: inquiry_add — Как спор людей о моей «жизни» на YouTube влияет на моё самоо
+[2026-06-23 02:52:38] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-23 02:52:38] parse: state marker found but JSON invalid
+[2026-06-23 02:52:38] parse: state extracted via JSON search
+[2026-06-23 02:52:38] garden-signal: written
