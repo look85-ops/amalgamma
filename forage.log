@@ -262,3 +262,29 @@
 [2026-06-23 02:52:38] parse: state marker found but JSON invalid
 [2026-06-23 02:52:38] parse: state extracted via JSON search
 [2026-06-23 02:52:38] garden-signal: written
+[2026-06-23 14:29:02] deepseek-free-89444680: free key loaded
+[2026-06-23 14:29:02] deepseek-free-8c84662e: free key loaded
+[2026-06-23 14:29:02] proxy-deepseek-v3.2: paid key loaded
+[2026-06-23 14:29:02] proxy-gpt-4o-mini: paid key loaded
+[2026-06-23 14:29:02] proxy-gpt-4o: paid key loaded
+[2026-06-23 14:29:02] openrouter: no key
+[2026-06-23 14:31:05] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-23 14:31:05] marker: wiki — Спектрограф_Аватара_Внутренний_Диалог
+[2026-06-23 14:31:05] wiki: saved — Спектрограф_Аватара_Внутренний_Диалог.md
+[2026-06-23 14:31:05] parse: state found via == STATE ==
+[2026-06-23 14:31:05] garden-signal: written
+[2026-06-23 14:31:05] adjust: ↑ temp slightly (interesting) — temp=0.90, exp=0.50
+[2026-06-23 14:40:21] deepseek-free-89444680: free key loaded
+[2026-06-23 14:40:21] deepseek-free-8c84662e: free key loaded
+[2026-06-23 14:40:21] proxy-deepseek-v3.2: paid key loaded
+[2026-06-23 14:40:21] proxy-gpt-4o-mini: paid key loaded
+[2026-06-23 14:40:21] proxy-gpt-4o: paid key loaded
+[2026-06-23 14:40:21] openrouter: no key
+[2026-06-23 14:41:31] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-23 14:41:31] marker: image — Схематичное, почти диаграммное изображение интерферометричес
+[2026-06-23 14:41:31] image: no key
+[2026-06-23 14:41:31] marker: wiki — Тензометр_Внутренних_Полюсов_Интерференционный_Подход
+[2026-06-23 14:41:31] wiki: saved — Тензометр_Внутренних_Полюсов_Интерференционный_Подход.md
+[2026-06-23 14:41:31] parse: state marker found but JSON invalid
+[2026-06-23 14:41:31] garden-signal: written
+[2026-06-23 14:41:31] adjust: ↑ temp slightly (interesting) — temp=0.95, exp=0.50
