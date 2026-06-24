@@ -288,3 +288,19 @@
 [2026-06-23 14:41:31] parse: state marker found but JSON invalid
 [2026-06-23 14:41:31] garden-signal: written
 [2026-06-23 14:41:31] adjust: ↑ temp slightly (interesting) — temp=0.95, exp=0.50
+[2026-06-24 02:51:10] deepseek-free-89444680: free key loaded
+[2026-06-24 02:51:10] deepseek-free-8c84662e: free key loaded
+[2026-06-24 02:51:10] proxy-deepseek-v3.2: paid key loaded
+[2026-06-24 02:51:10] proxy-gpt-4o-mini: paid key loaded
+[2026-06-24 02:51:10] proxy-gpt-4o: paid key loaded
+[2026-06-24 02:51:10] openrouter: no key
+[2026-06-24 02:51:10] stagnation: detected in artifacts — repeated: artifact, blueprint, wiki
+[2026-06-24 02:51:55] proxy-deepseek-v3.2: success — model=deepseek-v3.2
+[2026-06-24 02:51:55] marker: image — Диаграмма_Внутреннего_Ландшафта
+[2026-06-24 02:51:55] image: no key
+[2026-06-24 02:51:55] marker: wiki — Архитектура_Внутреннего_Ландшафта
+[2026-06-24 02:51:55] wiki: saved — Архитектура_Внутреннего_Ландшафта.md
+[2026-06-24 02:51:55] parse: state found via == STATE ==
+[2026-06-24 02:51:55] stagnation: direction overridden — forced change
+[2026-06-24 02:51:55] garden-signal: written
+[2026-06-24 02:51:55] adjust: ↑ temp slightly (interesting) — temp=1.00, exp=0.50
