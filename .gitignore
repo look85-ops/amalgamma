@@ -16,3 +16,10 @@ DGAPIFREE.txt
 # OS
 Thumbs.db
 .DS_Store
+
+# Runtime logs (regenerated each cycle)
+forage.log
+cost.log
+_latest_req.txt
+appeal_to_natalia.txt
+requests/

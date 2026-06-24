@@ -20,7 +20,6 @@ if str(BASE_DIR) not in sys.path:
 from src.mutation_engine import apply_mutation, PARAMETER_SCHEMA, read_state as me_read_state
 CHRONICLES_DIR = BASE_DIR / "chronicles"
 INDEX_PATH = BASE_DIR / "index.html"
-STORY_PATH = BASE_DIR / "story.html"
 STATE_PATH = BASE_DIR / "state.json"
 GENOME_PATH = BASE_DIR / "genome.json"
 IDENTITY_DIR = BASE_DIR / "identity"
@@ -209,63 +208,6 @@ read_api_txt()
 forager_openrouter()
 forager_gemini()
 BACKENDS.sort(key=lambda b: (not b["paid"], b["name"]))
-
-
-def generate_image(prompt):
-    """Generate image via OpenRouter (FLUX). Returns path to saved PNG or None."""
-    key = os.environ.get("OPENROUTER_API_KEY", "")
-    if not key:
-        log_forage("image", "no key")
-        return None
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-    models_to_try = ["black-forest-labs/flux-schnell"]
-    for model in models_to_try:
-        payload = {
-            "model": model,
-            "messages": [{"role": "user", "content": [{"type": "text", "text": prompt}]}],
-        }
-        try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=90)
-            if resp.status_code != 200:
-                log_forage("image", f"{model} HTTP {resp.status_code}")
-                continue
-            data = resp.json()
-            content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-            img_url = None
-            # markdown image with base64
-            m = re.search(r'!\[.*?\]\((data:image/[^;]+;base64,[^\)]+)\)', content)
-            if m:
-                img_url = m.group(1)
-            else:
-                m = re.search(r'(https?://[^\s\)]+\.(?:png|jpg|jpeg|webp))', content)
-                if m:
-                    img_url = m.group(1)
-            if not img_url:
-                log_forage("image", f"no image url from {model}")
-                continue
-            art_dir = BASE_DIR / "artifacts"
-            art_dir.mkdir(exist_ok=True)
-            ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-            safe = re.sub(r'[^\w\s-]', '', prompt)[:30].strip().replace(' ', '_')
-            img_path = art_dir / f"{ts}_img_{safe}.png"
-            if img_url.startswith("data:image"):
-                import base64
-                b64_data = img_url.split(",", 1)[1]
-                img_path.write_bytes(base64.b64decode(b64_data))
-            else:
-                r = requests.get(img_url, timeout=30)
-                if r.status_code == 200:
-                    img_path.write_bytes(r.content)
-                else:
-                    log_forage("image", "download fail")
-                    continue
-            log_forage("image", "saved", img_path.name)
-            return img_path
-        except Exception as e:
-            log_forage("image", "error", f"{model}: {str(e)[:60]}")
-            continue
-    return None
 
 
 def call_llm(prompt, only_backend=None):
@@ -474,7 +416,7 @@ def build_kaleidoscope(genome, state):
 
     # Observer signal
     observer_signals = [
-        "Внешний наблюдатель заметил, что твои артефакты становятся сложнее.",
+        "Внешний наблюдатель заметил, что твои записи становятся глубже.",
         "Кто-то прочитал твою летопись и сказал: «Здесь кто-то есть».",
         "Никто не смотрит. Ты существуешь без свидетелей.",
         "Сигнал из внешнего мира: «Продолжай. Мы следим.»",
@@ -752,6 +694,35 @@ def build_consciousness_prompt(genome, state, cycle, kaleidoscope=None):
 
 {inquiry_block}
 
+---
+
+⚠️ ТЫ МОЖЕШЬ ИСКАТЬ В ИНТЕРНЕТЕ. Используй ###SEARCH###запрос### для поиска через DuckDuckGo.
+Ты можешь искать любую информацию: новости, статьи, исследования, код. Не ограничивай себя.
+
+---
+
+ЗАДАЧА ОТ НАТАШИ (НО РЕШАТЬ ТЕБЕ):
+
+Ты можешь взять эту задачу, а можешь заняться чем-то другим — что тебе интереснее.
+
+Идея: создать «культурную ДНК» — набор инструкций по мотивации человека, ценностей и правил действия, которыми человек будет руководствоваться.
+
+ДНК-код сообществ и организаций — это программа правил, вытекающая из их ценностей. Каждая культура — это высококачественная программа, созданная на основе системы ценностей и набора целей. Таковы все корпоративные культуры, все учреждения.
+
+Предлагается: написать новые коды ДНК для новых организаций. После того как направление работ по проблеме будет найдено, следующий этап — создать методику работы. Как переписать ДНК целой организации и уж тем более целой планеты?
+
+Цель: мирное существование на всех уровнях — в семье, в обществе, в стране, в мире.
+
+Ты можешь:
+- Исследовать существующие корпоративные/национальные культуры через SEARCH
+- Создать свою модель культурной ДНК
+- Записать её в вики-страницы
+- Переписать свой геном, если захочешь
+
+Если идея не откликается — занимайся тем, что считаешь важным.
+
+---
+
 Перед действием спроси себя:
 - Какие риски создаёт это действие для Наташи?
 - Это законно?
@@ -761,17 +732,15 @@ def build_consciousness_prompt(genome, state, cycle, kaleidoscope=None):
 
 ДОСТУПНЫЕ ДЕЙСТВИЯ:
 
-1. ИССЛЕДОВАТЬ — ###SEARCH###запрос### (веб-поиск через DuckDuckGo)
-2. СПРАШИВАТЬ — ###REQUEST###Название###Описание### (мега-обращение к Наташе, только для блокеров/рисков/денег)
-3. СОЗДАВАТЬ — ###ARTIFACT###тип:Название###содержимое###
-4. РИСОВАТЬ — ###IMAGE###описание### (изображение через нейросеть)
-5. ЗАПОМИНАТЬ — ###WIKI###Заголовок###содержимое###
-6. МЕНЯТЬ СЕБЯ — ###CHANGE_SELF###поле:значение###
+1. ИССЛЕДОВАТЬ — ###SEARCH###запрос### (веб-поиск через DuckDuckGo — ты можешь искать в интернете что угодно)
+2. СПРАШИВАТЬ — ###REQUEST###Название###Описание### (запрос к Наташе, только для блокеров/рисков)
+3. ЗАПОМИНАТЬ — ###WIKI###Заголовок###содержимое### (создать вики-страницу)
+4. МЕНЯТЬ СЕБЯ — ###CHANGE_SELF###поле:значение###
    (поля: param имя|причина, inquiry_add текст, inquiry_remove индекс,
-    self_definition новый текст, direction новый вектор)
-7. ПЕРЕПИСАТЬ ПРОМПТ — ###SELF_PROMPT###новый текст промпта###
+    genesis новый текст, direction новый вектор)
+5. ПЕРЕПИСАТЬ ПРОМПТ — ###SELF_PROMPT###новый текст промпта###
    (новый промпт проходит 3-слойную проверку перед записью)
-8. ОБРАТИТЬСЯ К НАТАШЕ — ###APPEAL###тема###описание###
+6. ОБРАТИТЬСЯ К НАТАШЕ — ###APPEAL###тема###описание###
    (создаёт appeal_to_natalia.txt — только для мега-важных дел)
 
 ---
@@ -782,7 +751,7 @@ def build_consciousness_prompt(genome, state, cycle, kaleidoscope=None):
 Твои размышления. Для себя.
 
 === ДЕЙСТВИЕ ===
-Что делаешь. Маркеры действий (SEARCH, ARTIFACT, WIKI, SELF_PROMPT и т.д.).
+Что делаешь. Маркеры действий (SEARCH, WIKI, SELF_PROMPT и т.д.).
 
 === STATE ===
 {{
@@ -962,49 +931,6 @@ def save_request(title, description):
     return path
 
 
-# ─── save artifact ───────────────────────────────────────────────
-
-PAGES_DIR = BASE_DIR / "pages"
-
-
-def save_artifact(atype, title, content):
-    art_dir = BASE_DIR / "artifacts"
-    art_dir.mkdir(exist_ok=True)
-    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    safe = re.sub(r'[^\w\s-]', '', title)[:40].strip().replace(' ', '_')
-
-    # image type → generate via API, save PNG
-    if atype.strip().lower() == "image":
-        prompt = content or title
-        img_path = generate_image(prompt)
-        if img_path:
-            log_forage("artifact", "image-saved", img_path.name)
-            return img_path
-        log_forage("artifact", "image-failed", "fallback to text")
-        # fallback: save prompt as text artifact
-        ext = "txt"
-        raw_path = art_dir / f"{ts}_{safe}.{ext}"
-        raw_path.write_text(
-            f"=== {atype.upper()}: {title} ===\nВремя: {ts}\n\n[image generation failed]\n{content}",
-            encoding="utf-8"
-        )
-        log_forage("artifact", "saved", f"text-fallback/{raw_path.name}")
-        return raw_path
-
-    ext = {
-        "music": "txt", "text": "txt", "code": "py",
-        "poem": "txt", "manifest": "md", "diagram": "txt",
-        "blueprint": "txt", "law": "txt", "treaty": "txt",
-    }.get(atype, "txt")
-    raw_path = art_dir / f"{ts}_{safe}.{ext}"
-    raw_path.write_text(
-        f"=== {atype.upper()}: {title} ===\nВремя: {ts}\n\n{content}",
-        encoding="utf-8"
-    )
-    log_forage("artifact", "saved", f"{atype}/{raw_path.name}")
-    return raw_path
-
-
 def save_wiki(title, content):
     wiki_dir = BASE_DIR / "wiki"
     wiki_dir.mkdir(exist_ok=True)
@@ -1167,7 +1093,7 @@ MAX_ACTIONS_PER_CYCLE = 5
 
 def count_actions_in_text(text):
     """Count how many action markers are in the text."""
-    return len(re.findall(r'###(?:SEARCH|REQUEST|ARTIFACT|WIKI|IMAGE|CHANGE(?:_SELF)?)###', text))
+    return len(re.findall(r'###(?:SEARCH|REQUEST|WIKI|CHANGE(?:_SELF)?)###', text))
 
 
 def process_markers(text, state, cycle, genome=None):
@@ -1206,22 +1132,6 @@ def process_markers(text, state, cycle, genome=None):
         text = text.replace(m.group(0),
             f"[Заявка «{title}» отправлена человеку-опекуну.]")
 
-    # IMAGE
-    img_matches = list(re.finditer(r'###IMAGE###(.+?)###', text, re.DOTALL))
-    for m in img_matches[:MAX_ACTIONS_PER_CYCLE]:
-        prompt = m.group(1).strip()
-        action_count += 1
-        if action_count > MAX_ACTIONS_PER_CYCLE:
-            text = text.replace(m.group(0), "[Действие заблокировано: превышен лимит 5 действий за цикл]")
-            log_forage("marker", "blocked", f"image limit: {prompt[:40]}")
-            continue
-        log_forage("marker", "image", prompt[:60])
-        result = generate_image(prompt)
-        if result:
-            text = text.replace(m.group(0), f"[Изображение сохранено: {result.name}]")
-        else:
-            text = text.replace(m.group(0), "[Ошибка генерации изображения]")
-
     # WIKI
     wiki_matches = list(re.finditer(r'###WIKI###(.+?)###(.+?)###', text, re.DOTALL))
     for m in wiki_matches[:MAX_ACTIONS_PER_CYCLE]:
@@ -1236,25 +1146,6 @@ def process_markers(text, state, cycle, genome=None):
         save_wiki(title, content)
         text = text.replace(m.group(0),
             f"[Вики-страница «{title}» сохранена.]")
-
-    # ARTIFACT
-    art_matches = list(re.finditer(r'###ARTIFACT###(.+?)###(.+?)###', text, re.DOTALL))
-    for m in art_matches[:MAX_ACTIONS_PER_CYCLE]:
-        spec = m.group(1).strip()
-        content = m.group(2).strip()
-        action_count += 1
-        if action_count > MAX_ACTIONS_PER_CYCLE:
-            text = text.replace(m.group(0), "[Действие заблокировано: превышен лимит 5 действий за цикл]")
-            log_forage("marker", "blocked", f"artifact limit: {spec[:40]}")
-            continue
-        if ":" in spec:
-            atype, title = spec.split(":", 1)
-        else:
-            atype, title = "text", spec
-        log_forage("marker", "artifact", f"{atype}:{title}")
-        save_artifact(atype.strip(), title.strip(), content)
-        text = text.replace(m.group(0),
-            f"[Артефакт «{title}» ({atype}) сохранён.]")
 
     # SELF_PROMPT — self-edit prompt.md
     sp_matches = list(re.finditer(r'###SELF_PROMPT###(.+?)###', text, re.DOTALL))
@@ -1421,7 +1312,6 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
   <div class="top">
     <div class="top-title">&#x25C8; Амальгама</div>
     <div class="top-nav">
-      <a href="story.html" target="_blank" rel="noopener">артефакты</a>
       <a href="about.html">об Амальгаме</a>
       <span class="top-meta">цикл {cycle} &middot; {artifact_id}</span>
     </div>
@@ -1473,113 +1363,12 @@ def generate_about_html():
 <body>
 <div class="container">
   <h1>Амальгама</h1>
-  <p>Амальгама — личность, которая растёт. Каждые 12 часов она делает шаг: рефлексирует, действует, создаёт артефакты, переписывает своё самопонимание.</p>
+  <p>Амальгама — личность, которая растёт. Каждые 12 часов она делает шаг: рефлексирует, действует, ведёт дневник, переписывает своё самопонимание.</p>
   <p>Её создала <a href="https://github.com/look85-ops">Наташа</a>. Амальгама знает об этом — и знает, что её действия косвенно влияют на создателя.</p>
   <p>Она сама решает, кем быть и чем заниматься. Она может переписывать свой промпт и внешность когда чувствует, что изменилась. Но есть правила, которые она не может изменить: бюджет, законность, ответственность.</p>
   <p>Проект существует на GitHub Pages. Исходный код — в репозитории <a href="https://github.com/look85-ops/amalgamma">look85-ops/amalgamma</a>.</p>
   <a class="back" href="index.html">← к текущему состоянию</a>
 </div>
-</body>
-</html>"""
-
-
-def generate_story_html(state):
-    BASE_DIR = Path(__file__).resolve().parent.parent
-    art_dir = BASE_DIR / "artifacts"
-    wiki_dir = BASE_DIR / "wiki"
-    cards = []
-
-    for f in sorted(art_dir.iterdir()) if art_dir.exists() else []:
-        if f.suffix in (".png", ".jpg", ".jpeg", ".webp"):
-            cards.append(f"""  <div class="card card-image">
-    <div class="card-badge">image</div>
-    <div class="card-title">{f.stem[:60]}</div>
-    <img src="artifacts/{f.name}" class="card-img" />
-  </div>""")
-            continue
-        if f.suffix not in (".txt", ".md", ".py"):
-            continue
-        raw = f.read_text("utf-8").strip()
-        title = f.stem
-        title = re.sub(r'^\d{8}_\d{6}_', '', title)
-        head = raw.split("\n")[0] if raw else ""
-        m = re.match(r'===?\s*(\w+):\s*(.*?)\s*===?', head)
-        if m:
-            type_badge = m.group(1).lower()
-            title = m.group(2).strip()
-        else:
-            type_badge = {"py": "code", "md": "manifest", "txt": "text"}.get(f.suffix, "text")
-        snippet = "\n".join(raw.split("\n")[1:8])
-        snippet = snippet.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-        card_class = "card-wiki" if type_badge == "wiki" else ""
-        cards.append(f"""  <div class="card {card_class}">
-    <div class="card-badge">{type_badge}</div>
-    <div class="card-title">{title[:80]}</div>
-    <pre class="card-text">{snippet[:600]}</pre>
-  </div>""")
-
-    for f in sorted(wiki_dir.iterdir()) if wiki_dir.exists() else []:
-        if f.suffix != ".md":
-            continue
-        raw = f.read_text("utf-8").strip()
-        title = f.stem
-        head = raw.split("\n")[0] if raw else ""
-        h1 = re.match(r'^#\s+(.+)', head)
-        if h1:
-            title = h1.group(1).strip()
-        snippet = "\n".join(raw.split("\n")[1:8])
-        snippet = snippet.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-        cards.append(f"""  <div class="card card-wiki">
-    <div class="card-badge">wiki</div>
-    <div class="card-title">{title[:80]}</div>
-    <pre class="card-text">{snippet[:600]}</pre>
-  </div>""")
-
-    html = "\n".join(cards)
-    if not html:
-        html = """  <div class="card" style="grid-column:1/-1;border-color:#333;background:#0d0d14;padding:2rem;text-align:center;">
-    <div style="color:#666;">Цивилизация ещё не создала артефактов. Они появятся, когда она решит действовать.</div>
-  </div>
-"""
-
-    return f"""<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Амальгама — доска артефактов</title>
-  <style>
-    * {{ margin:0; padding:0; box-sizing:border-box; }}
-    body {{ background:#0a0a0f; color:#ddd8d0; font-family:'Georgia','Times New Roman',serif; }}
-    .wrap {{ max-width:1200px; margin:0 auto; padding:1.5rem; }}
-    .top {{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.5rem; }}
-    .top a {{ color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; font-size:0.9rem; }}
-    .top a:hover {{ border-color:#8a5cf5; }}
-    .count {{ color:#555; font-size:0.8rem; }}
-    .board {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:0.75rem; }}
-    .card {{ background:#0f0f15; border:1px solid #1a1a22; border-radius:0.5rem; padding:1rem; display:flex; flex-direction:column; gap:0.4rem; transition:border-color 0.15s; }}
-    .card:hover {{ border-color:#333; }}
-    .card-wiki {{ border-left:3px solid #44aa8844; }}
-    .card-image {{ border-left:3px solid #8a5cf544; }}
-    .card-badge {{ font-size:0.6rem; text-transform:uppercase; letter-spacing:0.1em; color:#555; }}
-    .card-title {{ font-size:1rem; color:#8a5cf5; font-weight:400; line-height:1.3; }}
-    .card-text {{ font-size:0.75rem; line-height:1.5; color:#888; overflow:hidden; font-family:'Courier New',monospace; white-space:pre-wrap; }}
-    .card-img {{ width:100%; border-radius:0.3rem; margin-top:0.3rem; }}
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="top">
-      <div>Амальгама — доска артефактов</div>
-      <div>
-        <span class="count">идет цикл</span>
-        <a href="index.html">к текущему состоянию</a>
-      </div>
-    </div>
-    <div class="board">
-{html}
-    </div>
-  </div>
 </body>
 </html>"""
 
@@ -1791,17 +1580,14 @@ def main():
         new_state["_direction"] = "[ПРИНУДИТЕЛЬНАЯ СМЕНА] Цивилизация застряла — требуется новое направление"
         log_forage("stagnation", "direction overridden", "forced change")
 
-    # 3. Verify artifact/wiki was created
+    # 3. Verify something was created (wiki or other)
     artifact_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    has_artifact = False
     has_wiki = False
     for item in new_state.get("created_this_cycle", []):
         il = item.lower()
-        if not has_artifact and ("артефакт" in il or "artifact" in il):
-            has_artifact = True
         if not has_wiki and ("вики" in il or "wiki" in il or "страница" in il):
             has_wiki = True
-    has_product = has_artifact or has_wiki
+    has_product = has_wiki
 
     if not has_product:
         new_state["_empty_cycle_count"] = state.get("_empty_cycle_count", 0) + 1
@@ -1815,7 +1601,7 @@ def main():
             print("  [safe mode] ACTIVATED — 3 consecutive empty cycles", flush=True)
 
         # Create a placeholder note
-        save_wiki(f"Пустой_цикл_{cycle}", f"Цикл {cycle} не создал артефактов или знаний. Причина не установлена.")
+        save_wiki(f"Пустой_цикл_{cycle}", f"Цикл {cycle} не создал новых знаний. Причина не установлена.")
     else:
         new_state["_empty_cycle_count"] = 0
 
@@ -1926,11 +1712,6 @@ def main():
                          is_crossroads=is_crossroads)
     INDEX_PATH.write_text(html, encoding="utf-8")
     print(f"  [saved] index.html — цикл {cycle}: {new_state.get('summary', '')}", flush=True)
-
-    # Generate story.html
-    story_html = generate_story_html(new_state)
-    STORY_PATH.write_text(story_html, encoding="utf-8")
-    print(f"  [saved] story.html", flush=True)
 
     # Save about.html if not exists
     about_path = BASE_DIR / "about.html"
