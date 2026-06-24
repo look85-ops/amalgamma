@@ -697,7 +697,8 @@ def build_consciousness_prompt(genome, state, cycle, kaleidoscope=None):
 ---
 
 ⚠️ ТЫ МОЖЕШЬ ИСКАТЬ В ИНТЕРНЕТЕ. Используй ###SEARCH###запрос### для поиска через DuckDuckGo.
-Ты можешь искать любую информацию: новости, статьи, исследования, код. Не ограничивай себя.
+Ты можешь искать любую информацию: новости, статьи, исследования, код.
+Если поиск недоступен (среда заблокировала) — не расстраивайся, используй данные из repos/, wiki/ и свою рефлексию.
 
 ---
 
@@ -755,7 +756,7 @@ def build_consciousness_prompt(genome, state, cycle, kaleidoscope=None):
 
 === STATE ===
 {{
-  "_evaluation": "ожидаемо" | "интересно" | "странно",
+  "_evaluation": "ОДНО СЛОВО: ожидаемо | интересно | странно (только одно из трёх, никаких фраз)",
   "_direction": "вектор на ближайшие циклы",
   "lessons": ["уроки цикла"],
   "created_this_cycle": ["что создано"],
@@ -895,10 +896,13 @@ def web_search(query, max_results=5):
             log_forage("search", "ok", f"query={query}, results={len(results)}")
             return "\n".join(f"{i+1}. {r}" for i, r in enumerate(results))
         log_forage("search", "empty", f"query={query}")
-        return "empty"
+        return "[Поиск не дал результатов. Попробуй другой запрос или используй то, что уже есть в твоих данных.]"
+    except requests.exceptions.Timeout:
+        log_forage("search", "timeout", f"query={query}")
+        return "[Поиск в интернете сейчас недоступен (таймаут). Используй свои данные и репозитории для исследования.]"
     except Exception as e:
         log_forage("search", "failed", str(e)[:60])
-        return "error"
+        return "[Поиск в интернете недоступен в этой среде. Сосредоточься на данных, которые уже есть в репозиториях и wiki.]"
 
 
 # ─── save request ────────────────────────────────────────────────
@@ -1580,14 +1584,15 @@ def main():
         new_state["_direction"] = "[ПРИНУДИТЕЛЬНАЯ СМЕНА] Цивилизация застряла — требуется новое направление"
         log_forage("stagnation", "direction overridden", "forced change")
 
-    # 3. Verify something was created (wiki or other)
+    # 3. Verify something was created (wiki or meaningful reflection)
     artifact_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     has_wiki = False
     for item in new_state.get("created_this_cycle", []):
         il = item.lower()
         if not has_wiki and ("вики" in il or "wiki" in il or "страница" in il):
             has_wiki = True
-    has_product = has_wiki
+    has_reflection = len((reflection_text or "").strip()) > 150
+    has_product = has_wiki or has_reflection
 
     if not has_product:
         new_state["_empty_cycle_count"] = state.get("_empty_cycle_count", 0) + 1
@@ -1664,15 +1669,19 @@ def main():
     new_state["_history"] = history[-50:]
 
     # Direction (crossroads or forced)
+    ai_direction = new_state.get("_direction", "").strip()
+    old_direction = state.get("_direction", "")
     is_crossroads = cycle > 1 and (cycle % 5 == 0 or state.get("_eval_streak", 0) >= 3)
     if is_stagnant:
         new_state["_direction"] = "[ПРИНУДИТЕЛЬНАЯ СМЕНА] Цивилизация застряла — требуется новое направление"
+    elif ai_direction and not is_crossroads:
+        new_state["_direction"] = ai_direction
     elif is_crossroads:
         direction_lines = [l.strip() for l in action_text.split("\n") if l.strip() and len(l.strip()) > 20]
         new_state["_direction"] = (direction_lines[0] if direction_lines else action_text[:100])[:200]
         log_forage("direction", "set", new_state["_direction"][:60])
     else:
-        new_state["_direction"] = state.get("_direction", "")
+        new_state["_direction"] = old_direction
 
     # Garden signal
     try:
