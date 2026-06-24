@@ -23,3 +23,10 @@ cost.log
 _latest_req.txt
 appeal_to_natalia.txt
 requests/
+
+# Cycle data (regenerated each cycle)
+chronicles/
+wiki/
+artifacts/
+repos/
+garden_signal.json
