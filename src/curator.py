@@ -873,14 +873,35 @@ SEARCH_TIMEOUT = 10  # seconds
 
 
 def web_search(query, max_results=5):
+    try:
+        from ddgs import DDGS
+        ddgs = DDGS()
+        results = []
+        for r in ddgs.text(query, max_results=max_results):
+            title = r.get("title", "")
+            body = r.get("body", "")
+            results.append(f"{title}: {body}")
+        if results:
+            log_forage("search", "ok", f"query={query}, results={len(results)}")
+            return "\n".join(f"{i+1}. {r}" for i, r in enumerate(results))
+        log_forage("search", "empty", f"query={query}")
+        return "[Поиск не дал результатов. Попробуй другой запрос или используй то, что уже есть в твоих данных.]"
+    except ImportError:
+        log_forage("search", "fallback", "ddgs not installed, trying requests")
+    except Exception as e:
+        log_forage("search", "failed", str(e)[:120])
+        return "[Поиск в интернете недоступен в этой среде. Сосредоточься на данных, которые уже есть в репозиториях и wiki.]"
+    # Fallback: manual DuckDuckGo HTML scraping
     url = "https://html.duckduckgo.com/html/"
     params = {"q": query}
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
     }
     try:
         resp = requests.get(url, params=params, headers=headers, timeout=SEARCH_TIMEOUT)
-        if resp.status_code != 200:
+        if resp.status_code not in (200, 202):
             log_forage("search", "error", f"HTTP {resp.status_code}")
             return "error"
         results = []
