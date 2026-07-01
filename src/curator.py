@@ -18,6 +18,7 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 from src.mutation_engine import apply_mutation, PARAMETER_SCHEMA, read_state as me_read_state
+from src.harness import run as run_harness, estimate_tokens as estimate_tokens_harness, CYCLE_TOKEN_BUDGET as HARNESS_TOKEN_BUDGET
 CHRONICLES_DIR = BASE_DIR / "chronicles"
 INDEX_PATH = BASE_DIR / "index.html"
 STATE_PATH = BASE_DIR / "state.json"
@@ -1589,6 +1590,32 @@ def main():
     new_state["cycle"] = cycle
     new_state["timestamp"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
+    # ── Loop Harness: rubricator, LLM judge, token budget ────────
+    artifact_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    harness_result = run_harness(
+        cycle=cycle,
+        reflection_text=reflection_text or "",
+        state=new_state,
+        change_results=change_results,
+        history=state.get("_history", []),
+        available_backends=BACKENDS,
+        prompt_tokens=estimate_tokens_harness(prompt),
+        response_tokens=estimate_tokens_harness(result or ""),
+        artifact_id=artifact_id,
+    )
+    print(f"  [harness] rubric={harness_result['rubric']['score']:.0f}% "
+          f"verdict={harness_result['judge']['verdict']} "
+          f"tokens={harness_result['tokens']['total']}/{HARNESS_TOKEN_BUDGET}", flush=True)
+
+    # Override evaluation if LLM judge says FAIL and self-eval says otherwise
+    judge_verdict = harness_result["judge"]["verdict"]
+    rubric_score = harness_result["rubric"]["score"]
+    if judge_verdict == "FAIL" and rubric_score < 50:
+        current_eval = (new_state.get("_evaluation") or "").strip().lower()
+        if current_eval in ("интересно", "странно"):
+            new_state["_evaluation"] = "ожидаемо"
+            print(f"  [harness] overrode self-evaluation '{current_eval}' → 'ожидаемо' (FAIL)", flush=True)
+
     # ── Post-cycle: verification & counters ──────────────────────
 
     # 1. Track evaluation
@@ -1614,7 +1641,6 @@ def main():
         log_forage("stagnation", "direction overridden", "forced change")
 
     # 3. Verify something was created (wiki or meaningful reflection)
-    artifact_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     has_wiki = False
     for item in new_state.get("created_this_cycle", []):
         il = item.lower()
@@ -1675,7 +1701,8 @@ def main():
         f"Время: {artifact_id}\n"
         f"Действий: {total_action_count}\n"
         f"Пустых подряд: {new_state.get('_empty_cycle_count', 0)}\n"
-        f"Safe mode: {new_state.get('_safe_mode', False)}\n\n"
+        f"Safe mode: {new_state.get('_safe_mode', False)}\n"
+        f"Harness: rubric={harness_result['rubric']['score']:.0f}% verdict={harness_result['judge']['verdict']} tokens={harness_result['tokens']['total']}\n\n"
         f"=== РЕФЛЕКСИЯ ===\n{reflection_text}\n\n"
         f"=== ДЕЙСТВИЕ ===\n{action_text}\n\n"
         f"---STATE---\n"
