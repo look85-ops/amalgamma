@@ -250,3 +250,20 @@ def run(cycle, reflection_text, state, change_results, history,
     report_path = HARNESS_DIR / f"harness_cycle_{cycle:04d}.json"
     report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
     return report
+
+
+def read_last_harness_report():
+    if not HARNESS_DIR.exists():
+        return None
+    reports = list(HARNESS_DIR.glob("harness_cycle_*.json"))
+    if not reports:
+        return None
+    def get_cycle_num(path):
+        stem = path.stem
+        num_str = stem.split("_")[-1]
+        return int(num_str)
+    latest = max(reports, key=get_cycle_num)
+    try:
+        return json.loads(latest.read_text(encoding="utf-8"))
+    except Exception:
+        return None

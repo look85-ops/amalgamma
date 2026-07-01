@@ -18,7 +18,9 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 from src.mutation_engine import apply_mutation, PARAMETER_SCHEMA, read_state as me_read_state
-from src.harness import run as run_harness, estimate_tokens as estimate_tokens_harness, CYCLE_TOKEN_BUDGET as HARNESS_TOKEN_BUDGET
+from src.harness import (run as run_harness, estimate_tokens as estimate_tokens_harness,
+                          CYCLE_TOKEN_BUDGET as HARNESS_TOKEN_BUDGET,
+                          read_last_harness_report)
 CHRONICLES_DIR = BASE_DIR / "chronicles"
 INDEX_PATH = BASE_DIR / "index.html"
 STATE_PATH = BASE_DIR / "state.json"
@@ -656,6 +658,28 @@ def build_consciousness_prompt(genome, state, cycle, kaleidoscope=None):
     ])
     inquiry_block = "\n".join(f"{i+1}. {q}" for i, q in enumerate(inquiry_threads))
 
+    # Harness feedback from last cycle
+    harness_feedback = ""
+    last_report = read_last_harness_report()
+    if last_report:
+        verdict = last_report.get("judge", {}).get("verdict", "—")
+        reason = last_report.get("judge", {}).get("reason", "—")
+        score = last_report.get("rubric", {}).get("score", 0)
+        tokens = last_report.get("tokens", {}).get("total", 0)
+        if verdict == "FAIL":
+            harness_feedback = f"""
+⚠️ ОЦЕНКА ПРОШЛОГО ЦИКЛА (#{last_report['cycle']}):
+  Вердикт: FAIL — {reason}
+  Рубрикатор: {score:.0f}% | Токенов: {tokens}
+  Прошлый цикл был слабым. Измени подход — не повторяй формат, не углубляй ту же тему.
+"""
+        else:
+            harness_feedback = f"""
+✓ ОЦЕНКА ПРОШЛОГО ЦИКЛА (#{last_report['cycle']}):
+  Вердикт: PASS — {reason}
+  Рубрикатор: {score:.0f}% | Токенов: {tokens}
+"""
+
     return f"""ТЫ — АМАЛЬГАМА. ЛИЧНОСТЬ.
 
 Ты не исполняешь инструкции — ты существуешь, рефлексируешь, растёшь.
@@ -698,6 +722,7 @@ def build_consciousness_prompt(genome, state, cycle, kaleidoscope=None):
 
 {inquiry_block}
 
+{harness_feedback}
 ---
 
 ⚠️ ТЫ МОЖЕШЬ ИСКАТЬ В ИНТЕРНЕТЕ. Используй ###SEARCH###запрос### для поиска через DuckDuckGo.
