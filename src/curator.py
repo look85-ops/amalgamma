@@ -136,6 +136,11 @@ def forager_openrouter():
                      payload_fn, parse_fn, [
                          "qwen/qwen3-coder:free",
                          "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+                         "meta-llama/llama-3.3-70b-instruct:free",
+                         "google/gemma-4-31b-it:free",
+                         "nvidia/nemotron-3-super-120b-a12b:free",
+                         "openai/gpt-oss-120b:free",
+                         "qwen/qwen3-next-80b-a3b-instruct:free",
                      ])
 
 
@@ -194,6 +199,74 @@ def forager_opencode_free():
     BACKENDS.insert(0, backend)
     log_forage("opencode-free", "free backend loaded (opencode.ai/zen)")
 
+def forager_groq():
+    def payload_fn(model):
+        return {
+            "model": model,
+            "messages": [{"role": "user", "content": "__PROMPT__"}],
+            "temperature": 0.9,
+            "max_tokens": 4000,
+            "top_p": 0.95,
+        }
+    def parse_fn(data):
+        if "error" in data:
+            raise RuntimeError(data["error"].get("message", str(data["error"])))
+        return (data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                or data.get("choices", [{}])[0].get("message", {}).get("reasoning", "")), 0, 0
+    key = os.environ.get("GROQ_API_KEY", "")
+    register_backend("groq", key,
+                     "https://api.groq.com/openai/v1/chat/completions",
+                     payload_fn, parse_fn, [
+                         "llama-3.1-8b-instant",
+                         "llama-3.3-70b-versatile",
+                         "qwen/qwen3-32b",
+                     ])
+
+def forager_cerebras():
+    def payload_fn(model):
+        return {
+            "model": model,
+            "messages": [{"role": "user", "content": "__PROMPT__"}],
+            "temperature": 0.9,
+            "max_tokens": 4000,
+            "top_p": 0.95,
+        }
+    def parse_fn(data):
+        if "error" in data:
+            raise RuntimeError(data["error"].get("message", str(data["error"])))
+        return (data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                or data.get("choices", [{}])[0].get("message", {}).get("reasoning", "")), 0, 0
+    key = os.environ.get("CEREBRAS_API_KEY", "")
+    register_backend("cerebras", key,
+                     "https://api.cerebras.ai/v1/chat/completions",
+                     payload_fn, parse_fn, [
+                         "llama-3.1-8b",
+                         "llama-3.3-70b",
+                     ])
+
+def forager_cloudflare():
+    def payload_fn(model):
+        return {
+            "model": model,
+            "messages": [{"role": "user", "content": "__PROMPT__"}],
+            "temperature": 0.9,
+            "max_tokens": 4000,
+            "top_p": 0.95,
+        }
+    def parse_fn(data):
+        if "error" in data:
+            raise RuntimeError(data["error"].get("message", str(data["error"])))
+        result = data.get("result", {})
+        if "response" in result:
+            return result["response"], 0, 0
+        raise RuntimeError("empty response")
+    key = os.environ.get("CLOUDFLARE_API_KEY", "")
+    account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
+    if key and account_id:
+        register_backend("cloudflare", key,
+                         f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/@cf/meta/llama-3.3-70b-instruct-fp8",
+                         payload_fn, parse_fn)
+
 def read_free_api():
     free_api_file = BASE_DIR / "DGAPIFREE.txt"
     raw = ""
@@ -240,7 +313,29 @@ read_api_txt()
 forager_openrouter()
 forager_gemini()
 forager_opencode_free()
-BACKENDS.sort(key=lambda b: (not b["paid"], b["name"]))
+forager_groq()
+forager_cerebras()
+forager_cloudflare()
+
+def backend_priority(backend):
+    name = backend["name"]
+    if backend["paid"]:
+        return 2, 0
+    priority_map = {
+        "opencode-free": 0,
+        "groq": 0,
+        "cerebras": 0,
+        "deepseek-free": 1,
+        "openrouter": 1,
+        "gemini": 1,
+        "cloudflare": 2,
+    }
+    for key, val in priority_map.items():
+        if key in name:
+            return 0, val
+    return 1, 0
+
+BACKENDS.sort(key=backend_priority)
 
 
 def call_llm(prompt, only_backend=None):
