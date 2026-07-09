@@ -222,27 +222,7 @@ def forager_groq():
                          "qwen/qwen3-32b",
                      ])
 
-def forager_cerebras():
-    def payload_fn(model):
-        return {
-            "model": model,
-            "messages": [{"role": "user", "content": "__PROMPT__"}],
-            "temperature": 0.9,
-            "max_tokens": 4000,
-            "top_p": 0.95,
-        }
-    def parse_fn(data):
-        if "error" in data:
-            raise RuntimeError(data["error"].get("message", str(data["error"])))
-        return (data.get("choices", [{}])[0].get("message", {}).get("content", "")
-                or data.get("choices", [{}])[0].get("message", {}).get("reasoning", "")), 0, 0
-    key = os.environ.get("CEREBRAS_API_KEY", "")
-    register_backend("cerebras", key,
-                     "https://api.cerebras.ai/v1/chat/completions",
-                     payload_fn, parse_fn, [
-                         "llama-3.1-8b",
-                         "llama-3.3-70b",
-                     ])
+
 
 def forager_cloudflare():
     def payload_fn(model):
@@ -314,7 +294,6 @@ forager_openrouter()
 forager_gemini()
 forager_opencode_free()
 forager_groq()
-forager_cerebras()
 forager_cloudflare()
 
 def backend_priority(backend):
@@ -324,7 +303,6 @@ def backend_priority(backend):
     priority_map = {
         "opencode-free": 0,
         "groq": 0,
-        "cerebras": 0,
         "deepseek-free": 1,
         "openrouter": 1,
         "gemini": 1,
