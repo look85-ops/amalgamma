@@ -1,0 +1,12 @@
+* text=auto eol=lf
+
+# Common text file types
+*.{js,ts,tsx,jsx} text eol=lf
+*.{css,scss}       text eol=lf
+*.{html,md,txt}    text eol=lf
+*.{json,yml,yaml}  text eol=lf
+*.{py,sh,xml}      text eol=lf
+
+# Keep images and other binaries untouched
+*.{png,jpg,jpeg,gif,webp,ico} -text
+*.{pdf,zip,gz,bz2,7z}         -text

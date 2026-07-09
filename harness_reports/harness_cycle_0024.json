@@ -1,0 +1,60 @@
+{
+  "cycle": 24,
+  "timestamp": "2026-07-05 02:43:11",
+  "artifact_id": "20260705_024310",
+  "rubric": {
+    "score": 76.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "создано 3 артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 1954 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "слишком похоже на цикл 22 (sim=0.79)",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: Переход от попытки активного установления контакта к укрепле",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Рубрикатор: 76%",
+    "llm_available": false
+  },
+  "tokens": {
+    "cycle": 24,
+    "prompt_tokens": 2097,
+    "response_tokens": 3152,
+    "total": 5249,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260705_024310",
+    "timestamp": "2026-07-05 02:43:11"
+  }
+}
