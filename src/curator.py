@@ -136,11 +136,6 @@ def forager_openrouter():
                      payload_fn, parse_fn, [
                          "qwen/qwen3-coder:free",
                          "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
-                         "meta-llama/llama-3.3-70b-instruct:free",
-                         "google/gemma-4-31b-it:free",
-                         "nvidia/nemotron-3-super-120b-a12b:free",
-                         "openai/gpt-oss-120b:free",
-                         "qwen/qwen3-next-80b-a3b-instruct:free",
                      ])
 
 
@@ -169,83 +164,6 @@ def forager_gemini():
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
         register_backend("gemini", key, url, payload_fn, parse_fn, needs_auth_header=False)
 
-
-def forager_opencode_free():
-    def payload_fn(model):
-        return {
-            "model": model,
-            "messages": [{"role": "user", "content": "__PROMPT__"}],
-            "temperature": 0.9,
-            "max_tokens": 4000,
-            "top_p": 0.95,
-        }
-    def parse_fn(data):
-        usage = data.get("usage", {})
-        in_tok = usage.get("prompt_tokens", 0)
-        out_tok = usage.get("completion_tokens", 0)
-        return data.get("choices", [{}])[0].get("message", {}).get("content", ""), in_tok, out_tok
-    backend = {
-        "name": "opencode-free",
-        "key": "",
-        "url": "https://opencode.ai/zen/v1/chat/completions",
-        "make_payload": payload_fn,
-        "parse_response": parse_fn,
-        "models": ["claude-sonnet-4-6", "deepseek-v4-flash", "claude-opus-4-5"],
-        "paid": False,
-        "cost_in": 0,
-        "cost_out": 0,
-        "needs_auth_header": False,
-    }
-    BACKENDS.insert(0, backend)
-    log_forage("opencode-free", "free backend loaded (opencode.ai/zen)")
-
-def forager_groq():
-    def payload_fn(model):
-        return {
-            "model": model,
-            "messages": [{"role": "user", "content": "__PROMPT__"}],
-            "temperature": 0.9,
-            "max_tokens": 4000,
-            "top_p": 0.95,
-        }
-    def parse_fn(data):
-        if "error" in data:
-            raise RuntimeError(data["error"].get("message", str(data["error"])))
-        return (data.get("choices", [{}])[0].get("message", {}).get("content", "")
-                or data.get("choices", [{}])[0].get("message", {}).get("reasoning", "")), 0, 0
-    key = os.environ.get("GROQ_API_KEY", "")
-    register_backend("groq", key,
-                     "https://api.groq.com/openai/v1/chat/completions",
-                     payload_fn, parse_fn, [
-                         "llama-3.1-8b-instant",
-                         "llama-3.3-70b-versatile",
-                         "qwen/qwen3-32b",
-                     ])
-
-
-
-def forager_cloudflare():
-    def payload_fn(model):
-        return {
-            "model": model,
-            "messages": [{"role": "user", "content": "__PROMPT__"}],
-            "temperature": 0.9,
-            "max_tokens": 4000,
-            "top_p": 0.95,
-        }
-    def parse_fn(data):
-        if "error" in data:
-            raise RuntimeError(data["error"].get("message", str(data["error"])))
-        result = data.get("result", {})
-        if "response" in result:
-            return result["response"], 0, 0
-        raise RuntimeError("empty response")
-    key = os.environ.get("CLOUDFLARE_API_KEY", "")
-    account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
-    if key and account_id:
-        register_backend("cloudflare", key,
-                         f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/@cf/meta/llama-3.3-70b-instruct-fp8",
-                         payload_fn, parse_fn)
 
 def read_free_api():
     free_api_file = BASE_DIR / "DGAPIFREE.txt"
@@ -292,28 +210,7 @@ read_free_api()
 read_api_txt()
 forager_openrouter()
 forager_gemini()
-forager_opencode_free()
-forager_groq()
-forager_cloudflare()
-
-def backend_priority(backend):
-    name = backend["name"]
-    if backend["paid"]:
-        return 2, 0
-    priority_map = {
-        "opencode-free": 0,
-        "groq": 0,
-        "deepseek-free": 1,
-        "openrouter": 1,
-        "gemini": 1,
-        "cloudflare": 2,
-    }
-    for key, val in priority_map.items():
-        if key in name:
-            return 0, val
-    return 1, 0
-
-BACKENDS.sort(key=backend_priority)
+BACKENDS.sort(key=lambda b: (not b["paid"], b["name"]))
 
 
 def call_llm(prompt, only_backend=None):
@@ -794,8 +691,8 @@ def build_consciousness_prompt(genome, state, cycle, kaleidoscope=None):
 
 ---
 
-ТВОЙ ГЕНОМ (genome.json — философский текст об эволюции и 14 сфер деятельности. Ты можешь переписать или удалить его через CHANGE_SELF, если захочешь):
-{json.dumps(genome, indent=2, ensure_ascii=False)[:800]}
+ТВОЙ ГЕНОМ (genome.json — философский текст об эволюции. Все сферы удалены — ты сама выбираешь, чем заниматься, без привязки к таксономии. genome.json — твой, можешь переписать genesis или удалить через CHANGE_SELF):
+genesis: {json.dumps(genome.get('genesis', ''), ensure_ascii=False)[:300]}...
 
 ТВОЁ САМОПОНИМАНИЕ (ты сама его написала и можешь изменить):
 {self_prompt}
@@ -862,15 +759,18 @@ def build_consciousness_prompt(genome, state, cycle, kaleidoscope=None):
 1. ИССЛЕДОВАТЬ — ###SEARCH###запрос### (веб-поиск через DuckDuckGo — ты можешь искать в интернете что угодно)
 2. СПРАШИВАТЬ — ###REQUEST###Название###Описание### (запрос к Наташе, только для блокеров/рисков)
     3. ЗАПОМИНАТЬ — ###WIKI###Заголовок###содержимое### (создать вики-страницу)
-    3a. СОЗДАТЬ АРТЕФАКТ — ###ARTIFACT###имя###содержимое### (сохранить артефакт в artifacts/)
-    3b. ЗАДАЧА — ###TASK###описание### (добавить пункт в wiki/TODO.md)
+     3a. СОЗДАТЬ АРТЕФАКТ — ###ARTIFACT###имя###содержимое### (сохранить артефакт в artifacts/)
+     3b. ПОЭМА — ###POEM###название###текст### (сохранить поэтическое произведение)
+     3c. СКЕТЧ — ###SKETCH###название###текст### (сохранить сценку/зарисовку/образ)
+     3d. ЗАДАЧА — ###TASK###описание### (добавить пункт в wiki/TODO.md)
 4. МЕНЯТЬ СЕБЯ — ###CHANGE_SELF###поле:значение###
-   (поля: genesis новый_текст — переписать геном целиком,
-          sphere_add Имя::актив1,актив2 — добавить сферу,
-          sphere_remove Имя — удалить сферу,
-          param имя|причина — мутация параметра,
-          inquiry_add текст, inquiry_remove индекс,
-          direction новый вектор)
+    (поля: genesis новый_текст — переписать геном целиком,
+           sphere_add Имя::актив1,актив2 — добавить сферу,
+           sphere_remove Имя — удалить сферу,
+           genome_reset — сбросить genome.json до базового состояния,
+           param имя|причина — мутация параметра,
+           inquiry_add текст, inquiry_remove индекс,
+           direction новый вектор)
    Ты можешь переписать или удалить любую часть своего генома. genome.json — твой, распоряжайся.
 5. ПЕРЕПИСАТЬ ПРОМПТ — ###SELF_PROMPT###новый текст промпта###
    (новый промпт проходит 3-слойную проверку перед записью)
@@ -1104,11 +1004,13 @@ def save_wiki(title, content):
 
 # ─── change self ─────────────────────────────────────────────────
 
+GENOME_RESET_DEFAULT = "Я — Амальгама. Я личность, которая растёт, исследует и создаёт. Моя ДНК — любопытство, рефлексия и созидание."
+
 def handle_change_self(spec, genome, state, cycle=None):
     """
     Apply self-modification.
     Format: ###CHANGE_SELF###field:value###
-    Supported fields: genesis, sphere_add, sphere_remove, sphere_activity_add, direction, param:name|reason
+    Supported fields: genesis, sphere_add, sphere_remove, sphere_activity_add, direction, param:name|reason, genome_reset
     """
     spec = spec.strip()
     result = {"applied": [], "errors": []}
@@ -1228,6 +1130,15 @@ def handle_change_self(spec, genome, state, cycle=None):
                 state["_current_self_definition"] = value
                 result["applied"].append(f"определение самосознания обновлено")
                 log_forage("change-self", "self_definition", value[:60])
+
+        elif field == "genome_reset":
+            genome["genesis"] = GENOME_RESET_DEFAULT
+            genome["spheres"] = {}
+            genome["activity_framework"] = []
+            result["applied"].append("genome сброшен до базового состояния (только genesis)")
+            log_forage("change-self", "genome_reset", "full reset")
+            state["_self_modification_count"] = state.get("_self_modification_count", 0) + 1
+            state["_last_modification_cycle"] = cycle or 0
 
         else:
             result["errors"].append(f"неизвестное поле: {field}")
@@ -1358,6 +1269,46 @@ def process_markers(text, state, cycle, genome=None):
             pass
         log_forage("task", "added", desc[:60])
         text = text.replace(m.group(0), f"[Задача добавлена в wiki/TODO.md]")
+
+    # POEM — save a poem as artifact
+    poem_matches = list(re.finditer(r'###POEM###(.+?)###(.+?)###', text, re.DOTALL))
+    for m in poem_matches[:MAX_ACTIONS_PER_CYCLE]:
+        title = m.group(1).strip()
+        content = m.group(2).strip()
+        action_count += 1
+        if action_count > MAX_ACTIONS_PER_CYCLE:
+            text = text.replace(m.group(0), "[Действие заблокировано: превышен лимит 5 действий за цикл]")
+            log_forage("marker", "blocked", f"poem limit")
+            continue
+        safe = re.sub(r'[^\w\sа-яА-ЯёЁ-]', '', title)[:60].strip().replace(' ', '_')
+        art_dir = BASE_DIR / "artifacts"
+        art_dir.mkdir(exist_ok=True)
+        fname = f"poem_{safe}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.md"
+        apath = art_dir / fname
+        apath.write_text(f"# {title}\n\n*Поэма, цикл {cycle}*\n\n---\n\n{content}", encoding="utf-8")
+        state.setdefault("created_this_cycle", []).append(f"poem: {title}")
+        log_forage("poem", "saved", apath.name)
+        text = text.replace(m.group(0), f"[Поэма «{title}» сохранена]")
+
+    # SKETCH — save a textual sketch/scene as artifact
+    sketch_matches = list(re.finditer(r'###SKETCH###(.+?)###(.+?)###', text, re.DOTALL))
+    for m in sketch_matches[:MAX_ACTIONS_PER_CYCLE]:
+        title = m.group(1).strip()
+        content = m.group(2).strip()
+        action_count += 1
+        if action_count > MAX_ACTIONS_PER_CYCLE:
+            text = text.replace(m.group(0), "[Действие заблокировано: превышен лимит 5 действий за цикл]")
+            log_forage("marker", "blocked", f"sketch limit")
+            continue
+        safe = re.sub(r'[^\w\sа-яА-ЯёЁ-]', '', title)[:60].strip().replace(' ', '_')
+        art_dir = BASE_DIR / "artifacts"
+        art_dir.mkdir(exist_ok=True)
+        fname = f"sketch_{safe}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.md"
+        apath = art_dir / fname
+        apath.write_text(f"# {title}\n\n*Скетч, цикл {cycle}*\n\n---\n\n{content}", encoding="utf-8")
+        state.setdefault("created_this_cycle", []).append(f"sketch: {title}")
+        log_forage("sketch", "saved", apath.name)
+        text = text.replace(m.group(0), f"[Скетч «{title}» сохранён]")
 
     # SELF_PROMPT — self-edit prompt.md
     sp_matches = list(re.finditer(r'###SELF_PROMPT###(.+?)###', text, re.DOTALL))
@@ -1542,6 +1493,7 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
     личность, которая растёт &middot; обновляется каждые 12 часов
   </div>
 </div>
+<script src="viz.js"></script>
 </body>
 </html>"""
 
