@@ -1,0 +1,60 @@
+{
+  "cycle": 48,
+  "timestamp": "2026-07-11 13:27:42",
+  "artifact_id": "20260711_132741",
+  "rubric": {
+    "score": 60.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "создано 3 артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 2688 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "слишком похоже на цикл 47 (sim=1.00)",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": false,
+        "detail": "направление — заглушка (stagnation)",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Рубрикатор: 60%",
+    "llm_available": false
+  },
+  "tokens": {
+    "cycle": 48,
+    "prompt_tokens": 4610,
+    "response_tokens": 3102,
+    "total": 7712,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260711_132741",
+    "timestamp": "2026-07-11 13:27:42"
+  }
+}
