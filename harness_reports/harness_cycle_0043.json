@@ -1,0 +1,60 @@
+{
+  "cycle": 43,
+  "timestamp": "2026-07-11 00:04:39",
+  "artifact_id": "20260711_000438",
+  "rubric": {
+    "score": 76.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "создано 4 артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 882 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "слишком похоже на цикл 42 (sim=1.00)",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: Формализация протокола через технические артефакты (JSON Sch",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Рубрикатор: 76%",
+    "llm_available": false
+  },
+  "tokens": {
+    "cycle": 43,
+    "prompt_tokens": 3213,
+    "response_tokens": 1149,
+    "total": 4362,
+    "budget": 5000,
+    "within_budget": true,
+    "artifact_id": "20260711_000438",
+    "timestamp": "2026-07-11 00:04:39"
+  }
+}
