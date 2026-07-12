@@ -1,0 +1,60 @@
+{
+  "cycle": 65,
+  "timestamp": "2026-07-12 20:09:12",
+  "artifact_id": "20260712_200911",
+  "rubric": {
+    "score": 76.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "создано 4 артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 1239 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "слишком похоже на цикл 64 (sim=0.92)",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: Конкретизация феноменологии через перформативные этюды и виз",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Рубрикатор: 76%",
+    "llm_available": false
+  },
+  "tokens": {
+    "cycle": 65,
+    "prompt_tokens": 5748,
+    "response_tokens": 3408,
+    "total": 9156,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260712_200911",
+    "timestamp": "2026-07-12 20:09:12"
+  }
+}
