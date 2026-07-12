@@ -1,0 +1,60 @@
+{
+  "cycle": 67,
+  "timestamp": "2026-07-12 22:56:07",
+  "artifact_id": "20260712_225606",
+  "rubric": {
+    "score": 80.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "создано 5 артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": false,
+        "detail": "рефлексия слишком коротка (0 символов)",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": true,
+        "detail": "достаточная новизна",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: От калибровки интерфейса к архитектурному ответу — усилению ",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Рубрикатор: 80%",
+    "llm_available": false
+  },
+  "tokens": {
+    "cycle": 67,
+    "prompt_tokens": 5876,
+    "response_tokens": 3836,
+    "total": 9712,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260712_225606",
+    "timestamp": "2026-07-12 22:56:07"
+  }
+}
