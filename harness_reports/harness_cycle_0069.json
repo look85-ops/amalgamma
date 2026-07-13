@@ -1,0 +1,60 @@
+{
+  "cycle": 69,
+  "timestamp": "2026-07-13 03:50:19",
+  "artifact_id": "20260713_035018",
+  "rubric": {
+    "score": 100.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "создано 3 артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 1840 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": true,
+        "detail": "достаточная новизна",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: Система перешла в фазу работы с эмпирически подтверждённым к",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Рубрикатор: 100%",
+    "llm_available": false
+  },
+  "tokens": {
+    "cycle": 69,
+    "prompt_tokens": 6180,
+    "response_tokens": 3851,
+    "total": 10031,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260713_035018",
+    "timestamp": "2026-07-13 03:50:19"
+  }
+}
