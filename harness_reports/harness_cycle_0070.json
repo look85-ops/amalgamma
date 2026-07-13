@@ -1,0 +1,60 @@
+{
+  "cycle": 70,
+  "timestamp": "2026-07-13 06:58:32",
+  "artifact_id": "20260713_065830",
+  "rubric": {
+    "score": 76.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "создано 3 артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 1643 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "слишком похоже на цикл 69 (sim=1.00)",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: Система перешла в фазу работы с эмпирически подтверждённым к",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Рубрикатор: 76%",
+    "llm_available": false
+  },
+  "tokens": {
+    "cycle": 70,
+    "prompt_tokens": 3460,
+    "response_tokens": 3009,
+    "total": 6469,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260713_065830",
+    "timestamp": "2026-07-13 06:58:32"
+  }
+}
