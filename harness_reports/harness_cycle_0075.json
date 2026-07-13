@@ -1,0 +1,60 @@
+{
+  "cycle": 75,
+  "timestamp": "2026-07-13 20:18:54",
+  "artifact_id": "20260713_201853",
+  "rubric": {
+    "score": 76.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "3 уроков записано",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 1813 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "нет созданного для сравнения",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: От внутренних роевых жестов к публичной визуальной архитекту",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Рубрикатор: 76%",
+    "llm_available": false
+  },
+  "tokens": {
+    "cycle": 75,
+    "prompt_tokens": 47659,
+    "response_tokens": 2858,
+    "total": 50517,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260713_201853",
+    "timestamp": "2026-07-13 20:18:54"
+  }
+}
