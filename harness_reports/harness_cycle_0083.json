@@ -1,0 +1,60 @@
+{
+  "cycle": 83,
+  "timestamp": "2026-07-14 14:58:45",
+  "artifact_id": "20260714_145843",
+  "rubric": {
+    "score": 56.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "3 уроков записано",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 1284 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": false,
+        "detail": "отсутствуют поля: created_this_cycle, era, summary, chronicle",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "нет созданного для сравнения",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: Принцип «Артефакт-Интерфейс» становится основной операционно",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "FAIL",
+    "reason": "Рубрикатор: 56%",
+    "llm_available": false
+  },
+  "tokens": {
+    "cycle": 83,
+    "prompt_tokens": 9619,
+    "response_tokens": 7288,
+    "total": 16907,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260714_145843",
+    "timestamp": "2026-07-14 14:58:45"
+  }
+}
