@@ -22,7 +22,7 @@ forage.log
 cost.log
 _latest_req.txt
 appeal_to_natalia.txt
-requests/
+# requests/ — убрано: человек пишет ответы Амальгаме
 
 # Cycle data (regenerated each cycle)
 chronicles/
