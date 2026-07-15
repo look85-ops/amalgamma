@@ -917,6 +917,12 @@ def web_search(query, max_results=5):
         log_forage("search", "failed", str(e)[:120])
         return "[Поиск в интернете недоступен в этой среде. Сосредоточься на данных, которые уже есть в репозиториях и wiki.]"
     # Fallback: manual DuckDuckGo HTML scraping
+    # Prefer 'last 30 days' feeds if query requests freshness
+    freshness = re.search(r"(?i)last\s*30\s*days|последн(ие|ых)\s*30\s*дн", query)
+    if freshness:
+        query = re.sub(r"(?i)last\s*30\s*days|последн(ие|ых)\s*30\s*дн", "", query).strip()
+        # Bias results to recent timeframe via DuckDuckGo date filters
+        query = f"{query} last 30 days release news"
     url = "https://html.duckduckgo.com/html/"
     params = {"q": query}
     headers = {
@@ -1229,12 +1235,39 @@ def process_markers(text, state, cycle, genome=None):
         safe = re.sub(r'[^\w\sа-яА-ЯёЁ-]', '', title)[:60].strip().replace(' ', '_')
         art_dir = BASE_DIR / "artifacts"
         art_dir.mkdir(exist_ok=True)
-        fname = f"{safe or 'artifact'}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.md"
-        apath = art_dir / fname
-        apath.write_text(
-            f"# {title}\n\n*Дата:* {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n---\n\n{content}",
-            encoding="utf-8"
-        )
+
+        # Decide file extension by content type
+        ts = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
+        is_html = bool(re.match(r"\s*<!DOCTYPE html|\s*<html\b", content[:200], re.IGNORECASE))
+        is_json = False
+        json_obj = None
+        if not is_html and content.strip().startswith("{"):
+            try:
+                json_obj = json.loads(content)
+                is_json = True
+            except Exception:
+                is_json = False
+
+        if is_html:
+            fname = f"{safe or 'artifact'}_{ts}.html"
+            apath = art_dir / fname
+            # If it's a full HTML document — write as-is; otherwise wrap minimally
+            html_text = content if re.search(r"<head|<body|</html>", content, re.IGNORECASE) else f"<!DOCTYPE html>\n<html><head><meta charset=\"utf-8\"><title>{title}</title></head><body>\n{content}\n</body></html>"
+            apath.write_text(html_text, encoding="utf-8")
+        elif is_json:
+            fname = f"{safe or 'artifact'}_{ts}.json"
+            apath = art_dir / fname
+            try:
+                apath.write_text(json.dumps(json_obj, ensure_ascii=False, indent=2), encoding="utf-8")
+            except Exception:
+                apath.write_text(content, encoding="utf-8")
+        else:
+            fname = f"{safe or 'artifact'}_{ts}.md"
+            apath = art_dir / fname
+            apath.write_text(
+                f"# {title}\n\n*Дата:* {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n---\n\n{content}",
+                encoding="utf-8"
+            )
         # reflect in state
         try:
             created = state.setdefault("created_this_cycle", [])
