@@ -344,16 +344,7 @@ def free_backends():
 
 # ─── kaleidoscope ────────────────────────────────────────────────
 
-KALEIDOSCOPE_TOOLS = [
-    "Линза обратной перспективы — смотреть на причины из будущего",
-    "Компас по следам — находить направление по тому, что уже пройдено",
-    "Шумовой генератор — случайный сигнал как катализатор мысли",
-    "Архив забытых вопросов — коллекция незакрытых неопределённостей",
-    "Интерференционный фильтр — выделять сигнал из наложения паттернов",
-    "Зеркало пропущенных шагов — видеть, что не было сделано",
-    "Спектрограф смыслов — раскладывать идею на составляющие",
-    "Эхо-карта — слышать, как решения отзываются в других сферах",
-]
+KALEIDOSCOPE_TOOLS = None  # moved to genome.json as 'kaleidoscope_tools'
 
 
 def build_kaleidoscope(genome, state):
@@ -385,8 +376,12 @@ def build_kaleidoscope(genome, state):
     else:
         elements["memory"] = "нет прошлого — вся история впереди"
 
-    # Random tool
-    elements["tool"] = random.choice(KALEIDOSCOPE_TOOLS)
+    # Random tool from genome
+    tools = genome.get("kaleidoscope_tools", [])
+    if tools:
+        elements["tool"] = random.choice(tools)
+    else:
+        elements["tool"] = "—"
 
     # Mood from last evaluation
     evals = state.get("_evaluations", [])
