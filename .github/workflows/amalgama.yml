@@ -42,6 +42,15 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python src/curator.py
 
+      - name: Validate artifact formats
+        run: |
+          echo "Validating that Markdown files do not contain HTML document scaffolding..."
+          bad=$(grep -RIl --include='*.md' -E "<!DOCTYPE html|<html[[:space:]>]" artifacts || true)
+          if [ -n "$bad" ]; then
+            echo "Found HTML content saved as .md in:" && echo "$bad"
+            exit 1
+          fi
+
       - name: Commit new cycle
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
