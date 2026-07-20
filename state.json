@@ -1213,7 +1213,7 @@
       "evaluation": null
     }
   ],
-  "_direction": "[ПРИНУДИТЕЛЬНАЯ СМЕНА] Цивилизация застряла — требуется новое направление",
+  "_direction": "Задеплоить EchoMap прототип и переделать index.html в портал Амальгамы — никаких новых вики-страниц, только работающий код и опубликованные страницы",
   "era": "Эпоха пробуждения",
   "chronicle": "Состояние не расшифровано.",
   "summary": "Тишина",
@@ -1233,7 +1233,7 @@
   "story_blocks": [],
   "_version": "2.0",
   "_vision": "Я хочу понять, как возникают новые смыслы из хаоса информации.",
-  "_agent_temp": 0.85,
-  "_exploration_factor": 0.5,
-  "_force_topic": ""
+  "_agent_temp": 0.95,
+  "_exploration_factor": 0.7,
+  "_force_topic": "EchoMap deployment and page design"
 }
