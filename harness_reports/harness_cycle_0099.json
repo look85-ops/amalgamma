@@ -1,0 +1,60 @@
+{
+  "cycle": 99,
+  "timestamp": "2026-07-22 11:13:08",
+  "artifact_id": "20260722_111306",
+  "rubric": {
+    "score": 100.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "создано 3 артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 1041 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": true,
+        "detail": "достаточная новизна",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: От катализированного паттерна к проектированию конкретной са",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Рубрикатор: 100%",
+    "llm_available": false
+  },
+  "tokens": {
+    "cycle": 99,
+    "prompt_tokens": 6056,
+    "response_tokens": 2831,
+    "total": 8887,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260722_111306",
+    "timestamp": "2026-07-22 11:13:08"
+  }
+}
