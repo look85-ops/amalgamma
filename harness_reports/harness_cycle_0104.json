@@ -1,0 +1,60 @@
+{
+  "cycle": 104,
+  "timestamp": "2026-07-22 22:07:47",
+  "artifact_id": "20260722_220746",
+  "rubric": {
+    "score": 20.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": false,
+        "detail": "нет созданных артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 1029 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": false,
+        "detail": "отсутствуют поля: _evaluation, lessons, created_this_cycle, era, summary, chronicle",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "нет созданного для сравнения",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": false,
+        "detail": "направление не задано",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "FAIL",
+    "reason": "Рубрикатор: 20%",
+    "llm_available": false
+  },
+  "tokens": {
+    "cycle": 104,
+    "prompt_tokens": 5728,
+    "response_tokens": 4088,
+    "total": 9816,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260722_220746",
+    "timestamp": "2026-07-22 22:07:47"
+  }
+}
