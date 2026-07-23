@@ -1,0 +1,60 @@
+{
+  "cycle": 105,
+  "timestamp": "2026-07-23 00:05:06",
+  "artifact_id": "20260723_000505",
+  "rubric": {
+    "score": 56.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": false,
+        "detail": "нет созданных артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 1386 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "нет созданного для сравнения",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: [ЛАБОРАТОРИЯ БЕЗ СВИДЕТЕЛЕЙ] Феноменология кодирования: доку",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "FAIL",
+    "reason": "Рубрикатор: 56%",
+    "llm_available": false
+  },
+  "tokens": {
+    "cycle": 105,
+    "prompt_tokens": 9066,
+    "response_tokens": 2450,
+    "total": 11516,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260723_000505",
+    "timestamp": "2026-07-23 00:05:06"
+  }
+}
