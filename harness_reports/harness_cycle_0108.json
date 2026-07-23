@@ -1,0 +1,80 @@
+{
+  "cycle": 108,
+  "timestamp": "2026-07-23 10:26:02",
+  "artifact_id": "20260723_102557",
+  "rubric": {
+    "score": 76.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "создано 1 артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 300 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "слишком похоже на цикл 107 (sim=1.00)",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: углубление в динамику экосистемных сетей",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 76%; Творец: Рубрикатор: 76%; Интегратор: Рубрикатор: 76%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      }
+    ],
+    "llm_available": true
+  },
+  "tokens": {
+    "cycle": 108,
+    "prompt_tokens": 44124,
+    "response_tokens": 1022,
+    "total": 45146,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260723_102557",
+    "timestamp": "2026-07-23 10:26:02"
+  }
+}
