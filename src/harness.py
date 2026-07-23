@@ -96,7 +96,7 @@ def run_rubricator(reflection_text, state, change_results, history):
     return results, score
 
 
-# ─── LLM Judge ────────────────────────────────────────────────────
+# ─── Multi-Agent LLM Judges ─────────────────────────────────────────
 
 JUDGE_FEW_SHOT = """
 Пример 1 — PASS:
@@ -124,8 +124,25 @@ Direction: та же, что и в прошлом цикле
 Вердикт: FAIL — нет конкретики, рефлексия поверхностна
 """
 
+JUDGE_ROLES = [
+    {
+        "id": "skeptic",
+        "name": "Скептик",
+        "instruction": "Ты — строгий скептик. Ищешь слабые места: пустые артефакты, поверхностную рефлексию, отсутствие развития. PASS только если цикл реально продвинулся.",
+    },
+    {
+        "id": "creator",
+        "name": "Творец",
+        "instruction": "Ты — вдохновлённый творец. Ищешь потенциал: новизну, смелость, неожиданные ходы. PASS если есть искра, даже при сырых артефактах.",
+    },
+    {
+        "id": "integrator",
+        "name": "Интегратор",
+        "instruction": "Ты — системный интегратор. Смотришь целостность: связаны ли рефлексия, действие и направление. PASS если цикл — часть последовательного развития, а не случайный выброс.",
+    },
+]
 
-def build_judge_prompt(cycle, reflection_text, state, rubric_results, score):
+def build_judge_prompt(cycle, reflection_text, state, rubric_results, score, role):
     created = state.get("created_this_cycle", [])
     direction = state.get("_direction", "")
     lessons = state.get("lessons", [])
@@ -133,11 +150,7 @@ def build_judge_prompt(cycle, reflection_text, state, rubric_results, score):
         f"  {'✓' if r['passed'] else '✗'} {r['name']}: {r['detail']}"
         for r in rubric_results
     )
-    return f"""Ты — строгий судья качества цикла Амальгамы.
-
-Оцени, заслуживает ли этот цикл PASS или FAIL.
-Оценивай жёстко: PASS = цикл создал что-то новое И продвинул развитие.
-FAIL = пустой цикл, поверхностная рефлексия, отсутствие артефактов.
+    return f"""{role['instruction']}
 
 {JUDGE_FEW_SHOT}
 
@@ -191,6 +204,38 @@ def call_llm_judge(prompt, available_backends):
     return None, "LLM-судья недоступен"
 
 
+def run_multi_judge(cycle, reflection_text, state, rubric_results, score, available_backends):
+    """Запускает 3 агентов-судей и возвращает вердикт большинством голосов."""
+    verdicts = []
+    for role in JUDGE_ROLES:
+        prompt = build_judge_prompt(cycle, reflection_text, state, rubric_results, score, role)
+        verdict, reason = call_llm_judge(prompt, available_backends)
+        verdicts.append({
+            "judge": role["id"],
+            "name": role["name"],
+            "verdict": verdict or ("PASS" if score >= 60 else "FAIL"),
+            "reason": reason if verdict else f"Рубрикатор: {score:.0f}%",
+        })
+    
+    passes = sum(1 for v in verdicts if v["verdict"] == "PASS")
+    fails = sum(1 for v in verdicts if v["verdict"] == "FAIL")
+    
+    if passes > fails:
+        final_verdict = "PASS"
+        final_reason = f"Большинством судей ({passes}/{passes+fails}): " + "; ".join(
+            f"{v['name']}: {v['reason'][:40]}" for v in verdicts if v['verdict'] == final_verdict)
+    elif fails > passes:
+        final_verdict = "FAIL"
+        final_reason = f"Большинством судей ({fails}/{passes+fails}): " + "; ".join(
+            f"{v['name']}: {v['reason'][:40]}" for v in verdicts if v['verdict'] == final_verdict)
+    else:
+        # Ничья — рубрикатор решает
+        final_verdict = "PASS" if score >= 60 else "FAIL"
+        final_reason = f"Ничья. Рубрикатор: {score:.0f}%"
+    
+    return final_verdict, final_reason, verdicts
+
+
 # ─── Token Budget ─────────────────────────────────────────────────
 
 CYCLE_TOKEN_BUDGET = 5000
@@ -226,15 +271,8 @@ def run(cycle, reflection_text, state, change_results, history,
 
     rubric_results, rubric_score = run_rubricator(reflection_text, state, change_results, history)
 
-    judge_prompt = build_judge_prompt(cycle, reflection_text, state, rubric_results, rubric_score)
-    judge_verdict, judge_reason = call_llm_judge(judge_prompt, available_backends)
-
-    if judge_verdict is None:
-        final_verdict = "PASS" if rubric_score >= 60 else "FAIL"
-        final_reason = f"Рубрикатор: {rubric_score:.0f}%"
-    else:
-        final_verdict = judge_verdict
-        final_reason = judge_reason
+    final_verdict, final_reason, judge_verdicts = run_multi_judge(
+        cycle, reflection_text, state, rubric_results, rubric_score, available_backends)
 
     token_info = track_token_usage(cycle, prompt_tokens, response_tokens, artifact_id)
 
@@ -243,7 +281,12 @@ def run(cycle, reflection_text, state, change_results, history,
         "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
         "artifact_id": artifact_id,
         "rubric": {"score": round(rubric_score, 1), "criteria": rubric_results},
-        "judge": {"verdict": final_verdict, "reason": final_reason, "llm_available": judge_verdict is not None},
+        "judge": {
+            "verdict": final_verdict,
+            "reason": final_reason,
+            "multi_agent": judge_verdicts,
+            "llm_available": any(v["verdict"] for v in judge_verdicts),
+        },
         "tokens": token_info,
     }
 

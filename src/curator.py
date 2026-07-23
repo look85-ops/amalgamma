@@ -213,8 +213,10 @@ forager_gemini()
 BACKENDS.sort(key=lambda b: (not b["paid"], b["name"]))
 
 
-def call_llm(prompt, only_backend=None):
+def call_llm(prompt, only_backend=None, prefer_paid=False):
     backends = [only_backend] if only_backend else BACKENDS
+    if prefer_paid:
+        backends = sorted(backends, key=lambda b: (b.get("paid", False), b["name"]), reverse=True)
     for backend in backends:
         if backend is None:
             continue
@@ -1676,7 +1678,7 @@ def main():
             print(f"  [timeout] cycle exceeded {cycle_timeout}s", flush=True)
             break
 
-        result, used_backend = call_llm(prompt)
+        result, used_backend = call_llm(prompt, prefer_paid=True)
         if not result:
             print("  [no content returned]", flush=True)
             return
