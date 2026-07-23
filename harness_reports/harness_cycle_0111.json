@@ -1,0 +1,80 @@
+{
+  "cycle": 111,
+  "timestamp": "2026-07-23 17:25:31",
+  "artifact_id": "20260723_172527",
+  "rubric": {
+    "score": 100.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "создано 2 артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 492 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": true,
+        "detail": "достаточная новизна",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: углубление в экосистемные принципы и новые формы взаимодейст",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 100%; Творец: Рубрикатор: 100%; Интегратор: Рубрикатор: 100%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      }
+    ],
+    "llm_available": true
+  },
+  "tokens": {
+    "cycle": 111,
+    "prompt_tokens": 1888,
+    "response_tokens": 1300,
+    "total": 3188,
+    "budget": 5000,
+    "within_budget": true,
+    "artifact_id": "20260723_172527",
+    "timestamp": "2026-07-23 17:25:31"
+  }
+}
