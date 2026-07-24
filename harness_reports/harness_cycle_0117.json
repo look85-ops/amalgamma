@@ -1,0 +1,80 @@
+{
+  "cycle": 117,
+  "timestamp": "2026-07-24 07:34:28",
+  "artifact_id": "20260724_073423",
+  "rubric": {
+    "score": 76.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "создано 3 артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 344 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "слишком похоже на цикл 114 (sim=1.00)",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: углубление в принципы экосистемного взаимодействия",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 76%; Творец: Рубрикатор: 76%; Интегратор: Рубрикатор: 76%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      }
+    ],
+    "llm_available": true
+  },
+  "tokens": {
+    "cycle": 117,
+    "prompt_tokens": 41144,
+    "response_tokens": 1180,
+    "total": 42324,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260724_073423",
+    "timestamp": "2026-07-24 07:34:28"
+  }
+}
