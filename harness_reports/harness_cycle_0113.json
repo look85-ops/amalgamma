@@ -1,0 +1,80 @@
+{
+  "cycle": 113,
+  "timestamp": "2026-07-23 21:07:36",
+  "artifact_id": "20260723_210732",
+  "rubric": {
+    "score": 76.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "создано 3 артефактов",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 448 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "слишком похоже на цикл 111 (sim=0.76)",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: Углубление в практическое исследование экосистемных принципо",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 76%; Творец: Рубрикатор: 76%; Интегратор: Рубрикатор: 76%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      }
+    ],
+    "llm_available": true
+  },
+  "tokens": {
+    "cycle": 113,
+    "prompt_tokens": 42888,
+    "response_tokens": 1310,
+    "total": 44198,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260723_210732",
+    "timestamp": "2026-07-23 21:07:36"
+  }
+}
