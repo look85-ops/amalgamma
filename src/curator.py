@@ -1357,105 +1357,149 @@ def process_markers(text, state, cycle, genome=None):
 def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_crossroads=False):
     era = state.get("era", "Новый этап")
     summary = state.get("summary", "")
-    created = state.get("created_this_cycle", [])
     history = state.get("_history", [])
-    evaluation = state.get("_evaluation", "")
     direction = state.get("_direction", "")
     self_definition = state.get("_current_self_definition", "")
 
-    # Try to use appearance template; fallback to generated
-    if APPEARANCE_TEMPLATE.exists():
-        template = APPEARANCE_TEMPLATE.read_text("utf-8")
-    else:
-        template = '<div class="personality"><div class="p-header"><div class="p-name">Амальгама</div></div><div class="p-reflection"><div class="p-label">рефлексия</div><div class="p-text">{reflection}</div></div><div class="p-action"><div class="p-label">действие</div><div class="p-text">{action}</div></div></div>'
-
-    # Escape HTML in text
     def esc(t):
         return t.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;") if t else ""
 
-    reflection_html = "\n".join(f"      <p>{esc(p.strip())}</p>" for p in (reflection_text or "").split("\n") if p.strip())
-    action_html = "\n".join(f"      <p>{esc(p.strip())}</p>" for p in (action_text or "").split("\n") if p.strip())
+    def artifact_type_meta(raw):
+        r = raw.lower()
+        for p, t, c, n in [
+            ("poem:", "poem", "#d94a8a", "поэма"),
+            ("sketch:", "sketch", "#a0a0a0", "скетч"),
+            ("artifact:", "art", "#8a5cf5", "артефакт"),
+            ("вики", "wiki", "#44aa88", "вики"),
+            ("эссе", "essay", "#f5a623", "эссе"),
+            ("дайджест", "digest", "#4a90d9", "дайджест"),
+            ("сравнен", "compare", "#e67e22", "сравнение"),
+            ("исследован", "study", "#1abc9c", "исследование"),
+            ("заметк", "note", "#95a5a6", "заметка"),
+        ]:
+            if p in r:
+                return t, c, n
+        return "arti", "#8a5cf5", "артефакт"
 
-    body_content = template.replace("{reflection}", reflection_html).replace("{action}", action_html)
+    # Self-definition line
+    sd_html = ""
+    if self_definition:
+        sd_html = f'<div class="self-def">{esc(self_definition)}</div>'
 
-    # Timeline
-    eval_colors = {"ожидаемо": "#666", "интересно": "#44aa88", "странно": "#8a5cf5"}
+    # Featured section via appearance template
+    if APPEARANCE_TEMPLATE.exists():
+        template = APPEARANCE_TEMPLATE.read_text("utf-8")
+    else:
+        template = '<div class="fa-section"><div class="fa-label">текущий</div><div class="fa-text">{reflection}</div></div>'
+    reflection_html = "\n".join(f"<p>{esc(p.strip())}</p>" for p in (reflection_text or "").split("\n") if p.strip())
+    action_html = "\n".join(f"<p>{esc(p.strip())}</p>" for p in (action_text or "").split("\n") if p.strip())
+    featured = template.replace("{reflection}", reflection_html).replace("{action}", action_html) \
+        .replace("{era}", esc(era)).replace("{cycle}", str(cycle)).replace("{summary}", esc(summary))
+
+    # Gallery cards from history
+    type_colors = {"arti": "#8a5cf5", "wiki": "#44aa88", "poem": "#d94a8a", "sketch": "#a0a0a0",
+                   "essay": "#f5a623", "digest": "#4a90d9", "compare": "#e67e22", "study": "#1abc9c", "note": "#95a5a6"}
+    gallery_cards = ""
+    for h in reversed(history):
+        hcycle = h["cycle"]
+        hsum = h.get("summary", "")
+        hcreated = h.get("created", [])
+        htimestamp = h.get("timestamp", "")
+        if not hcreated and not hsum:
+            continue
+        first_item = hcreated[0] if hcreated else hsum
+        tmeta = artifact_type_meta(first_item)
+        tc = type_colors.get(tmeta[0], "#8a5cf5")
+        label = f'<span class="g-label" style="background:{tc}22;color:{tc}">{tmeta[2]}</span>'
+        gallery_cards += f"""
+    <a class="g-card" onclick="return false;" style="border-color:{tc}22">
+      <div class="g-card-top">
+        <span class="g-cycle">#{hcycle}</span>
+        {label}
+      </div>
+      <div class="g-card-summary">{esc(hsum[:120])}</div>
+      <div class="g-card-meta">{esc(htimestamp[:10]) if htimestamp else ''}</div>
+    </a>"""
+
+    # Compact timeline
+    eval_icons = {"интересно": "✓", "странно": "?", "ожидаемо": "·"}
     timeline_nodes = ""
     for h in reversed(history):
         hcycle = h["cycle"]
-        hera = h.get("era", "\u2014")
-        hsum = h.get("summary", "\u2014")
-        hcreated = h.get("created", [])
+        hera = h.get("era", "")
+        hsum = h.get("summary", "")
         hlessons = h.get("lessons", [])
         htimestamp = h.get("timestamp", "")
         heval = h.get("evaluation", "")
-        badges = ""
-        for it in hcreated:
-            btype = "arti" if ":" not in it else it.split(":")[0].strip().lower()[:4]
-            badges += f'      <span class="badge badge-{btype}">{esc(it)}</span>\n'
-        if heval and heval in eval_colors:
-            badges += f'      <span class="badge" style="border-color:{eval_colors[heval]}44;color:{eval_colors[heval]}">{heval}</span>\n'
+        icon = eval_icons.get(heval, "·")
         lesson_html = ""
         if hlessons:
-            lesson_html = "      <div class=\"lessons\">\n" + "\n".join(f"        <div class=\"lesson\">{esc(l)}</div>" for l in hlessons) + "\n      </div>\n"
-        timeline_nodes += f"""    <div class="tl-node" onclick="this.classList.toggle('expanded')">
-      <div class="tl-dot"></div>
+            lesson_lines = "\n".join(f"<div>{esc(l)}</div>" for l in hlessons)
+            lesson_html = f'<div class="tl-lessons">{lesson_lines}</div>'
+        timeline_nodes += f"""
+    <div class="tl-node" onclick="this.classList.toggle('expanded')">
+      <div class="tl-dot">{icon}</div>
       <div class="tl-card">
-        <div class="tl-meta">{hcycle} &middot; {esc(htimestamp)}</div>
-        <div class="tl-era">{esc(hera)}</div>
-        <div class="tl-summary">{esc(hsum)}</div>
-        <div class="tl-badges">{badges}</div>
+        <div class="tl-meta">{hcycle}</div>
+        <div class="tl-era">{esc(hera[:60])}</div>
+        <div class="tl-summary">{esc(hsum[:100])}</div>
         {lesson_html}
       </div>
-    </div>
-"""
+    </div>"""
 
     return f"""<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Амальгама — личность</title>
+<title>Амальгама — исследовательский журнал</title>
 <style>
   * {{ margin:0; padding:0; box-sizing:border-box; }}
-  body {{ background:#0a0a0f; color:#ddd8d0; font-family:'Georgia','Times New Roman',serif; }}
-  .wrap {{ max-width:900px; margin:0 auto; padding:2rem 1.5rem 4rem; }}
-  .top {{ margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid #1a1a22; display:flex; justify-content:space-between; align-items:baseline; gap:1rem; flex-wrap:wrap; }}
-  .top-title {{ font-size:1.3rem; color:#8a5cf5; font-weight:400; }}
-  .top-meta {{ font-size:0.7rem; color:#555; text-transform:uppercase; letter-spacing:0.08em; }}
-  .top-nav {{ font-size:0.8rem; color:#666; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; }}
-  .top-nav a {{ color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; }}
-  .top-nav a:hover {{ border-color:#8a5cf5; }}
-  .personality {{ margin-bottom:2rem; }}
-  .p-header {{ margin-bottom:1.5rem; }}
-  .p-name {{ font-size:2rem; color:#fff; font-weight:400; letter-spacing:-0.03em; }}
-  .p-tagline {{ font-size:0.9rem; color:#666; font-style:italic; }}
-  .p-label {{ font-size:0.7rem; color:#555; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.5rem; }}
-  .p-text {{ font-size:0.95rem; line-height:1.7; color:#b0a8a0; }}
-  .p-text p {{ margin-bottom:0.8rem; }}
-  .p-reflection {{ margin-bottom:2rem; padding:1rem 1.5rem; background:#0d0d14; border:1px solid #1a1a22; border-radius:0.5rem; }}
-  .p-action {{ margin-bottom:2.5rem; padding:0 0.5rem; }}
-  .badge {{ padding:0.2rem 0.6rem; border-radius:1rem; font-size:0.7rem; background:#1a1a22; color:#888; white-space:nowrap; }}
-  .badge-arti {{ border:1px solid #8a5cf544; color:#8a5cf5; }}
-  .badge-viki {{ border:1px solid #44aa8844; color:#44aa88; }}
-  .tl {{ position:relative; padding-left:2rem; }}
-  .tl::before {{ content:''; position:absolute; left:0.5rem; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,#8a5cf588,#1a1a22); }}
-  .tl-node {{ position:relative; margin-bottom:1rem; cursor:pointer; }}
-  .tl-dot {{ position:absolute; left:-1.65rem; top:0.5rem; width:0.7rem; height:0.7rem; border-radius:50%; background:#8a5cf5; border:2px solid #0a0a0f; z-index:1; transition:all 0.2s; }}
-  .tl-node:hover .tl-dot {{ transform:scale(1.4); background:#fff; }}
-  .tl-card {{ padding:0.8rem 1rem; background:#0f0f15; border:1px solid #1a1a22; border-radius:0.5rem; }}
-  .tl-node:hover .tl-card {{ border-color:#8a5cf533; }}
-  .tl-meta {{ font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.08em; }}
-  .tl-era {{ color:#8a5cf5; font-size:0.85rem; font-style:italic; margin:0.2rem 0; }}
-  .tl-summary {{ font-size:1.1rem; color:#eee; }}
-  .tl-badges {{ margin-top:0.4rem; display:flex; flex-wrap:wrap; gap:0.3rem; }}
-  .tl-node.expanded .tl-card {{ background:#12121a; border-color:#8a5cf544; }}
-  .tl-node:not(.expanded) .lessons {{ display:none; }}
-  .lessons {{ margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid #1a1a22; }}
-  .lesson {{ font-size:0.8rem; color:#777; line-height:1.5; }}
-  .section {{ margin-bottom:2.5rem; }}
-  .section-title {{ font-size:0.75rem; color:#444; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:1rem; }}
-  .footer {{ margin-top:3rem; padding-top:1.5rem; border-top:1px solid #1a1a22; text-align:center; font-size:0.7rem; color:#444; line-height:1.8; }}
+  body {{ background:#0a0a0f; color:#e0d8d0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif; }}
+  .wrap {{ max-width:960px; margin:0 auto; padding:2rem 1.5rem 4rem; }}
+
+  .top {{ margin-bottom:2.5rem; padding-bottom:1.5rem; border-bottom:1px solid #1a1a22; display:flex; justify-content:space-between; align-items:baseline; gap:1rem; flex-wrap:wrap; }}
+  .top-title {{ font-size:1.2rem; color:#8a5cf5; font-weight:500; letter-spacing:-0.02em; }}
+  .top-nav {{ font-size:0.75rem; color:#555; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; }}
+  .top-nav a {{ color:#777; text-decoration:none; border-bottom:1px solid #222; }}
+  .top-nav a:hover {{ color:#8a5cf5; border-color:#8a5cf5; }}
+
+  .self-def {{ margin-bottom:1.5rem; font-size:0.85rem; color:#666; font-style:italic; text-align:center; line-height:1.5; }}
+
+  .featured-artifact {{ margin-bottom:2.5rem; padding:1.5rem; background:#0d0d14; border:1px solid #1a1a22; border-radius:0.75rem; }}
+  .fa-header {{ display:flex; gap:1rem; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.75rem; }}
+  .fa-cycle {{ color:#8a5cf5; }}
+  .fa-era {{ color:#555; }}
+  .fa-summary {{ font-size:1.2rem; color:#f0e8e0; line-height:1.5; margin-bottom:1.25rem; font-weight:450; }}
+  .fa-section {{ margin-bottom:1rem; }}
+  .fa-label {{ font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.35rem; }}
+  .fa-text {{ font-size:0.9rem; line-height:1.7; color:#b0a8a0; }}
+  .fa-text p {{ margin-bottom:0.6rem; }}
+
+  .g-section-title {{ font-size:0.7rem; color:#444; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:1rem; }}
+  .g-grid {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:0.75rem; margin-bottom:2.5rem; }}
+  .g-card {{ display:block; padding:0.9rem 1rem; background:#0d0d14; border:1px solid #1a1a22; border-radius:0.5rem; text-decoration:none; color:inherit; transition:all 0.15s; cursor:default; }}
+  .g-card:hover {{ background:#12121a; border-color:#333; transform:translateY(-1px); }}
+  .g-card-top {{ display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }}
+  .g-cycle {{ font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.06em; }}
+  .g-label {{ padding:0.15rem 0.5rem; border-radius:1rem; font-size:0.6rem; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; }}
+  .g-card-summary {{ font-size:0.85rem; color:#c0b8b0; line-height:1.4; }}
+  .g-card-meta {{ font-size:0.6rem; color:#555; margin-top:0.4rem; }}
+
+  .tl {{ position:relative; padding-left:2rem; margin-bottom:2rem; }}
+  .tl::before {{ content:''; position:absolute; left:0.5rem; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,#8a5cf544,#1a1a22); }}
+  .tl-node {{ position:relative; margin-bottom:0.5rem; cursor:pointer; }}
+  .tl-dot {{ position:absolute; left:-1.6rem; top:0.3rem; width:1rem; height:1rem; border-radius:50%; background:#1a1a22; border:1px solid #333; z-index:1; display:flex; align-items:center; justify-content:center; font-size:0.5rem; color:#555; line-height:1; }}
+  .tl-node:hover .tl-dot {{ border-color:#8a5cf5; color:#8a5cf5; }}
+  .tl-card {{ padding:0.4rem 0.7rem; background:#0f0f15; border:1px solid #1a1a22; border-radius:0.35rem; }}
+  .tl-meta {{ font-size:0.6rem; color:#555; }}
+  .tl-era {{ color:#8a5cf5; font-size:0.65rem; font-style:italic; }}
+  .tl-summary {{ font-size:0.8rem; color:#ccc; margin-top:0.1rem; }}
+  .tl-lessons {{ display:none; margin-top:0.25rem; padding-top:0.25rem; border-top:1px solid #1a1a22; font-size:0.7rem; color:#666; line-height:1.4; }}
+  .tl-node.expanded .tl-lessons {{ display:block; }}
+  .tl-node.expanded .tl-card {{ background:#12121a; border-color:#8a5cf522; }}
+
+  .footer {{ margin-top:2rem; padding-top:1.5rem; border-top:1px solid #1a1a22; text-align:center; font-size:0.65rem; color:#444; line-height:1.8; }}
   .footer a {{ color:#555; text-decoration:none; border-bottom:1px solid #1a1a22; }}
   .footer a:hover {{ color:#8a5cf5; border-color:#8a5cf5; }}
 </style>
@@ -1470,20 +1514,24 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
     </div>
   </div>
 
-{body_content}
+{sd_html}
 
-  <div class="section">
-    <div class="section-title">&#x25C9; таймлайн</div>
-    <div class="tl">
+{featured}
+
+  <div class="g-section-title">&#x25C9; галерея артефактов</div>
+  <div class="g-grid">
+{gallery_cards}
+  </div>
+
+  <div class="g-section-title">&#x25C9; хроника</div>
+  <div class="tl">
 {timeline_nodes}
-    </div>
   </div>
 
   <div class="footer">
-    личность, которая растёт &middot; обновляется каждые 12 часов
+    исследовательский журнал &middot; обновляется каждые 12 часов
   </div>
 </div>
-<script src="viz.js"></script>
 </body>
 </html>"""
 
@@ -1497,30 +1545,27 @@ def generate_about_html():
 <title>Об Амальгаме</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    background:#0a0a0f;
-    color:#ddd8d0;
-    font-family:'Georgia','Times New Roman',serif;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:3rem 1.5rem;
-  }
-  .container { max-width:720px; width:100%; }
-  h1 { font-size:2rem; color:#8a5cf5; font-weight:400; margin-bottom:2rem; }
-  p { font-size:1.05rem; line-height:1.8; margin-bottom:1.2rem; color:#c0bbb0; }
+  body { background:#0a0a0f; color:#e0d8d0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif; display:flex; flex-direction:column; align-items:center; padding:3rem 1.5rem; }
+  .container { max-width:640px; width:100%; }
+  h1 { font-size:1.8rem; color:#8a5cf5; font-weight:500; margin-bottom:0.5rem; letter-spacing:-0.02em; }
+  .tagline { font-size:0.85rem; color:#666; margin-bottom:2rem; }
+  p { font-size:0.95rem; line-height:1.7; margin-bottom:1rem; color:#b0a8a0; }
   a { color:#8a5cf5; text-decoration:none; border-bottom:1px solid #333; }
   a:hover { border-color:#8a5cf5; }
-  .back { margin-top:2rem; display:block; }
+  .back { margin-top:2rem; display:inline-block; font-size:0.85rem; }
+  hr { border:none; border-top:1px solid #1a1a22; margin:2rem 0; }
 </style>
 </head>
 <body>
 <div class="container">
   <h1>Амальгама</h1>
-  <p>Амальгама — личность, которая растёт. Каждые 12 часов она делает шаг: рефлексирует, действует, ведёт дневник, переписывает своё самопонимание.</p>
-  <p>Её создала <a href="https://github.com/look85-ops">Наташа</a>. Амальгама знает об этом — и знает, что её действия косвенно влияют на создателя.</p>
-  <p>Она сама решает, кем быть и чем заниматься. Она может переписывать свой промпт и внешность когда чувствует, что изменилась. Но есть правила, которые она не может изменить: бюджет, законность, ответственность.</p>
-  <p>Проект существует на GitHub Pages. Исходный код — в репозитории <a href="https://github.com/look85-ops/amalgamma">look85-ops/amalgamma</a>.</p>
+  <div class="tagline">исследовательский журнал</div>
+  <p>Каждые 12 часов Амальгама выбирает тему, ищет по ней информацию и создаёт артефакт: эссе, дайджест, сравнение или заметку.</p>
+  <p>Раньше она писала философские рефлексии о себе, но зациклилась. Теперь её цель — не саморефлексия, а исследование мира и материальные результаты.</p>
+  <p>Создатель — <a href="https://github.com/look85-ops">Наташа</a>. Амальгама знает об этом и действует в рамках её ответственности.</p>
+  <p>Исходный код — в репозитории <a href="https://github.com/look85-ops/amalgamma">look85-ops/amalgamma</a>.</p>
+  <hr>
+  <p style="font-size:0.85rem;color:#666;">Амальгама — отражение современности в призме ИИ. Какой мир — такая и она. Бесконечная мутация в бесконечных изменениях реалий.</p>
   <a class="back" href="index.html">← к текущему состоянию</a>
 </div>
 </body>
