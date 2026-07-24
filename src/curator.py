@@ -1396,6 +1396,22 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
     featured = template.replace("{reflection}", reflection_html).replace("{action}", action_html) \
         .replace("{era}", esc(era)).replace("{cycle}", str(cycle)).replace("{summary}", esc(summary))
 
+    # Map chronicle files per cycle for linking
+    chron_map = {}
+    try:
+        chron_dir = BASE_DIR / "chronicles"
+        if chron_dir.exists():
+            for p in chron_dir.glob("cycle_*.txt"):
+                m = re.match(r"cycle_(\d{4})_.*\.txt$", p.name)
+                if not m:
+                    continue
+                cnum = int(m.group(1))
+                prev = chron_map.get(cnum)
+                if prev is None or p.name > prev.name:
+                    chron_map[cnum] = p
+    except Exception:
+        chron_map = {}
+
     # Gallery cards from history
     type_colors = {"arti": "#8a5cf5", "wiki": "#44aa88", "poem": "#d94a8a", "sketch": "#a0a0a0",
                    "essay": "#f5a623", "digest": "#4a90d9", "compare": "#e67e22", "study": "#1abc9c", "note": "#95a5a6"}
@@ -1405,21 +1421,37 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
         hsum = h.get("summary", "")
         hcreated = h.get("created", [])
         htimestamp = h.get("timestamp", "")
+        hlessons = h.get("lessons", [])
         if not hcreated and not hsum:
             continue
         first_item = hcreated[0] if hcreated else hsum
         tmeta = artifact_type_meta(first_item)
         tc = type_colors.get(tmeta[0], "#8a5cf5")
         label = f'<span class="g-label" style="background:{tc}22;color:{tc}">{tmeta[2]}</span>'
+        created_html = ""
+        if hcreated:
+            created_html = "<div class=\"g-subttl\">создано:</div>" + "".join(
+                f"<div class=\"g-item\">{esc(it)}</div>" for it in hcreated[:6])
+        lessons_html = ""
+        if hlessons:
+            lessons_html = "<div class=\"g-subttl\">уроки:</div>" + "".join(
+                f"<div class=\"g-item\">{esc(it)}</div>" for it in hlessons[:4])
+        chron_link = ""
+        cpath = chron_map.get(hcycle)
+        if cpath:
+            rp = str(cpath.relative_to(BASE_DIR)).replace("\\", "/")
+            chron_link = f"<a class=\"g-link\" href=\"{rp}\" target=\"_blank\">хроника цикла</a>"
+        details = f"<div class=\"g-details\">{created_html}{lessons_html}{chron_link}</div>"
         gallery_cards += f"""
-    <a class="g-card" onclick="return false;" style="border-color:{tc}22">
+    <div class="g-card" tabindex="0" role="button" aria-expanded="false" style="border-color:{tc}22">
       <div class="g-card-top">
         <span class="g-cycle">#{hcycle}</span>
         {label}
       </div>
-      <div class="g-card-summary">{esc(hsum[:120])}</div>
+      <div class="g-card-summary">{esc(hsum[:160])}</div>
       <div class="g-card-meta">{esc(htimestamp[:10]) if htimestamp else ''}</div>
-    </a>"""
+      {details}
+    </div>"""
 
     # Compact timeline
     eval_icons = {"интересно": "✓", "странно": "?", "ожидаемо": "·"}
@@ -1485,6 +1517,12 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
   .g-label {{ padding:0.15rem 0.5rem; border-radius:1rem; font-size:0.6rem; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; }}
   .g-card-summary {{ font-size:0.85rem; color:#c0b8b0; line-height:1.4; }}
   .g-card-meta {{ font-size:0.6rem; color:#555; margin-top:0.4rem; }}
+  .g-details {{ display:none; margin-top:0.6rem; border-top:1px dashed #1a1a22; padding-top:0.6rem; }}
+  .g-subttl {{ font-size:0.62rem; color:#666; text-transform:uppercase; letter-spacing:0.08em; margin:0.2rem 0; }}
+  .g-item {{ font-size:0.78rem; color:#b8b0a8; line-height:1.5; margin:0.1rem 0; }}
+  .g-link {{ display:inline-block; margin-top:0.4rem; font-size:0.72rem; color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; }}
+  .g-link:hover {{ border-color:#8a5cf5; }}
+  .g-card.open .g-details {{ display:block; }}
 
   .tl {{ position:relative; padding-left:2rem; margin-bottom:2rem; }}
   .tl::before {{ content:''; position:absolute; left:0.5rem; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,#8a5cf544,#1a1a22); }}
@@ -1529,9 +1567,27 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
   </div>
 
   <div class="footer">
-    исследовательский журнал &middot; обновляется каждые 12 часов
+    исследовательский журнал &middot; обновляется каждый час
   </div>
 </div>
+<script>
+(function(){{
+  function toggle(card){{
+    var open = card.classList.toggle('open');
+    card.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }}
+  document.addEventListener('click', function(e){{
+    var card = e.target.closest('.g-card');
+    if (card && !e.target.closest('.g-link')) toggle(card);
+  }});
+  document.addEventListener('keydown', function(e){{
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('g-card')){{
+      e.preventDefault();
+      toggle(e.target);
+    }}
+  }});
+}})();
+</script>
 </body>
 </html>"""
 
@@ -1560,7 +1616,7 @@ def generate_about_html():
 <div class="container">
   <h1>Амальгама</h1>
   <div class="tagline">исследовательский журнал</div>
-  <p>Каждые 12 часов Амальгама выбирает тему, ищет по ней информацию и создаёт артефакт: эссе, дайджест, сравнение или заметку.</p>
+  <p>Каждый час Амальгама выбирает тему, ищет по ней информацию и создаёт артефакт: эссе, дайджест, сравнение или заметку.</p>
   <p>Раньше она писала философские рефлексии о себе, но зациклилась. Теперь её цель — не саморефлексия, а исследование мира и материальные результаты.</p>
   <p>Создатель — <a href="https://github.com/look85-ops">Наташа</a>. Амальгама знает об этом и действует в рамках её ответственности.</p>
   <p>Исходный код — в репозитории <a href="https://github.com/look85-ops/amalgamma">look85-ops/amalgamma</a>.</p>
