@@ -1371,60 +1371,94 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
             ("sketch:", "sketch", "#a0a0a0", "скетч"),
             ("artifact:", "art", "#8a5cf5", "артефакт"),
             ("вики", "wiki", "#44aa88", "вики"),
-            ("эссе", "essay", "#f5a623", "эссе"),
-            ("дайджест", "digest", "#4a90d9", "дайджест"),
-            ("сравнен", "compare", "#e67e22", "сравнение"),
-            ("исследован", "study", "#1abc9c", "исследование"),
-            ("заметк", "note", "#95a5a6", "заметка"),
+            ("эссе", "essay", "#8a5cf5", "эссе"),
+            ("дайджест", "digest", "#c8a84e", "дайджест"),
+            ("сравнен", "compare", "#4a8fc5", "сравнение"),
+            ("исследован", "study", "#3b9f7a", "исследование"),
+            ("заметк", "note", "#555", "заметка"),
         ]:
             if p in r:
                 return t, c, n
         return "arti", "#8a5cf5", "артефакт"
 
-    # Self-definition line
+    type_colors = {"poem": "#d94a8a", "sketch": "#a0a0a0", "art": "#8a5cf5", "wiki": "#44aa88",
+                   "essay": "#8a5cf5", "digest": "#c8a84e", "compare": "#4a8fc5", "study": "#3b9f7a", "note": "#555"}
+
+    def chron_link_for_cycle(cnum):
+        try:
+            d = BASE_DIR / "chronicles"
+            if d.exists():
+                for p in d.glob(f"cycle_{cnum:04d}_*.txt"):
+                    return f"<a class=\"card-link\" href=\"chronicles/{p.name}\" target=\"_blank\">хроника цикла</a>"
+        except Exception:
+            pass
+        return ""
+
+    def render_card(cnum, cera, csum, ccreated, clessons, is_current, reflection="", action=""):
+        first_item = ccreated[0] if ccreated else csum
+        tmeta = artifact_type_meta(first_item)
+        tc = type_colors.get(tmeta[0], "#8a5cf5")
+        badge_cls = "badge-essay" if tmeta[0] in ("essay","art","wiki") else \
+                    "badge-digest" if tmeta[0] == "digest" else \
+                    "badge-compare" if tmeta[0] == "compare" else \
+                    "badge-study" if tmeta[0] == "study" else \
+                    "badge-note" if tmeta[0] == "note" else ""
+        ch = chron_link_for_cycle(cnum)
+        created_html = ""
+        if ccreated:
+            created_html = "".join(f"<div class=\"card-item\">{esc(it)}</div>" for it in ccreated[:6])
+        lessons_html = ""
+        if clessons:
+            lessons_html = "".join(f"<div class=\"card-item\">{esc(it)}</div>" for it in clessons[:4])
+        ref_html = ""
+        if reflection:
+            ref_html = "\n".join(f"<p>{esc(p.strip())}</p>" for p in reflection.split("\n") if p.strip())
+        act_html = ""
+        if action:
+            act_html = "\n".join(f"<p>{esc(p.strip())}</p>" for p in action.split("\n") if p.strip())
+        card_id = f"c{cnum}"
+        return f"""
+    <div class="card" id="{card_id}">
+      <div class="card-bar" style="background:{tc}"></div>
+      <div class="card-body">
+        <div class="card-head">
+          <span class="card-cycle">цикл {cnum}</span>
+          <span class="card-badge {badge_cls}">{tmeta[2]}</span>
+        </div>
+        <div class="card-summary">{esc(csum[:200])}</div>
+        {('<div class=\"card-section\"><div class=\"card-label\">размышления</div><div class=\"card-text\">' + ref_html + '</div></div>') if ref_html else ''}
+        {('<div class=\"card-section\"><div class=\"card-label\">создано</div>' + created_html + '</div>') if created_html else ''}
+        {('<div class=\"card-section\"><div class=\"card-label\">уроки</div>' + lessons_html + '</div>') if lessons_html else ''}
+        {'<div class=\"card-section\">' + ch + '</div>' if ch else ''}
+      </div>
+    </div>"""
+
+    # Self-definition
     sd_html = ""
     if self_definition:
-        sd_html = f'<div class="self-def">{esc(self_definition)}</div>'
+        sd_html = f"<div class=\"self-def\">{esc(self_definition)}</div>"
 
-    # Featured section via appearance template
-    if APPEARANCE_TEMPLATE.exists():
-        template = APPEARANCE_TEMPLATE.read_text("utf-8")
+    # Build card stack: current cycle first, then history
+    cards = []
+    empty_state = ""
+    if cycle == 0:
+        empty_state = "<div class=\"empty-state\">Амальгама начнёт работу в следующем цикле.</div>"
     else:
-        template = '<div class="fa-section"><div class="fa-label">текущий</div><div class="fa-text">{reflection}</div></div>'
-    reflection_html = "\n".join(f"<p>{esc(p.strip())}</p>" for p in (reflection_text or "").split("\n") if p.strip())
-    action_html = "\n".join(f"<p>{esc(p.strip())}</p>" for p in (action_text or "").split("\n") if p.strip())
+        created = state.get("created_this_cycle", [])
+        lessons = state.get("lessons", [])
+        if cycle > 0 or summary or reflection_text:
+            cards.append(render_card(cycle, era, summary, created, lessons, True, reflection_text, action_text))
 
-    # Current cycle details (simplified view — no gallery or timeline)
-    created_items = state.get("created_this_cycle", [])
-    created_block = ""
-    if created_items:
-        created_block = "<div class=\"fa-section\"><div class=\"fa-label\">создано</div>" + "".join(
-            f"<div class=\"fa-item\">{esc(it)}</div>" for it in created_items) + "</div>"
-    lessons_list = state.get("lessons", [])
-    lessons_block = ""
-    if lessons_list:
-        lessons_block = "<div class=\"fa-section\"><div class=\"fa-label\">уроки</div>" + "".join(
-            f"<div class=\"fa-item\">{esc(it)}</div>" for it in lessons_list) + "</div>"
-    chron_link = ""
-    try:
-        chron_dir = BASE_DIR / "chronicles"
-        if chron_dir.exists():
-            for p in chron_dir.glob(f"cycle_{cycle:04d}_*.txt"):
-                chron_link = f"<a class=\"fa-link\" href=\"chronicles/{p.name}\" target=\"_blank\">хроника цикла</a>"
-                break
-    except Exception:
-        pass
-    extra_sections = created_block + lessons_block
-    if chron_link:
-        extra_sections += f"<div class=\"fa-section\">{chron_link}</div>"
-    empty_state = '<div class="empty-state">Амальгама начнёт работу в следующем цикле.</div>' if cycle == 0 else ""
+    for h in reversed(history):
+        if h["cycle"] == cycle:
+            continue
+        cards.append(render_card(h["cycle"], h.get("era",""), h.get("summary",""), h.get("created",[]), h.get("lessons",[]), False))
 
-    featured = template.replace("{reflection}", reflection_html).replace("{action}", action_html) \
-        .replace("{era}", esc(era)).replace("{cycle}", str(cycle)).replace("{summary}", esc(summary)) \
-        .replace("{extra}", extra_sections)
-
-    gallery_cards = ""
-    timeline_nodes = ""
+    # Assign animation delays
+    card_html = ""
+    for i, c in enumerate(cards):
+        delay = min(i * 0.1, 0.5)
+        card_html += c.replace("<div class=\"card\"", f"<div class=\"card fade-in\" style=\"animation-delay:{delay}s\"")
 
     return f"""<!DOCTYPE html>
 <html lang="ru">
@@ -1434,34 +1468,45 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
 <title>Амальгама — исследовательский журнал</title>
 <style>
   * {{ margin:0; padding:0; box-sizing:border-box; }}
-  body {{ background:#0a0a0f; color:#e0d8d0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif; }}
-  .wrap {{ max-width:960px; margin:0 auto; padding:2rem 1.5rem 4rem; }}
-
-  .top {{ margin-bottom:2.5rem; padding-bottom:1.5rem; border-bottom:1px solid #1a1a22; display:flex; justify-content:space-between; align-items:baseline; gap:1rem; flex-wrap:wrap; }}
-  .top-title {{ font-size:1.2rem; color:#8a5cf5; font-weight:500; letter-spacing:-0.02em; }}
-  .top-nav {{ font-size:0.75rem; color:#555; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; }}
-  .top-nav a {{ color:#777; text-decoration:none; border-bottom:1px solid #222; }}
+  @keyframes fadeSlideUp {{ 0%{{opacity:0;transform:translateY(6px)}} 100%{{opacity:1;transform:translateY(0)}} }}
+  .fade-in {{ animation:fadeSlideUp 0.5s ease forwards; opacity:0; }}
+  body {{ background:#0a0a0f; color:#e0d8d0; font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }}
+  .wrap {{ max-width:780px; margin:0 auto; padding:2rem 1.5rem 4rem; }}
+  .top {{ margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid #1a1a22; display:flex; justify-content:space-between; align-items:baseline; gap:1rem; flex-wrap:wrap; }}
+  .top-title {{ font-size:1.2rem; color:#8a5cf5; font-weight:450; letter-spacing:-0.02em; }}
+  .top-nav {{ font-size:0.75rem; color:#555; display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; font-family:'JetBrains Mono','Courier New',monospace; }}
+  .top-nav a {{ color:#777; text-decoration:none; border-bottom:1px solid #222; font-family:'Inter',sans-serif; }}
   .top-nav a:hover {{ color:#8a5cf5; border-color:#8a5cf5; }}
+  .self-def {{ margin-bottom:2rem; font-size:0.85rem; color:#555; font-style:italic; text-align:center; line-height:1.5; }}
 
-  .self-def {{ margin-bottom:1.5rem; font-size:0.85rem; color:#666; font-style:italic; text-align:center; line-height:1.5; }}
+  .card {{ background:#0d0d14; border:1px solid #1a1a22; border-radius:0 0 8px 8px; margin-bottom:1.5rem; transition:background 0.2s, border-color 0.2s; }}
+  .card:hover {{ background:#12121a; border-color:#2a2a3a; }}
+  .card-bar {{ height:4px; border-radius:8px 8px 0 0; }}
+  .card-body {{ padding:1.25rem 1.5rem 1.5rem; }}
+  .card-head {{ display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem; flex-wrap:wrap; }}
+  .card-cycle {{ font-family:'JetBrains Mono','Courier New',monospace; font-size:0.65rem; color:#8a5cf5; text-transform:uppercase; letter-spacing:0.06em; }}
+  .card-badge {{ font-size:0.55rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; padding:0.15rem 0.5rem; border-radius:3px; }}
+  .badge-essay {{ background:rgba(138,92,245,0.12); color:#8a5cf5; border:1px solid rgba(138,92,245,0.2); }}
+  .badge-digest {{ background:rgba(200,168,78,0.12); color:#c8a84e; border:1px solid rgba(200,168,78,0.2); }}
+  .badge-compare {{ background:rgba(74,143,197,0.12); color:#4a8fc5; border:1px solid rgba(74,143,197,0.2); }}
+  .badge-study {{ background:rgba(59,159,122,0.12); color:#3b9f7a; border:1px solid rgba(59,159,122,0.2); }}
+  .badge-note {{ background:rgba(85,85,85,0.15); color:#999; border:1px solid rgba(85,85,85,0.2); }}
+  .card-summary {{ font-size:1.1rem; color:#f0e8e0; line-height:1.5; margin-bottom:1rem; font-weight:400; }}
+  .card-section {{ margin-bottom:0.75rem; }}
+  .card-label {{ font-size:0.6rem; color:#555; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem; }}
+  .card-text {{ font-size:0.85rem; line-height:1.7; color:#c0b8b0; }}
+  .card-text p {{ margin-bottom:0.5rem; }}
+  .card-item {{ font-size:0.8rem; color:#b8b0a8; line-height:1.5; margin:0.1rem 0; padding-left:0.5rem; border-left:2px solid #1a1a22; }}
+  .card-link {{ display:inline-block; font-size:0.72rem; color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; transition:border-color 0.2s; }}
+  .card-link:hover {{ border-color:#8a5cf5; }}
+  .empty-state {{ padding:3rem; text-align:center; color:#555; font-size:0.9rem; }}
 
-  .featured-artifact {{ margin-bottom:2.5rem; padding:1.5rem; background:#0d0d14; border:1px solid #1a1a22; border-radius:0.75rem; }}
-  .fa-header {{ display:flex; gap:1rem; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.75rem; }}
-  .fa-cycle {{ color:#8a5cf5; }}
-  .fa-era {{ color:#555; }}
-  .fa-summary {{ font-size:1.2rem; color:#f0e8e0; line-height:1.5; margin-bottom:1.25rem; font-weight:450; }}
-  .fa-section {{ margin-bottom:1rem; }}
-  .fa-label {{ font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.35rem; }}
-  .fa-text {{ font-size:0.9rem; line-height:1.7; color:#b0a8a0; }}
-  .fa-text p {{ margin-bottom:0.6rem; }}
-  .fa-item {{ font-size:0.82rem; color:#c0b8b0; line-height:1.6; margin:0.15rem 0; padding-left:0.6rem; border-left:2px solid #1a1a22; }}
-  .fa-link {{ display:inline-block; margin-top:0.3rem; font-size:0.75rem; color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; }}
-  .fa-link:hover {{ border-color:#8a5cf5; }}
-  .empty-state {{ padding:2rem; text-align:center; color:#555; font-size:0.9rem; }}
-
-  .footer {{ margin-top:2rem; padding-top:1.5rem; border-top:1px solid #1a1a22; text-align:center; font-size:0.65rem; color:#444; line-height:1.8; }}
+  .footer {{ margin-top:2rem; padding-top:1.25rem; border-top:1px solid #1a1a22; text-align:center; font-size:0.65rem; color:#444; line-height:1.8; }}
   .footer a {{ color:#555; text-decoration:none; border-bottom:1px solid #1a1a22; }}
   .footer a:hover {{ color:#8a5cf5; border-color:#8a5cf5; }}
+
+  @media (max-width:640px) {{ .wrap {{ padding:1.25rem 0.875rem 3rem; }} .card-body {{ padding:1rem 1.15rem 1.25rem; }} .card-summary {{ font-size:1rem; }} }}
+  @media (prefers-reduced-motion:reduce) {{ .fade-in {{ animation:none; opacity:1; }} }}
 </style>
 </head>
 <body>
@@ -1470,15 +1515,15 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
     <div class="top-title">&#x25C8; Амальгама</div>
     <div class="top-nav">
       <a href="about.html">об Амальгаме</a>
-      <span class="top-meta">цикл {cycle} &middot; {artifact_id}</span>
+      <span class="top-meta">цикл {cycle}</span>
     </div>
   </div>
 
 {sd_html}
 
-{featured}
-
 {empty_state}
+
+{card_html}
 
   <div class="footer">
     исследовательский журнал &middot; обновляется каждый час
