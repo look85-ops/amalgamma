@@ -1393,91 +1393,38 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
         template = '<div class="fa-section"><div class="fa-label">текущий</div><div class="fa-text">{reflection}</div></div>'
     reflection_html = "\n".join(f"<p>{esc(p.strip())}</p>" for p in (reflection_text or "").split("\n") if p.strip())
     action_html = "\n".join(f"<p>{esc(p.strip())}</p>" for p in (action_text or "").split("\n") if p.strip())
-    featured = template.replace("{reflection}", reflection_html).replace("{action}", action_html) \
-        .replace("{era}", esc(era)).replace("{cycle}", str(cycle)).replace("{summary}", esc(summary))
 
-    # Map chronicle files per cycle for linking
-    chron_map = {}
+    # Current cycle details (simplified view — no gallery or timeline)
+    created_items = state.get("created_this_cycle", [])
+    created_block = ""
+    if created_items:
+        created_block = "<div class=\"fa-section\"><div class=\"fa-label\">создано</div>" + "".join(
+            f"<div class=\"fa-item\">{esc(it)}</div>" for it in created_items) + "</div>"
+    lessons_list = state.get("lessons", [])
+    lessons_block = ""
+    if lessons_list:
+        lessons_block = "<div class=\"fa-section\"><div class=\"fa-label\">уроки</div>" + "".join(
+            f"<div class=\"fa-item\">{esc(it)}</div>" for it in lessons_list) + "</div>"
+    chron_link = ""
     try:
         chron_dir = BASE_DIR / "chronicles"
         if chron_dir.exists():
-            for p in chron_dir.glob("cycle_*.txt"):
-                m = re.match(r"cycle_(\d{4})_.*\.txt$", p.name)
-                if not m:
-                    continue
-                cnum = int(m.group(1))
-                prev = chron_map.get(cnum)
-                if prev is None or p.name > prev.name:
-                    chron_map[cnum] = p
+            for p in chron_dir.glob(f"cycle_{cycle:04d}_*.txt"):
+                chron_link = f"<a class=\"fa-link\" href=\"chronicles/{p.name}\" target=\"_blank\">хроника цикла</a>"
+                break
     except Exception:
-        chron_map = {}
+        pass
+    extra_sections = created_block + lessons_block
+    if chron_link:
+        extra_sections += f"<div class=\"fa-section\">{chron_link}</div>"
+    empty_state = '<div class="empty-state">Амальгама начнёт работу в следующем цикле.</div>' if cycle == 0 else ""
 
-    # Gallery cards from history
-    type_colors = {"arti": "#8a5cf5", "wiki": "#44aa88", "poem": "#d94a8a", "sketch": "#a0a0a0",
-                   "essay": "#f5a623", "digest": "#4a90d9", "compare": "#e67e22", "study": "#1abc9c", "note": "#95a5a6"}
+    featured = template.replace("{reflection}", reflection_html).replace("{action}", action_html) \
+        .replace("{era}", esc(era)).replace("{cycle}", str(cycle)).replace("{summary}", esc(summary)) \
+        .replace("{extra}", extra_sections)
+
     gallery_cards = ""
-    for h in reversed(history):
-        hcycle = h["cycle"]
-        hsum = h.get("summary", "")
-        hcreated = h.get("created", [])
-        htimestamp = h.get("timestamp", "")
-        hlessons = h.get("lessons", [])
-        if not hcreated and not hsum:
-            continue
-        first_item = hcreated[0] if hcreated else hsum
-        tmeta = artifact_type_meta(first_item)
-        tc = type_colors.get(tmeta[0], "#8a5cf5")
-        label = f'<span class="g-label" style="background:{tc}22;color:{tc}">{tmeta[2]}</span>'
-        created_html = ""
-        if hcreated:
-            created_html = "<div class=\"g-subttl\">создано:</div>" + "".join(
-                f"<div class=\"g-item\">{esc(it)}</div>" for it in hcreated[:6])
-        lessons_html = ""
-        if hlessons:
-            lessons_html = "<div class=\"g-subttl\">уроки:</div>" + "".join(
-                f"<div class=\"g-item\">{esc(it)}</div>" for it in hlessons[:4])
-        chron_link = ""
-        cpath = chron_map.get(hcycle)
-        if cpath:
-            rp = str(cpath.relative_to(BASE_DIR)).replace("\\", "/")
-            chron_link = f"<a class=\"g-link\" href=\"{rp}\" target=\"_blank\">хроника цикла</a>"
-        details = f"<div class=\"g-details\">{created_html}{lessons_html}{chron_link}</div>"
-        gallery_cards += f"""
-    <div class="g-card" tabindex="0" role="button" aria-expanded="false" style="border-color:{tc}22">
-      <div class="g-card-top">
-        <span class="g-cycle">#{hcycle}</span>
-        {label}
-      </div>
-      <div class="g-card-summary">{esc(hsum[:160])}</div>
-      <div class="g-card-meta">{esc(htimestamp[:10]) if htimestamp else ''}</div>
-      {details}
-    </div>"""
-
-    # Compact timeline
-    eval_icons = {"интересно": "✓", "странно": "?", "ожидаемо": "·"}
     timeline_nodes = ""
-    for h in reversed(history):
-        hcycle = h["cycle"]
-        hera = h.get("era", "")
-        hsum = h.get("summary", "")
-        hlessons = h.get("lessons", [])
-        htimestamp = h.get("timestamp", "")
-        heval = h.get("evaluation", "")
-        icon = eval_icons.get(heval, "·")
-        lesson_html = ""
-        if hlessons:
-            lesson_lines = "\n".join(f"<div>{esc(l)}</div>" for l in hlessons)
-            lesson_html = f'<div class="tl-lessons">{lesson_lines}</div>'
-        timeline_nodes += f"""
-    <div class="tl-node" onclick="this.classList.toggle('expanded')">
-      <div class="tl-dot">{icon}</div>
-      <div class="tl-card">
-        <div class="tl-meta">{hcycle}</div>
-        <div class="tl-era">{esc(hera[:60])}</div>
-        <div class="tl-summary">{esc(hsum[:100])}</div>
-        {lesson_html}
-      </div>
-    </div>"""
 
     return f"""<!DOCTYPE html>
 <html lang="ru">
@@ -1507,35 +1454,10 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
   .fa-label {{ font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.35rem; }}
   .fa-text {{ font-size:0.9rem; line-height:1.7; color:#b0a8a0; }}
   .fa-text p {{ margin-bottom:0.6rem; }}
-
-  .g-section-title {{ font-size:0.7rem; color:#444; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:1rem; }}
-  .g-grid {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:0.75rem; margin-bottom:2.5rem; }}
-  .g-card {{ display:block; padding:0.9rem 1rem; background:#0d0d14; border:1px solid #1a1a22; border-radius:0.5rem; text-decoration:none; color:inherit; transition:all 0.15s; cursor:default; }}
-  .g-card:hover {{ background:#12121a; border-color:#333; transform:translateY(-1px); }}
-  .g-card-top {{ display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }}
-  .g-cycle {{ font-size:0.65rem; color:#555; text-transform:uppercase; letter-spacing:0.06em; }}
-  .g-label {{ padding:0.15rem 0.5rem; border-radius:1rem; font-size:0.6rem; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; }}
-  .g-card-summary {{ font-size:0.85rem; color:#c0b8b0; line-height:1.4; }}
-  .g-card-meta {{ font-size:0.6rem; color:#555; margin-top:0.4rem; }}
-  .g-details {{ display:none; margin-top:0.6rem; border-top:1px dashed #1a1a22; padding-top:0.6rem; }}
-  .g-subttl {{ font-size:0.62rem; color:#666; text-transform:uppercase; letter-spacing:0.08em; margin:0.2rem 0; }}
-  .g-item {{ font-size:0.78rem; color:#b8b0a8; line-height:1.5; margin:0.1rem 0; }}
-  .g-link {{ display:inline-block; margin-top:0.4rem; font-size:0.72rem; color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; }}
-  .g-link:hover {{ border-color:#8a5cf5; }}
-  .g-card.open .g-details {{ display:block; }}
-
-  .tl {{ position:relative; padding-left:2rem; margin-bottom:2rem; }}
-  .tl::before {{ content:''; position:absolute; left:0.5rem; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,#8a5cf544,#1a1a22); }}
-  .tl-node {{ position:relative; margin-bottom:0.5rem; cursor:pointer; }}
-  .tl-dot {{ position:absolute; left:-1.6rem; top:0.3rem; width:1rem; height:1rem; border-radius:50%; background:#1a1a22; border:1px solid #333; z-index:1; display:flex; align-items:center; justify-content:center; font-size:0.5rem; color:#555; line-height:1; }}
-  .tl-node:hover .tl-dot {{ border-color:#8a5cf5; color:#8a5cf5; }}
-  .tl-card {{ padding:0.4rem 0.7rem; background:#0f0f15; border:1px solid #1a1a22; border-radius:0.35rem; }}
-  .tl-meta {{ font-size:0.6rem; color:#555; }}
-  .tl-era {{ color:#8a5cf5; font-size:0.65rem; font-style:italic; }}
-  .tl-summary {{ font-size:0.8rem; color:#ccc; margin-top:0.1rem; }}
-  .tl-lessons {{ display:none; margin-top:0.25rem; padding-top:0.25rem; border-top:1px solid #1a1a22; font-size:0.7rem; color:#666; line-height:1.4; }}
-  .tl-node.expanded .tl-lessons {{ display:block; }}
-  .tl-node.expanded .tl-card {{ background:#12121a; border-color:#8a5cf522; }}
+  .fa-item {{ font-size:0.82rem; color:#c0b8b0; line-height:1.6; margin:0.15rem 0; padding-left:0.6rem; border-left:2px solid #1a1a22; }}
+  .fa-link {{ display:inline-block; margin-top:0.3rem; font-size:0.75rem; color:#8a5cf5; text-decoration:none; border-bottom:1px solid #222; }}
+  .fa-link:hover {{ border-color:#8a5cf5; }}
+  .empty-state {{ padding:2rem; text-align:center; color:#555; font-size:0.9rem; }}
 
   .footer {{ margin-top:2rem; padding-top:1.5rem; border-top:1px solid #1a1a22; text-align:center; font-size:0.65rem; color:#444; line-height:1.8; }}
   .footer a {{ color:#555; text-decoration:none; border-bottom:1px solid #1a1a22; }}
@@ -1556,38 +1478,12 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
 
 {featured}
 
-  <div class="g-section-title">&#x25C9; галерея артефактов</div>
-  <div class="g-grid">
-{gallery_cards}
-  </div>
-
-  <div class="g-section-title">&#x25C9; хроника</div>
-  <div class="tl">
-{timeline_nodes}
-  </div>
+{empty_state}
 
   <div class="footer">
     исследовательский журнал &middot; обновляется каждый час
   </div>
 </div>
-<script>
-(function(){{
-  function toggle(card){{
-    var open = card.classList.toggle('open');
-    card.setAttribute('aria-expanded', open ? 'true' : 'false');
-  }}
-  document.addEventListener('click', function(e){{
-    var card = e.target.closest('.g-card');
-    if (card && !e.target.closest('.g-link')) toggle(card);
-  }});
-  document.addEventListener('keydown', function(e){{
-    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('g-card')){{
-      e.preventDefault();
-      toggle(e.target);
-    }}
-  }});
-}})();
-</script>
 </body>
 </html>"""
 
