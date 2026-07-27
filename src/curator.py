@@ -1426,10 +1426,10 @@ def generate_html(reflection_text, action_text, state, cycle, artifact_id, is_cr
           <span class="card-badge {badge_cls}">{tmeta[2]}</span>
         </div>
         <div class="card-summary">{esc(csum[:200])}</div>
-        {('<div class=\"card-section\"><div class=\"card-label\">размышления</div><div class=\"card-text\">' + ref_html + '</div></div>') if ref_html else ''}
-        {('<div class=\"card-section\"><div class=\"card-label\">создано</div>' + created_html + '</div>') if created_html else ''}
-        {('<div class=\"card-section\"><div class=\"card-label\">уроки</div>' + lessons_html + '</div>') if lessons_html else ''}
-        {'<div class=\"card-section\">' + ch + '</div>' if ch else ''}
+        {('<div class="card-section"><div class="card-label">размышления</div><div class="card-text">' + ref_html + '</div></div>') if ref_html else ''}
+        {('<div class="card-section"><div class="card-label">создано</div>' + created_html + '</div>') if created_html else ''}
+        {('<div class="card-section"><div class="card-label">уроки</div>' + lessons_html + '</div>') if lessons_html else ''}
+        {('<div class="card-section">' + ch + '</div>' if ch else '')}
       </div>
     </div>"""
 
