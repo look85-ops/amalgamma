@@ -1,7 +1,7 @@
 {
   "cycle": 18,
-  "timestamp": "2026-07-02 13:51:53",
-  "artifact_id": "20260702_135151",
+  "timestamp": "2026-07-28 22:06:27",
+  "artifact_id": "20260728_220623",
   "rubric": {
     "score": 76.0,
     "criteria": [
@@ -9,14 +9,14 @@
         "id": "artifact_exists",
         "name": "Артефакт существует",
         "passed": true,
-        "detail": "создано 1 артефактов",
+        "detail": "1 уроков записано",
         "weight": 1.0
       },
       {
         "id": "reflection_depth",
         "name": "Рефлексия глубокая",
         "passed": true,
-        "detail": "рефлексия 1445 символов",
+        "detail": "рефлексия 178 символов",
         "weight": 1.0
       },
       {
@@ -30,31 +30,51 @@
         "id": "novelty",
         "name": "Новизна",
         "passed": false,
-        "detail": "слишком похоже на цикл 17 (sim=1.00)",
+        "detail": "нет созданного для сравнения",
         "weight": 1.2
       },
       {
         "id": "direction_set",
         "name": "Направление задано",
         "passed": true,
-        "detail": "направление задано: Создание открытых инструментов культурной диагностики на осн",
+        "detail": "направление задано: углубление в динамику социальных изменений",
         "weight": 0.8
       }
     ]
   },
   "judge": {
     "verdict": "PASS",
-    "reason": "Рубрикатор: 76%",
-    "llm_available": false
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 76%; Творец: Рубрикатор: 76%; Интегратор: Рубрикатор: 76%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      }
+    ],
+    "llm_available": true
   },
   "tokens": {
     "cycle": 18,
-    "prompt_tokens": 7765,
-    "response_tokens": 2209,
-    "total": 9974,
+    "prompt_tokens": 12690,
+    "response_tokens": 761,
+    "total": 13451,
     "budget": 5000,
     "within_budget": false,
-    "artifact_id": "20260702_135151",
-    "timestamp": "2026-07-02 13:51:53"
+    "artifact_id": "20260728_220623",
+    "timestamp": "2026-07-28 22:06:27"
   }
 }
