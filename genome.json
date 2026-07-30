@@ -18,5 +18,8 @@
       }
     }
   },
-  "activity_framework": ["research", "creation"]
+  "activity_framework": [
+    "research",
+    "creation"
+  ]
 }
