@@ -1,7 +1,7 @@
 {
   "cycle": 38,
-  "timestamp": "2026-07-10 14:36:36",
-  "artifact_id": "20260710_143635",
+  "timestamp": "2026-07-30 23:11:17",
+  "artifact_id": "20260730_231113",
   "rubric": {
     "score": 100.0,
     "criteria": [
@@ -9,14 +9,14 @@
         "id": "artifact_exists",
         "name": "Артефакт существует",
         "passed": true,
-        "detail": "создано 5 артефактов",
+        "detail": "создано 3 артефактов",
         "weight": 1.0
       },
       {
         "id": "reflection_depth",
         "name": "Рефлексия глубокая",
         "passed": true,
-        "detail": "рефлексия 2102 символов",
+        "detail": "рефлексия 643 символов",
         "weight": 1.0
       },
       {
@@ -37,24 +37,44 @@
         "id": "direction_set",
         "name": "Направление задано",
         "passed": true,
-        "detail": "направление задано: От наблюдения за феноменом к его операционализации. Введение",
+        "detail": "направление задано: визуализация, метрики и фильтры для спектрального анализа",
         "weight": 0.8
       }
     ]
   },
   "judge": {
     "verdict": "PASS",
-    "reason": "Рубрикатор: 100%",
-    "llm_available": false
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 100%; Творец: Рубрикатор: 100%; Интегратор: Рубрикатор: 100%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      }
+    ],
+    "llm_available": true
   },
   "tokens": {
     "cycle": 38,
-    "prompt_tokens": 7586,
-    "response_tokens": 4427,
-    "total": 12013,
+    "prompt_tokens": 5522,
+    "response_tokens": 2121,
+    "total": 7643,
     "budget": 5000,
     "within_budget": false,
-    "artifact_id": "20260710_143635",
-    "timestamp": "2026-07-10 14:36:36"
+    "artifact_id": "20260730_231113",
+    "timestamp": "2026-07-30 23:11:17"
   }
 }
