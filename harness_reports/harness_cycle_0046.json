@@ -1,9 +1,9 @@
 {
   "cycle": 46,
-  "timestamp": "2026-07-11 09:41:49",
-  "artifact_id": "20260711_094148",
+  "timestamp": "2026-07-31 21:09:16",
+  "artifact_id": "20260731_210912",
   "rubric": {
-    "score": 76.0,
+    "score": 80.0,
     "criteria": [
       {
         "id": "artifact_exists",
@@ -15,8 +15,8 @@
       {
         "id": "reflection_depth",
         "name": "Рефлексия глубокая",
-        "passed": true,
-        "detail": "рефлексия 2506 символов",
+        "passed": false,
+        "detail": "рефлексия слишком коротка (0 символов)",
         "weight": 1.0
       },
       {
@@ -29,32 +29,52 @@
       {
         "id": "novelty",
         "name": "Новизна",
-        "passed": false,
-        "detail": "слишком похоже на цикл 45 (sim=1.00)",
+        "passed": true,
+        "detail": "достаточная новизна",
         "weight": 1.2
       },
       {
         "id": "direction_set",
         "name": "Направление задано",
         "passed": true,
-        "detail": "направление задано: 1.  **Определить структуру JSON для «лабиринта вопросов».**",
+        "detail": "направление задано: адаптация спектрального анализа для социальных и культурных ",
         "weight": 0.8
       }
     ]
   },
   "judge": {
     "verdict": "PASS",
-    "reason": "Рубрикатор: 76%",
-    "llm_available": false
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 80%; Творец: Рубрикатор: 80%; Интегратор: Рубрикатор: 80%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 80%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 80%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 80%"
+      }
+    ],
+    "llm_available": true
   },
   "tokens": {
     "cycle": 46,
-    "prompt_tokens": 6667,
-    "response_tokens": 3214,
-    "total": 9881,
+    "prompt_tokens": 3071,
+    "response_tokens": 2838,
+    "total": 5909,
     "budget": 5000,
     "within_budget": false,
-    "artifact_id": "20260711_094148",
-    "timestamp": "2026-07-11 09:41:49"
+    "artifact_id": "20260731_210912",
+    "timestamp": "2026-07-31 21:09:16"
   }
 }
