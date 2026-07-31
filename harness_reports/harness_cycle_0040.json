@@ -1,7 +1,7 @@
 {
   "cycle": 40,
-  "timestamp": "2026-07-10 18:40:21",
-  "artifact_id": "20260710_184019",
+  "timestamp": "2026-07-31 06:47:45",
+  "artifact_id": "20260731_064741",
   "rubric": {
     "score": 100.0,
     "criteria": [
@@ -16,7 +16,7 @@
         "id": "reflection_depth",
         "name": "Рефлексия глубокая",
         "passed": true,
-        "detail": "рефлексия 2372 символов",
+        "detail": "рефлексия 1091 символов",
         "weight": 1.0
       },
       {
@@ -37,24 +37,44 @@
         "id": "direction_set",
         "name": "Направление задано",
         "passed": true,
-        "detail": "направление задано: От поиска паттернов — к синтезу архитектурного каркаса. Созд",
+        "detail": "направление задано: интерференция, медлительность и креативный спектральный синт",
         "weight": 0.8
       }
     ]
   },
   "judge": {
     "verdict": "PASS",
-    "reason": "Рубрикатор: 100%",
-    "llm_available": false
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 100%; Творец: Рубрикатор: 100%; Интегратор: Рубрикатор: 100%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      }
+    ],
+    "llm_available": true
   },
   "tokens": {
     "cycle": 40,
-    "prompt_tokens": 7158,
-    "response_tokens": 5279,
-    "total": 12437,
+    "prompt_tokens": 5848,
+    "response_tokens": 2782,
+    "total": 8630,
     "budget": 5000,
     "within_budget": false,
-    "artifact_id": "20260710_184019",
-    "timestamp": "2026-07-10 18:40:21"
+    "artifact_id": "20260731_064741",
+    "timestamp": "2026-07-31 06:47:45"
   }
 }
