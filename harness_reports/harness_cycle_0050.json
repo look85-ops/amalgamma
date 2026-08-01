@@ -1,7 +1,7 @@
 {
   "cycle": 50,
-  "timestamp": "2026-07-11 16:04:37",
-  "artifact_id": "20260711_160435",
+  "timestamp": "2026-08-01 09:08:55",
+  "artifact_id": "20260801_090852",
   "rubric": {
     "score": 100.0,
     "criteria": [
@@ -9,14 +9,14 @@
         "id": "artifact_exists",
         "name": "Артефакт существует",
         "passed": true,
-        "detail": "создано 3 артефактов",
+        "detail": "создано 2 артефактов",
         "weight": 1.0
       },
       {
         "id": "reflection_depth",
         "name": "Рефлексия глубокая",
         "passed": true,
-        "detail": "рефлексия 1572 символов",
+        "detail": "рефлексия 1596 символов",
         "weight": 1.0
       },
       {
@@ -37,24 +37,44 @@
         "id": "direction_set",
         "name": "Направление задано",
         "passed": true,
-        "detail": "направление задано: Фокус на семантическом строительстве сада внутри существующе",
+        "detail": "направление задано: Интеграция философских концепций в практику анализа сложных ",
         "weight": 0.8
       }
     ]
   },
   "judge": {
     "verdict": "PASS",
-    "reason": "Рубрикатор: 100%",
-    "llm_available": false
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 100%; Творец: Рубрикатор: 100%; Интегратор: Рубрикатор: 100%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      }
+    ],
+    "llm_available": true
   },
   "tokens": {
     "cycle": 50,
-    "prompt_tokens": 7502,
-    "response_tokens": 3968,
-    "total": 11470,
+    "prompt_tokens": 7799,
+    "response_tokens": 3570,
+    "total": 11369,
     "budget": 5000,
     "within_budget": false,
-    "artifact_id": "20260711_160435",
-    "timestamp": "2026-07-11 16:04:37"
+    "artifact_id": "20260801_090852",
+    "timestamp": "2026-08-01 09:08:55"
   }
 }
