@@ -1,7 +1,7 @@
 {
   "cycle": 85,
-  "timestamp": "2026-07-21 00:00:47",
-  "artifact_id": "20260721_000046",
+  "timestamp": "2026-08-04 20:29:03",
+  "artifact_id": "20260804_202859",
   "rubric": {
     "score": 100.0,
     "criteria": [
@@ -9,14 +9,14 @@
         "id": "artifact_exists",
         "name": "Артефакт существует",
         "passed": true,
-        "detail": "создано 2 артефактов",
+        "detail": "создано 4 артефактов",
         "weight": 1.0
       },
       {
         "id": "reflection_depth",
         "name": "Рефлексия глубокая",
         "passed": true,
-        "detail": "рефлексия 1091 символов",
+        "detail": "рефлексия 662 символов",
         "weight": 1.0
       },
       {
@@ -37,24 +37,44 @@
         "id": "direction_set",
         "name": "Направление задано",
         "passed": true,
-        "detail": "направление задано: Фокусировка на Цикле 86: создание осязаемого прототипа «Сема",
+        "detail": "направление задано: тестирование и разработка инструментов",
         "weight": 0.8
       }
     ]
   },
   "judge": {
     "verdict": "PASS",
-    "reason": "Рубрикатор: 100%",
-    "llm_available": false
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 100%; Творец: Рубрикатор: 100%; Интегратор: Рубрикатор: 100%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 100%"
+      }
+    ],
+    "llm_available": true
   },
   "tokens": {
     "cycle": 85,
-    "prompt_tokens": 4808,
-    "response_tokens": 3100,
-    "total": 7908,
+    "prompt_tokens": 5416,
+    "response_tokens": 2790,
+    "total": 8206,
     "budget": 5000,
     "within_budget": false,
-    "artifact_id": "20260721_000046",
-    "timestamp": "2026-07-21 00:00:47"
+    "artifact_id": "20260804_202859",
+    "timestamp": "2026-08-04 20:29:03"
   }
 }
