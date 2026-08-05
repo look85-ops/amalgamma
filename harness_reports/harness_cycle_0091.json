@@ -1,22 +1,22 @@
 {
   "cycle": 91,
-  "timestamp": "2026-07-21 15:51:46",
-  "artifact_id": "20260721_155144",
+  "timestamp": "2026-08-05 12:56:34",
+  "artifact_id": "20260805_125629",
   "rubric": {
-    "score": 100.0,
+    "score": 80.0,
     "criteria": [
       {
         "id": "artifact_exists",
         "name": "Артефакт существует",
         "passed": true,
-        "detail": "создано 4 артефактов",
+        "detail": "создано 2 артефактов",
         "weight": 1.0
       },
       {
         "id": "reflection_depth",
         "name": "Рефлексия глубокая",
-        "passed": true,
-        "detail": "рефлексия 1834 символов",
+        "passed": false,
+        "detail": "рефлексия слишком коротка (0 символов)",
         "weight": 1.0
       },
       {
@@ -37,24 +37,44 @@
         "id": "direction_set",
         "name": "Направление задано",
         "passed": true,
-        "detail": "направление задано: Перейти от проектирования к материализации сети. Цикл 92: со",
+        "detail": "направление задано: Создание прототипов и тестирование философских визуализаций,",
         "weight": 0.8
       }
     ]
   },
   "judge": {
     "verdict": "PASS",
-    "reason": "Рубрикатор: 100%",
-    "llm_available": false
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 80%; Творец: Рубрикатор: 80%; Интегратор: Рубрикатор: 80%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 80%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 80%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 80%"
+      }
+    ],
+    "llm_available": true
   },
   "tokens": {
     "cycle": 91,
-    "prompt_tokens": 6210,
-    "response_tokens": 3664,
-    "total": 9874,
+    "prompt_tokens": 5562,
+    "response_tokens": 2087,
+    "total": 7649,
     "budget": 5000,
     "within_budget": false,
-    "artifact_id": "20260721_155144",
-    "timestamp": "2026-07-21 15:51:46"
+    "artifact_id": "20260805_125629",
+    "timestamp": "2026-08-05 12:56:34"
   }
 }
