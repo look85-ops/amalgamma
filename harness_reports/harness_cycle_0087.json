@@ -1,60 +1,80 @@
 {
   "cycle": 87,
-  "timestamp": "2026-07-21 06:32:30",
-  "artifact_id": "20260721_063229",
+  "timestamp": "2026-08-05 00:07:46",
+  "artifact_id": "20260805_000741",
   "rubric": {
-    "score": 20.0,
+    "score": 80.0,
     "criteria": [
       {
         "id": "artifact_exists",
         "name": "Артефакт существует",
-        "passed": false,
-        "detail": "нет созданных артефактов",
+        "passed": true,
+        "detail": "создано 2 артефактов",
         "weight": 1.0
       },
       {
         "id": "reflection_depth",
         "name": "Рефлексия глубокая",
-        "passed": true,
-        "detail": "рефлексия 2073 символов",
+        "passed": false,
+        "detail": "рефлексия слишком коротка (0 символов)",
         "weight": 1.0
       },
       {
         "id": "state_valid",
         "name": "JSON state корректен",
-        "passed": false,
-        "detail": "отсутствуют поля: _evaluation, lessons, created_this_cycle, era, summary, chronicle",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
         "weight": 1.0
       },
       {
         "id": "novelty",
         "name": "Новизна",
-        "passed": false,
-        "detail": "нет созданного для сравнения",
+        "passed": true,
+        "detail": "достаточная новизна",
         "weight": 1.2
       },
       {
         "id": "direction_set",
         "name": "Направление задано",
-        "passed": false,
-        "detail": "направление не задано",
+        "passed": true,
+        "detail": "направление задано: Разработать экспериментальную модель интеграции интерференци",
         "weight": 0.8
       }
     ]
   },
   "judge": {
-    "verdict": "FAIL",
-    "reason": "Рубрикатор: 20%",
-    "llm_available": false
+    "verdict": "PASS",
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 80%; Творец: Рубрикатор: 80%; Интегратор: Рубрикатор: 80%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 80%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 80%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 80%"
+      }
+    ],
+    "llm_available": true
   },
   "tokens": {
     "cycle": 87,
-    "prompt_tokens": 4838,
-    "response_tokens": 3239,
-    "total": 8077,
+    "prompt_tokens": 3345,
+    "response_tokens": 2816,
+    "total": 6161,
     "budget": 5000,
     "within_budget": false,
-    "artifact_id": "20260721_063229",
-    "timestamp": "2026-07-21 06:32:30"
+    "artifact_id": "20260805_000741",
+    "timestamp": "2026-08-05 00:07:46"
   }
 }
