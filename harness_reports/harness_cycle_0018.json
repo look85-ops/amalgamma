@@ -1,0 +1,80 @@
+{
+  "cycle": 18,
+  "timestamp": "2026-07-28 22:06:27",
+  "artifact_id": "20260728_220623",
+  "rubric": {
+    "score": 76.0,
+    "criteria": [
+      {
+        "id": "artifact_exists",
+        "name": "Артефакт существует",
+        "passed": true,
+        "detail": "1 уроков записано",
+        "weight": 1.0
+      },
+      {
+        "id": "reflection_depth",
+        "name": "Рефлексия глубокая",
+        "passed": true,
+        "detail": "рефлексия 178 символов",
+        "weight": 1.0
+      },
+      {
+        "id": "state_valid",
+        "name": "JSON state корректен",
+        "passed": true,
+        "detail": "все обязательные поля присутствуют",
+        "weight": 1.0
+      },
+      {
+        "id": "novelty",
+        "name": "Новизна",
+        "passed": false,
+        "detail": "нет созданного для сравнения",
+        "weight": 1.2
+      },
+      {
+        "id": "direction_set",
+        "name": "Направление задано",
+        "passed": true,
+        "detail": "направление задано: углубление в динамику социальных изменений",
+        "weight": 0.8
+      }
+    ]
+  },
+  "judge": {
+    "verdict": "PASS",
+    "reason": "Большинством судей (3/3): Скептик: Рубрикатор: 76%; Творец: Рубрикатор: 76%; Интегратор: Рубрикатор: 76%",
+    "multi_agent": [
+      {
+        "judge": "skeptic",
+        "name": "Скептик",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      },
+      {
+        "judge": "creator",
+        "name": "Творец",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      },
+      {
+        "judge": "integrator",
+        "name": "Интегратор",
+        "verdict": "PASS",
+        "reason": "Рубрикатор: 76%"
+      }
+    ],
+    "llm_available": true
+  },
+  "tokens": {
+    "cycle": 18,
+    "prompt_tokens": 12690,
+    "response_tokens": 761,
+    "total": 13451,
+    "budget": 5000,
+    "within_budget": false,
+    "artifact_id": "20260728_220623",
+    "timestamp": "2026-07-28 22:06:27"
+  }
+}
