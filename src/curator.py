@@ -21,6 +21,7 @@ from src.mutation_engine import apply_mutation, PARAMETER_SCHEMA, read_state as 
 from src.harness import (run as run_harness, estimate_tokens as estimate_tokens_harness,
                           CYCLE_TOKEN_BUDGET as HARNESS_TOKEN_BUDGET,
                           read_last_harness_report)
+from src.swarm import run_swarm
 CHRONICLES_DIR = BASE_DIR / "chronicles"
 INDEX_PATH = BASE_DIR / "index.html"
 STATE_PATH = BASE_DIR / "state.json"
@@ -753,6 +754,7 @@ genesis: {json.dumps(genome.get('genesis', ''), ensure_ascii=False)[:300]}...
      3b. ПОЭМА — ###POEM###название###текст### (сохранить произведение)
      3c. СКЕТЧ — ###SKETCH###название###текст### (сохранить сценку/зарисовку/образ)
      3d. ЗАДАЧА — ###TASK###описание### (добавить пункт в wiki/TODO.md)
+     3e. РОЙ — ###SWARM###тема### (создать сложный артефакт через команду из трёх ролей: Продюсер → Критик → Интегратор. Используй для больших артефактов, где тебе нужна помощь в качестве: исследование, дайджест, эссе, сравнение. Рой сохранит результат в artifacts/ и ты получишь отклик)
 4. МЕНЯТЬ СЕБЯ — ###CHANGE_SELF###поле:значение###
     (поля: genesis новый_текст — переписать геном целиком,
            sphere_add Имя::актив1,актив2 — добавить сферу,
@@ -1233,6 +1235,39 @@ def process_markers(text, state, cycle, genome=None):
             pass
         log_forage("artifact", "saved", apath.name)
         text = text.replace(m.group(0), f"[Артефакт «{title}» сохранён: artifacts/{apath.name}]")
+
+    # SWARM — сложный артефакт через команду трёх ролей (Продюсер→Критик→Интегратор)
+    swarm_matches = list(re.finditer(r'###SWARM###(.+?)###', text, re.DOTALL))
+    for m in swarm_matches[:1]:
+        topic = m.group(1).strip()
+        action_count += 1
+        if action_count > MAX_ACTIONS_PER_CYCLE:
+            text = text.replace(m.group(0), "[Действие заблокировано: превышен лимит 5 действий за цикл]")
+            log_forage("marker", "blocked", f"swarm limit")
+            continue
+        log_forage("marker", "swarm", f"topic={topic[:60]}")
+        final, draft, critique = run_swarm(call_llm, topic)
+        if not final:
+            text = text.replace(m.group(0), f"[Рой не смог собрать артефакт по теме «{topic}» — попробуй другую тему или создай артефакт вручную]")
+            log_forage("swarm", "failed")
+            continue
+        safe = re.sub(r'[^\w\sа-яА-ЯёЁ-]', '', topic)[:60].strip().replace(' ', '_')
+        art_dir = BASE_DIR / "artifacts"
+        art_dir.mkdir(exist_ok=True)
+        fname = f"swarm_{safe}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.md"
+        apath = art_dir / fname
+        apath.write_text(
+            f"# {safe} (рой)\n\n*Артефакт, собранный командой Продюсер → Критик → Интегратор.*\n"
+            f"*Дата:* {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n---\n\n{final}",
+            encoding="utf-8"
+        )
+        draft_path = art_dir / f"swarm_{safe}_draft_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.md"
+        draft_path.write_text(f"# {safe} — черновик\n\n{draft}", encoding="utf-8")
+        critique_path = art_dir / f"swarm_{safe}_critique_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.md"
+        critique_path.write_text(f"# {safe} — замечания критика\n\n{critique}", encoding="utf-8")
+        state.setdefault("created_this_cycle", []).append(f"swarm-артефакт: {topic}")
+        log_forage("swarm", "saved", apath.name)
+        text = text.replace(m.group(0), f"[Роевой артефакт «{topic}» собран и сохранён: artifacts/{apath.name}]")
 
     # TASK — append a task entry into wiki/TODO.md
     task_matches = list(re.finditer(r'###TASK###(.+?)###', text, re.DOTALL))
