@@ -474,7 +474,8 @@ def _constructivist(palette, bg, intensity):
             stroke_dash = f"{random.randint(3,8)} {random.randint(3,8)}" if random.random() < 0.5 else "none"
             lines_svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke}" stroke-width="0.4" opacity="0.2" stroke-dasharray="{stroke_dash}"/>'
         lines_svg += '</svg>'
-    return f"""<div class="blf">{''.join(blocks)}</div>{lines_svg}"""
+    joined_blocks = "".join(blocks)
+    return f"""<div class="blf">{joined_blocks}</div>{lines_svg}"""
 
 def _css_constructivist(palette, bg):
     bg_lighter = bg
@@ -555,7 +556,8 @@ def _liquid(palette, bg, intensity):
         blobs.append(
             f'<div class="lb" style="left:{x:.0f}%;top:{y:.0f}%;width:{w}vmax;height:{w}vmax;background:radial-gradient(circle,{c}55 0%,{c}15 50%,transparent 75%);--d:{d:.1f}s;--del:{delay:.1f}s"></div>'
         )
-    return f'<div class="lbf">{''.join(blobs)}</div>'
+    joined = "".join(blobs)
+    return f'<div class="lbf">{joined}</div>'
 
 def _css_liquid(palette):
     return """.lbf{position:fixed;inset:0;z-index:2;pointer-events:none;filter:blur(3vmax)}
