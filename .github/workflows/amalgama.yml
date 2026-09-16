@@ -1,9 +1,8 @@
 name: amalgama evolve
 
 on:
-  # FROZEN 2026-08-19: автоцикл отключён по решению Наташи. Включить — вернуть строку:
-  # schedule:
-  #   - cron: "0 * * * *"
+  schedule:
+    - cron: "0 */4 * * *"
   workflow_dispatch:
 
 permissions:

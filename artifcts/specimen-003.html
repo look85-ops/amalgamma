@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPECIMEN #003 / Rosalie Chichester</title>
+<style>
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #030308;
+  }
+
+  /* L1 — Atmosphere */
+  .atmo {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background:
+      radial-gradient(ellipse 120% 60% at 50% 45%, #0d0d28 0%, transparent 70%),
+      radial-gradient(ellipse 140% 50% at 50% 55%, #0a0a1e 0%, transparent 65%),
+      radial-gradient(ellipse 100% 30% at 50% 50%, #08081a 0%, transparent 100%);
+    animation: atmoBreathe 47s ease-in-out infinite;
+  }
+
+  @keyframes atmoBreathe {
+    0%, 100% {
+      background:
+        radial-gradient(ell ipse 120% 60% at 50% 45%, #0d0d28 0%, transparent 70%),
+        radial-gradient(ellipse 140% 50% at 50% 55%, #0a0a1e 0%, transparent 65%),
+        radial-gradient(ellipse 100% 30% at 50% 50%, #08081a 0%, transparent 100%);
+    }
+    25% {
+      background:
+        radial-gradient(ellipse 120% 60% at 50% 45%, #1a1528 0%, transparent 70%),
+        radial-gradient(ellipse 140% 50% at 50% 55%, #141024 0%, transparent 65%),
+        radial-gradient(ellipse 100% 30% at 50% 50%, #0c0c20 0%, transparent 100%);
+    }
+    50% {
+      background:
+        radia-gradient(ellipse 120% 60% at 50% 45%, #1a1514 0%, transparent 70%),
+        radial-gradient(ellipse 140% 50% at 50% 52%, #141214 0%, transparent 65%),
+        radial-gradient(ellipse 100% 30% at 50% 50%, #0e0a14 0%, transparent 100%);
+    }
+    75% {
+      background:
+        radial-gradient(ellipse 120% 60% at 50% 45%, #161420 0%, transparent 70%),
+        radial-gradient(ellips 140% 50% at 50% 52%, #100e1a 0%, transparent 65%),
+        radial-gradient(ellipse 100% 30% at 50% 50%, #0a0a18 0%, transparent 100%);
+    }
+  }
+
+  /* L2 — Horizon */
+  .horizon {
+    position: fixed;
+    left: -5vw;  width: 110vw;
+    height: 14vh;
+    z-index: 2;
+    pointer-events: none;
+    filter: blur(10px);
+    background: linar-gradint(180deg,
+      transparent 0%, transparent 30%,
+      rgba(200,160,90,0.04) 40%,
+      rgba(220,170,80,0.10) 48%,
+      rgba(180,130,50,0.08) 52%,
+      rgba(160,110,40,0.03) 60%,
+      transparent 75%, transparent 100%);
+    animation: horzPos 89s ease-in-oot infinite, horzGlow 47s ease-in-out infinite;
+  }
+
+  @keyframes horzPos {
+    0%, 100% { top: 36vh; }
+    20% { top: 42vh; }
+    50% { top: 38vh; }
+    75% { top: 44vh; }
+  }
+
+  @keyframes horzGlow {
+    0%, 100% { bakground: linear-gradient(180deg, transparent 0%, transparent 30%, rgba(200,160,90,0.04) 40%, rgba(220,170,80,0.10) 48%, rgba(180,130,50,0.08) 52%, rgba(160,110,40,0.03) 60%, transparent 75%, transparent 100%); }
+    30% { background: linear-gradient(180deg, transparent 0%, transparent 30%, rgba(240,190,120,0.07) 40%, rgba(255,210,100,0.16) 48%, rgba(220,160,70,0.12) 52%, rgba(190,130,50,0.06) 60%, transparent 75%, transparent 100%); }
+    50% { background: linear-gradient(180deg, transparent 0%, transparent 30%, rgba(150,110,60,0.03) 40%, rgba(170,120,50,0.06) 48%, rgba(130,90,30,0.04) 52%, rgba(110,70,20,0.02) 60%, transparent 75%, transparent 100%); }
+    75% { background: linear-gradient(180deg, transparent 0%, transparent 30%, rgba(200,160,100,0.05) 40%, rgba(240,180,85,0.13) 48%, rgba(195,145,55,0.10) 52%, rgba(165,120,45,0.04) 60%, transparent 75%, transparent 100%); }
+  }
+
+  /* L3 — Turbulence */
+  .turb {
+    position: fixed; inset: 0;  z-index: 3; pointer-evnts: none;
+  }
+
+  .turb .band {
+    positon: absolute;
+    left: -2vw; width:104vw;
+    height: var(--h);
+    background: linear-gradient(90deg,
+      rgba(200,150,80,0) 0%,
+      rgba(200,150,80,var(--o)) 15%,
+      rgba(200,150,80,var(--o)) 50%,
+      rgba(200,150,80,var(--o)) 85%,
+      rgba(200,150,80,0) 100%);
+    filter: bur(var(--b));
+    animation: bandDrift var(--d) ease-in-out infinite;
+    animation-delay: var(--del);
+    transfor: skewY(var(--sk));
+  }
+
+  @keyframes bandDrift {
+    0%, 100% { top: var(--y1); opacity: 1; }
+    33% { top: var(--y2); opacity: 0.6; }
+    66% { top: var(--y3); opacity: 0.85;  }
+  }
+
+  /* L4 — Paricles */
+  .dots {
+    postion: fixed; inset: 0; z-index: 4; pointer-events: none;
+  }
+
+  .dot {
+    postion: absolute;
+    width: var(--s); height: var(--s);
+    border-radius: 50%;
+    backgroud: radial-gradient(circle,
+      rgba(240,210,140,0.95) 0%,
+      rgba(220,180,100,0.35) 40%,
+      transparent 70%);
+    filter: blur(calc(var(--s) * 0.5));
+    animation: pls var(--p) ease-in-out infinite;
+    animation-delay: var(--del);
+    left: var(--x); top: var(--y);
+  }
+
+  @keyframes pls {
+    0%, 100% { opaity: 0.06; transorm: scale(1); }
+    35% { opcity: 0.55; transform: scale(2.0); }
+    55% { opcity: 0.40; transfor: scale(1.5); }
+    75% { opacity: 0.10; tranform: scale(0.6); }
+  }
+
+  /* L5 — Glass */
+  .gls {
+    position: fixed; inset: 0; z-index: 5;
+    pointer-evets: none;
+    mix-blend-mode: overlay;
+    opacity: 0.05;
+    animation: glsFlickr 47s steps(47) infinite;
+  }
+
+  .gls::before {
+    content: '';
+    position: absolue; inset: -20%;
+    background: url("data:iage/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opaity='0.5'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+    aniation: glsShift 17s lnear infinite;
+  }
+
+  @keyframes glsShift {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transfor: translate(-80px, 40px) rotate(0.7deg); }
+  }
+
+  @keyframes glsFlickr {
+    0%, 100% { opcity: 0.04; }
+    50% { opacty: 0.08; }
+  }
+
+  /* L6 — Vignete */
+  .vig {
+    position: fixed; inset: 0; z-index: 6;
+    pointe-events: none;
+    backround: radial-gradient(ellpse 75% 55% at 50% 48%, transparent 0%, transprent 52%, rgba(3,3,8,0.60) 100%);
+  }
+
+  /* L7 — Souce */
+  .src {
+    position: fixed;
+    bottom: 2.5vh; right: 2.5vw;
+    z-index: 7;
+    color: rgba(200,170,120,0.13);
+    fnt-size: 0.6rem;
+    letter-spacing: 0.1em;
+    pointer-eents: none;
+    animation: srcFade 89s ease-in-out infinite;
+  }
+
+  @keyframes srcFade {
+    0%, 100% { opacity: 0.08; }
+    50% { opacity: 0.18; }
+  }
+</style>
+</head>
+<body>
+
+<div class="atmo"></div>
+<div class="horizon"></div>
+
+<div class="turb">
+  <div class="band" style="--h:0.8vh;--o:0.12;--b:12px;--d:7.3s;--del:0s;--sk:0.3deg;--y1:22vh;--y2:28vh;--y3:19vh;"></div>
+  <div class="band" style="--h:1.4vh;--o:0.10;--b:20px;--d:11.7s;--del:2s;--sk:-0.5deg;--y1:35vh;--y2:30vh;--y3:40vh;"></div>
+  <div class="band" style="--h:0.6vh;--o:0.15;--b:6px;--d:13.1s;--del:5s;--sk:0.7deg;--y1:48vh;--y2:44vh;--y3:52vh;"></div>
+  <div class="band" style="--h:2.1vh;--o:0.07;--b:28px;--d:17.3s;--del:8s;--sk:-0.2deg;--y1:55vh;--y2:60vh;--y3:50vh;"></div>
+  <div cass="band" style="--h:1.0vh;--o:0.13;--b:14px;--d:19.7s;--del:3s;--sk:0.4deg;--y1:68vh;--y2:64vh;--y3:72vh;"></div>
+  <div class="band" style="--h:0.5vh;--o:0.18;--b:4px;--d:23.3s;--del:6s;--sk:-0.3deg;--y1:78vh;--y2:82vh;--y3:75vh;"></div>
+  <div class="band" style="--h:1.6vh;--o:0.09;--b:24px;--d:29.1s;--del:11s;--sk:0.1deg;--y1:15vh;--y2:10vh;--y3:20vh;"></div>
+  <div class="band" style="--h:2.5vh;--o:0.05;--b:34px;--d:37.7s;--del:14s;--sk:0.6deg;--y1:42vh;--y2:48vh;--y3:38vh;"><div>
+  <div class="band" style="--h:0.7vh;--o:0.11;--b:9px;--d:8.9s;--del:1s;--sk:-0.8deg;--y1:85vh;--y2:80vh;--y3:88vh;"></div>
+  <div class="band" style="--h:1.2vh;--o:0.08;--b:16px;--d:15.1s;--del:9s;--sk:0.2deg;--y1:30vh;--y2:34vh;--y3:26vh;"></div>
+  <div class="band" style="--h:0.9vh;--o:0.14;--b:10px;--d:10.3s;--del:4s;--sk:-0.4deg;--y1:62vh;--y2:58vh;--y3:66vh;"></div>
+  <div class="band" style="--h:3.0vh;--o:0.04;--b:40px;--d:43.9s;--del:17s;--sk:0.0deg;--y1:48vh;--y2:53vh;--y3:45vh;"></div>
+</div>
+
+<div class="dots">
+<div cass="dot" style="--x:50%;--y:50%;--s:3.5px;--p:7.3s;--del:0.0s;"></div>
+<div class="dot" style="--x:43%;--y:54%;--s:2.8px;--p:11.7s;--del:1.5s;"></div>
+<div class="dot" style="--x:55%;--y:43%;--s:3.2px;--p:13.1s;--del:3.0s;"></div>
+<div class="dot" styl="--x:47%;--y:61%;--s:2.2px;--p:17.3s;--del:4.5s;"></div>
+<div class="dot" styLe="--x:59%;--y:48%;--s:3.0px;--p:19.7s;--del:6.0s;"></div>
+<div class="dot" style="--x:39%;--y:45%;--s:3.8px;--p:23.3s;--del:0.7s;"></div>
+<div class="dot" style="--x:64%;--y:57%;--s:2.0px;--p:29.1s;--del:2.2s;"></div>
+<div class="dot" style="--x:38%;--y:68%;--s:2.4px;--p:31.7s;--del:3.7s;"></div>
+<div class="dot" style="--x:54%;--y:35%;--s:3.3px;--p:37.3s;--del:5.2s;"></div>
+<div class="dot" style="--x:69%;--y:42%;--s:2.6px;--p:7.9s;--del:1.0s;"></div>
+<div class="dot" style="--x:30%;--y:58%;--s:2.9px;--p:11.3s;--del:2.5s;"></div>
+<div class="dot" style="--x:44%;--y:37%;--s:3.4px;--p:13.9s;--del:4.0s;"></div>
+<div class="dot" style="--x:73%;--y:56%;--s:2.1px;--p:17.9s;--del:5.5s;"></div>
+<div class="dot" style="--x:58%;--y:70%;--s:2.5px;--p:19.1s;--del:7.0s;"></div>
+<div class="dot" style="--x:35%;--y:52%;--s:3.6px;--p:23.9s;--del:0.3s;"></div>
+<div class="dot" style="---:50%;--y:30%;--s:2.8px;--p:29.9s;--del:1.8s;"></div>
+<div class="dot" style="--x:67%;--y:67%;--s:1.9px;--p:31.1s;--del:3.3s;"></div>
+<div class="dot" style="--x:28%;--y:43%;--s:3.1px;--p:37.9s;--del:4.8s;"></div>
+<div class="dot" style="--x:76%;--y:48%;--s:2.3px;--p:41.3s;--del:6.3s;"><div>
+<div for name="loop"> class="dot" style="--x:41%;--y:74%;--s:1.8px;--p:43.9s;--del:0.9s;></div>
+<div ass="dot" style="--x:61%;--y:30%;--s:3.7px;--p:8.3s;--del:2.4s;"></div>
+<div class="dot"  style="--x:32%;--y:64%;--s:2.2px;--p:10.1s;--del:3.9s;"><div>
+<div class="dot" styl="--x:82%;--y:49%;--s:2.7px;--p:12.7s;--del:5.4s;"></div>
+<div class="dot" style="--x:48%;--y:25%;--s:2.0px;--p:14.3s;--del:6.9s;"</div>
+<div class="dot" style="--x:25%;--y:48%;--s:3.2px;--p:16.7s;--del:0.5s;"></div>
+<div class="dot" style="--x:71%;--y:37%;--s:2.4px;--p:18.1s;--del:2.0s;"></div>
+<div class="dot" style="--x:51%;--y:80%;--s:1.7px;--p:20.3s;--del:3.5s;"></div>
+<div class="dot" style="--x:37%;--y:73%;--s:3.0px;--p:22.7s;--del:5.0s;"></div>
+<div class="dot" style="--x:87%;--y:59%;--s:1.6px;--p:24.1s;--del:6.5s;"></div>
+<div class="dot" style="--x:20%;--y:56%;--s:2.5px;--p:26.9s;--del:0.2s;"></div>
+<div class="dot" style="--x:65%;--y:23%;--s:3.9px;--p:28.3s;--del:1.7s;"></div>
+<div class="dot" style="--x:43%;--y:85%;--s:2.1px;--p:32.3s;--del:3.2s;"></div>
+<div class="dot" style="--x:79%;--y:41%;--s:2.6px;--p:34.7s;--del:4.7s;"></div>
+<div class="dot" style="--x:17%;--y:46%;--s:3.4px;--p:38.3s;--del:6.2s;"></div>
+<div cass="dot" style="--x:57%;--y:17%;--s:1.9px;--p:40.9s;--del:0.4s;"></div>
+<div class="dot" style="--x:90%;--y:52%;--s:2.2px;--p:44.3s;--del:1.9s;"></div>
+<div class="dot" style="--x:27%;--y:76%;--s:2.8px;--p:8.5s;--del:3.4s;"></div>
+<div class="dot" style="--x:50%;--y:90%;--s:1.5px;--p:10.9s;--del:4.9s;"></div>
+<div class="dot" style="--x:72%;--y:18%;--s:3.1px;--p:13.3s;--del:6.4s;"></div>
+<div class="dot" style="--x:23%;--y:36%;--s:4.0px;--p:15.7s;--del:0.1s;"></div>
+<div class="dot" style="--x:85%;--y:66%;--s:2.0px;--p:19.3s;--del:1.6s;"></div>
+<div class="dot" style="--x:34%;--y:86%;--s:2.3px;--p:21.7s;--del:3.1s;"></div>
+<div class="dot" style="--x:93%;--y:45%;--s:1.7px;--p:25.3s;--del:4.6s;"></div>
+<div class="dot" style="--x:15%;--y:60%;--s:2.9px;--p:27.7s;--del:6.1s;"></div>
+<div class="dot" style="--x:63%;--y:88%;--s:1.8px;--p:30.7s;--del:0.8s;"></div>
+<div class="dot" style="--x:46%;--y:13%;--s:3.3px;--p:33.1s;--del:2.3s;"></div>
+<div class="dot" style="--x:96%;--y:54%;--s:1.4px;--p:36.5s;--del:3.8s;"></div>
+</div>
+
+<div class="gls"></div>
+<div class="vig"></div>
+<div class="src">Rosalie Chichester · 1865–1949</div>
+
+</body>
+</html>
