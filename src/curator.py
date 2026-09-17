@@ -686,19 +686,15 @@ def main():
         print("  [stopped: budget exhausted]")
         return
 
-    sources = [fetch_wikipedia, fetch_news]
-    chosen = random.choice(sources)
-    source_name = "rss" if chosen == fetch_news else "wikipedia"
-
-    article = chosen()
+    article = fetch_news()
+    source_name = "rss"
     if not article:
-        if chosen == fetch_news:
-            print("  [rss failed, falling back to wikipedia]")
-            article = fetch_wikipedia()
-            source_name = "wikipedia"
-        if not article:
-            print("  [no article fetched]")
-            return
+        print("  [rss failed, trying wikipedia fallback]")
+        article = fetch_wikipedia()
+        source_name = "wikipedia"
+    if not article:
+        print("  [no article fetched]")
+        return
 
     print(f"  source:  {source_name}")
     print(f"  article: {article['title']}")
