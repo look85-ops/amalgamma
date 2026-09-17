@@ -29,7 +29,6 @@ jobs:
           FREE_API_KEYS: ${{ secrets.FREE_API_KEYS }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
         run: python src/curator.py
 
       - name: Commit new cycle

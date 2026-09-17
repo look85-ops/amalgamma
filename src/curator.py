@@ -100,32 +100,42 @@ def write_state(state):
     STATE_PATH.write_text(json.dumps(state, indent=2), encoding="utf-8")
 
 
-NEWSAPI_KEY = os.environ.get("NEWSAPI_KEY", "")
+import xml.etree.ElementTree as ET
+
+RSS_FEEDS = [
+    "http://feeds.bbci.co.uk/news/rss.xml",
+    "https://feeds.npr.org/1001/rss.xml",
+]
 
 
 def fetch_news():
-    if not NEWSAPI_KEY:
-        return None
+    feed_url = random.choice(RSS_FEEDS)
     try:
-        url = f"https://newsapi.org/v2/top-headlines?language=en&pageSize=20&apiKey={NEWSAPI_KEY}"
-        resp = requests.get(url, timeout=15)
-        if resp.status_code == 200:
-            data = resp.json()
-            articles = data.get("articles", [])
-            if articles:
-                article = random.choice(articles)
-                title = article.get("title", "")
-                description = article.get("description", "") or ""
-                source_name = article.get("source", {}).get("name", "")
-                url_article = article.get("url", "")
-                text = description if len(description) > 50 else ""
-                if not text:
-                    text = article.get("content", "") or ""
-                log_forage("newsapi", "fetched", f"{source_name}: {title[:50]}")
-                return {"title": title, "extract": text, "description": source_name, "url": url_article}
-        log_forage("newsapi", f"HTTP {resp.status_code}")
+        resp = requests.get(feed_url, timeout=15, headers={"User-Agent": "Amalgamma/2.0"})
+        if resp.status_code != 200:
+            log_forage("rss", f"HTTP {resp.status_code}", feed_url[:40])
+            return None
+        root = ET.fromstring(resp.content)
+        items = root.findall(".//item")
+        if not items:
+            log_forage("rss", "no items")
+            return None
+        item = random.choice(items)
+        title = (item.findtext("title") or "").strip()
+        description = (item.findtext("description") or "").strip()
+        if description:
+            description = re.sub(r"<[^>]+>", "", description)
+            description = re.sub(r"\s+", " ", description)
+        source = feed_url.split("//")[1].split("/")[0]
+        log_forage("rss", "fetched", f"{source}: {title[:50]}")
+        return {
+            "title": title,
+            "extract": description if len(description) > 50 else title,
+            "description": source,
+            "url": item.findtext("link", "")
+        }
     except Exception as e:
-        log_forage("newsapi", "fail", str(e)[:60])
+        log_forage("rss", "fail", str(e)[:60])
     return None
 
 
@@ -676,17 +686,16 @@ def main():
         print("  [stopped: budget exhausted]")
         return
 
-    sources = [fetch_wikipedia]
-    if NEWSAPI_KEY:
-        sources.append(fetch_news)
+    sources = [fetch_wikipedia, fetch_news]
     chosen = random.choice(sources)
-    source_name = "newsapi" if chosen == fetch_news else "wikipedia"
+    source_name = "rss" if chosen == fetch_news else "wikipedia"
 
     article = chosen()
     if not article:
         if chosen == fetch_news:
-            print("  [newsapi failed, falling back to wikipedia]")
+            print("  [rss failed, falling back to wikipedia]")
             article = fetch_wikipedia()
+            source_name = "wikipedia"
         if not article:
             print("  [no article fetched]")
             return
