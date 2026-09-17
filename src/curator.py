@@ -100,6 +100,35 @@ def write_state(state):
     STATE_PATH.write_text(json.dumps(state, indent=2), encoding="utf-8")
 
 
+NEWSAPI_KEY = os.environ.get("NEWSAPI_KEY", "")
+
+
+def fetch_news():
+    if not NEWSAPI_KEY:
+        return None
+    try:
+        url = f"https://newsapi.org/v2/top-headlines?language=en&pageSize=20&apiKey={NEWSAPI_KEY}"
+        resp = requests.get(url, timeout=15)
+        if resp.status_code == 200:
+            data = resp.json()
+            articles = data.get("articles", [])
+            if articles:
+                article = random.choice(articles)
+                title = article.get("title", "")
+                description = article.get("description", "") or ""
+                source_name = article.get("source", {}).get("name", "")
+                url_article = article.get("url", "")
+                text = description if len(description) > 50 else ""
+                if not text:
+                    text = article.get("content", "") or ""
+                log_forage("newsapi", "fetched", f"{source_name}: {title[:50]}")
+                return {"title": title, "extract": text, "description": source_name, "url": url_article}
+        log_forage("newsapi", f"HTTP {resp.status_code}")
+    except Exception as e:
+        log_forage("newsapi", "fail", str(e)[:60])
+    return None
+
+
 # ── Wikipedia source ───────────────────────────────────────────────
 
 def fetch_wikipedia():
@@ -647,11 +676,22 @@ def main():
         print("  [stopped: budget exhausted]")
         return
 
-    article = fetch_wikipedia()
-    if not article:
-        print("  [no article fetched]")
-        return
+    sources = [fetch_wikipedia]
+    if NEWSAPI_KEY:
+        sources.append(fetch_news)
+    chosen = random.choice(sources)
+    source_name = "newsapi" if chosen == fetch_news else "wikipedia"
 
+    article = chosen()
+    if not article:
+        if chosen == fetch_news:
+            print("  [newsapi failed, falling back to wikipedia]")
+            article = fetch_wikipedia()
+        if not article:
+            print("  [no article fetched]")
+            return
+
+    print(f"  source:  {source_name}")
     print(f"  article: {article['title']}")
     print(f"  {article.get('description', '')}")
     print()
