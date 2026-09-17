@@ -817,7 +817,11 @@ def main():
     print()
 
     try:
-        json_match = re.search(r'\{.*\}', response, re.DOTALL)
+        response_clean = response.strip()
+        if response_clean.startswith("```"):
+            response_clean = re.sub(r"^```(?:json)?\s*", "", response_clean)
+            response_clean = re.sub(r"\s*```$", "", response_clean)
+        json_match = re.search(r'\{.*\}', response_clean, re.DOTALL)
         if json_match:
             vision = json.loads(json_match.group(0))
         else:
