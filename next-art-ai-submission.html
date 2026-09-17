@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amalgama — NEXT ART AI 2026</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100vw;height:100vh;overflow:hidden;background:#000}
+
+.stage{position:fixed;inset:0}
+.scene{position:absolute;inset:0;opacity:0}
+
+/* ── Scene 1: Liquid ── */
+.scene1{opacity:1;z-index:1}
+.s1-bg{position:absolute;inset:0;background:#F4FF8C}
+.lbf{position:fixed;inset:0;z-index:2;pointer-events:none;filter:blur(3vmax)}
+.lb{position:absolute;border-radius:50%;transform:translate(-50%,-50%);animation:l_morph var(--d) ease-in-out infinite;animation-delay:var(--del)}
+@keyframes l_morph{0%,100%{transform:translate(-50%,-50%) scale(.8) rotate(0deg);opacity:.25}33%{transform:translate(-50%,-50%) scale(1.3) rotate(15deg);opacity:.55}66%{transform:translate(-50%,-50%) scale(.6) rotate(-10deg);opacity:.35}}
+
+/* ── Scene 2: Constructivist ── */
+.scene2{z-index:2}
+.s2-bg{position:absolute;inset:0;background:#4a1c1a}
+.blf{position:fixed;inset:0;z-index:2;pointer-events:none}
+.bl{position:absolute;height:var(--w);aspect-ratio:1;animation:bl_rise var(--d) ease-in-out infinite;animation-delay:var(--dl);border-radius:calc(var(--br)*1px);opacity:0}
+@keyframes bl_rise{0%,100%{opacity:.08;transform:translateY(0)}40%{opacity:.25;transform:translateY(-3vh)}70%{opacity:.12;transform:translateY(1vh)}}
+.gls{position:fixed;inset:0;z-index:5;pointer-events:none;mix-blend-mode:overlay;opacity:.04;animation:g_flick 47s steps(47) infinite}
+.gls::before{content:"";position:absolute;inset:-20%;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");background-size:256px 256px;animation:g_shift 17s linear infinite}
+@keyframes g_shift{0%{transform:translate(0.0) rotate(0deg)}100%{transform:translate(-80px,40px) rotate(.7deg)}}
+@keyframes g_flick{0%,100%{opacity:.03}50%{opacity:.07}}
+
+/* ── Scene 3: Pulse ── */
+.scene3{z-index:3}
+.s3-bg{position:absolute;inset:0;background:#352c57}
+.ppf{position:fixed;inset:0;z-index:2;pointer-events:none}
+.pf{position:absolute;transform:translate(-50%,-50%);border-radius:50%;animation:p_beat var(--p) ease-in-out infinite;animation-delay:var(--del)}
+@keyframes p_beat{0%,100%{transform:translate(-50%,-50%) scale(.7);opacity:.25}50%{transform:translate(-50%,-50%) scale(1.4);opacity:.7}}
+
+/* ── Crossfade timeline (60s total) ── */
+/* 0-19s: scene1 full, 19-21s: crossfade 1→2, 21-39s: scene2 full, 39-41s: crossfade 2→3, 41-60s: scene3 full */
+.scene1{animation:s1_fade 60s linear infinite}
+.scene2{animation:s2_fade 60s linear infinite}
+.scene3{animation:s3_fade 60s linear infinite}
+
+@keyframes s1_fade{0%,30%{opacity:1}35%,100%{opacity:0}}
+@keyframes s2_fade{0%,30%{opacity:0}35%,65%{opacity:1}70%,100%{opacity:0}}
+@keyframes s3_fade{0%,65%{opacity:0}70%,100%{opacity:1}}
+
+/* ── Shared ── */
+.vig{position:fixed;inset:0;z-index:10;pointer-events:none;background:radial-gradient(ellipse 75% 55% at 50% 48%,transparent 0%,transparent 55%,rgba(0,0,0,.55) 100%)}
+.src{position:fixed;bottom:2.8vh;right:3vw;z-index:12;color:rgba(255,255,255,.35);font-size:.65rem;letter-spacing:.06em;pointer-events:none;font-family:system-ui,sans-serif;text-align:right}
+.src .line{display:block}
+.src1{animation:s1_fade 60s linear infinite}
+.src2{animation:s2_fade 60s linear infinite}
+.src3{animation:s3_fade 60s linear infinite}
+</style>
+</head>
+<body>
+
+<!-- Scene 1: Liquid -->
+<div class="stage scene scene1">
+  <div class="s1-bg"></div>
+  <div class="lbf">
+    <div class="lb" style="left:59%;top:65%;width:70vmax;height:70vmax;background:radial-gradient(circle,#1044dc55 0%,#1044dc15 50%,transparent 75%);--d:36.5s;--del:0s"></div>
+    <div class="lb" style="left:15%;top:-2%;width:22vmax;height:22vmax;background:radial-gradient(circle,#f43dff55 0%,#f43dff15 50%,transparent 75%);--d:44.5s;--del:-3s"></div>
+    <div class="lb" style="left:87%;top:40%;width:25vmax;height:25vmax;background:radial-gradient(circle,#f43dff55 0%,#f43dff15 50%,transparent 75%);--d:48.5s;--del:-6s"></div>
+    <div class="lb" style="left:5%;top:29%;width:21vmax;height:21vmax;background:radial-gradient(circle,#1044dc55 0%,#1044dc15 50%,transparent 75%);--d:33.5s;--del:-9s"></div>
+    <div class="lb" style="left:9%;top:-14%;width:60vmax;height:60vmax;background:radial-gradient(circle,#1044dc55 0%,#1044dc15 50%,transparent 75%);--d:30.5s;--del:-12s"></div>
+    <div class="lb" style="left:90%;top:64%;width:52vmax;height:52vmax;background:radial-gradient(circle,#1044dc55 0%,#1044dc15 50%,transparent 75%);--d:35.5s;--del:-2s"></div>
+    <div class="lb" style="left:72%;top:49%;width:28vmax;height:28vmax;background:radial-gradient(circle,#47ffa755 0%,#47ffa715 50%,transparent 75%);--d:29.5s;--del:-8s"></div>
+    <div class="lb" style="left:23%;top:25%;width:41vmax;height:41vmax;background:radial-gradient(circle,#47ffa755 0%,#47ffa715 50%,transparent 75%);--d:41.5s;--del:-5s"></div>
+    <div class="lb" style="left:52%;top:8%;width:43vmax;height:43vmax;background:radial-gradient(circle,#1044dc55 0%,#1044dc15 50%,transparent 75%);--d:21.5s;--del:-15s"></div>
+    <div class="lb" style="left:-18%;top:85%;width:30vmax;height:30vmax;background:radial-gradient(circle,#1044dc55 0%,#1044dc15 50%,transparent 75%);--d:26.5s;--del:-11s"></div>
+  </div>
+</div>
+
+<!-- Scene 2: Constructivist -->
+<div class="stage scene scene2">
+  <div class="s2-bg"></div>
+  <div class="blf">
+    <div class="bl" style="left:71%;top:62%;--w:12.2vw;width:var(--w);background:#dba27c;--d:12.5s;--dl:0s;--br:38"></div>
+    <div class="bl" style="left:21%;top:25%;--w:10.9vw;width:var(--w);background:#ae4e38;--d:8.6s;--dl:-2s;--br:42"></div>
+    <div class="bl" style="left:70%;top:65%;--w:14.4vw;width:var(--w);background:#a8983c;--d:18.8s;--dl:-4s;--br:26"></div>
+    <div class="bl" style="left:6%;top:45%;--w:8.7vw;width:var(--w);background:#5c768c;--d:12.3s;--dl:-1s;--br:23"></div>
+    <div class="bl" style="left:51%;top:34%;--w:12.3vw;width:var(--w);background:#dba27c;--d:25.3s;--dl:-3s;--br:47"></div>
+    <div class="bl" style="left:46%;top:24%;--w:5.3vw;width:var(--w);background:#a8983c;--d:15.0s;--dl:-7s;--br:25"></div>
+    <div class="bl" style="left:77%;top:70%;--w:15.6vw;width:var(--w);background:#a8983c;--d:17.5s;--dl:-5s;--br:28"></div>
+    <div class="bl" style="left:25%;top:60%;--w:6.4vw;width:var(--w);background:#a8983c;--d:25.6s;--dl:-9s;--br:28"></div>
+    <div class="bl" style="left:57%;top:48%;--w:8.8vw;width:var(--w);background:#ae4e38;--d:15.6s;--dl:-6s;--br:36"></div>
+    <div class="bl" style="left:65%;top:57%;--w:7.5vw;width:var(--w);background:#ae4e38;--d:18.1s;--dl:-11s;--br:28"></div>
+    <div class="bl" style="left:49%;top:59%;--w:15.3vw;width:var(--w);background:#a8983c;--d:14.2s;--dl:-8s;--br:22"></div>
+    <div class="bl" style="left:17%;top:27%;--w:11.2vw;width:var(--w);background:#ae4e38;--d:8.7s;--dl:-10s;--br:28"></div>
+    <div class="bl" style="left:50%;top:52%;--w:10.5vw;width:var(--w);background:#a8983c;--d:6.8s;--dl:-4s;--br:27"></div>
+    <div class="bl" style="left:79%;top:35%;--w:15.8vw;width:var(--w);background:#ae4e38;--d:24.8s;--dl:-1s;--br:22"></div>
+    <div class="bl" style="left:19%;top:65%;--w:9.3vw;width:var(--w);background:#5c768c;--d:9.7s;--dl:-7s;--br:42"></div>
+  </div>
+  <div class="gls"></div>
+</div>
+
+<!-- Scene 3: Pulse -->
+<div class="stage scene scene3">
+  <div class="s3-bg"></div>
+  <div class="ppf">
+    <div class="pf" style="left:73%;top:71%;width:40vmin;height:8vmin;background:radial-gradient(circle,#e09c4266 0%,#e09c4222 35%,transparent 70%);--p:47s;--del:0s"></div>
+    <div class="pf" style="left:24%;top:58%;width:28vmin;height:6vmin;background:radial-gradient(circle,#e09c4266 0%,#e09c4222 35%,transparent 70%);--p:43s;--del:-3s"></div>
+    <div class="pf" style="left:22%;top:58%;width:18vmin;height:4vmin;background:radial-gradient(circle,#7acfd666 0%,#7acfd622 35%,transparent 70%);--p:41s;--del:-6s"></div>
+    <div class="pf" style="left:50%;top:45%;width:45vmin;height:10vmin;background:radial-gradient(circle,#e09c4266 0%,#e09c4222 35%,transparent 70%);--p:53s;--del:-9s"></div>
+    <div class="pf" style="left:65%;top:35%;width:20vmin;height:5vmin;background:radial-gradient(circle,#7acfd666 0%,#7acfd622 35%,transparent 70%);--p:37s;--del:-12s"></div>
+  </div>
+</div>
+
+<div class="vig"></div>
+<div class="src src1"><span class="line">current inspiration: 'I can get more time — that's everything':</span><span class="line">Breast cancer patients get life-extending drug</span></div>
+<div class="src src2"><span class="line">current inspiration: Walnut Park West, St. Louis</span></div>
+<div class="src src3"><span class="line">current inspiration: Tătărăni</span></div>
+
+</body>
+</html>

@@ -26,7 +26,7 @@ Temperature follows a 14-day sine wave with occasional random spikes — some re
 
 Amalgamma is one half of a pair:
 
-- **Digital Garden** — creates text artifacts that live 4 hours and vanish. *Letting go.*
+- **[Digital Garden](https://github.com/look85-ops/digital-garden)** — creates text artifacts that live 4 hours and vanish. *Letting go.*
 - **Amalgamma** — reflects the news cycle. *Witnessing.*
 
 One releases, the other receives. Together they ask: what happens to a signal when you stop holding on to it?
