@@ -10,12 +10,13 @@ RSS feed (BBC/NPR) → LLM interprets mood & palette → algorithm generates CSS
 
 1. **Source** — a real headline from `feeds.bbci.co.uk` or `feeds.npr.org`
 2. **LLM** — free or paid backend interprets: mood, palette, structure, motion
-3. **Grammar** — one of five visual grammars is selected based on the LLM's vision:
-   - **atmospheric** — horizon, bands, particles, glass texture
-   - **constructivist** — geometric blocks, SVG connection lines, paper-like background
-   - **field** — dense point field, organic distribution, slow breathing
-   - **pulse** — a single luminous form throbbing in darkness
-   - **liquid** — overlapping translucent organic shapes bleeding into each other
+3. **Grammar** — one of six visual grammars selected by the LLM, with a 25% chance of random hybrid override:
+    - **atmospheric** — horizon, bands, particles, glass texture
+    - **constructivist** — geometric blocks, SVG connection lines, paper-like background
+    - **field** — dense point field, organic distribution, slow breathing
+    - **pulse** — luminous forms throbbing in darkness
+    - **liquid** — overlapping translucent organic shapes bleeding into each other
+    - **hybrid** — random 2–4 grammars layered together
 4. **Artifact** — a self-contained HTML file: fullscreen, no scrollbars, hypnotic animation
 5. **Cycle** — every 4 hours. The previous reflection disappears. Only the current one exists.
 
