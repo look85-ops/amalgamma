@@ -362,8 +362,12 @@ def build_prompt(article):
         f"Create an abstract visual composition that REFLECTS the feeling of this article. "
         f"Not an illustration — a visual equivalent. Like the article's shadow on water.\n\n"
         f"Temperature: {temp} (0=cold/coherent, 2=hot/glitchy). "
-        f"Let temperature affect your choices: low temp = restrained palette and slow motion, "
-        f"high temp = surprising colours and erratic rhythms.\n\n"
+        f"Let temperature affect your choices: low temp = restrained, "
+        f"high temp = surprising, clashing, unexpected.\n\n"
+        f"IMPORTANT: avoid dark/muted palettes. Prefer bold, contrasting colours. "
+        f"Never repeat the same colour twice. "
+        f"Avoid navy, dark purple, dark brown, dark grey as backgrounds — "
+        f"use them only as accents. Backgrounds should be vivid or unexpected.\n\n"
         f"Respond with a JSON object (only JSON, no markdown):\n"
         f'{{"bg":"hex background colour",\n'
         f' "palette":["hex","hex","hex","hex"],\n'
@@ -412,7 +416,7 @@ def generate_html(vision, article_title, article_url, cycle_num):
     c3 = palette[2] if len(palette) > 2 else "#e8dcc8"
     c4 = palette[3] if len(palette) > 3 else "#2a2540"
 
-    if random.random() < 0.35 and grammar != "hybrid":
+    if random.random() < 0.50 and grammar != "hybrid":
         grammar = "hybrid"
         print(f"  grammar override → hybrid")
 
@@ -720,6 +724,60 @@ def _bands(palette):
 # Glass CSS inlined in main generate_html for simplicity
 
 
+# ── Palette shifter ─────────────────────────────────────────────────
+
+def hex_to_hsl(hex_color):
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16) / 255.0, int(h[2:4], 16) / 255.0, int(h[4:6], 16) / 255.0
+    cmax, cmin = max(r, g, b), min(r, g, b)
+    delta = cmax - cmin
+    l = (cmax + cmin) / 2
+    if delta == 0:
+        return 0, 0, l
+    s = delta / (1 - abs(2 * l - 1))
+    if cmax == r:
+        h_val = ((g - b) / delta) % 6
+    elif cmax == g:
+        h_val = (b - r) / delta + 2
+    else:
+        h_val = (r - g) / delta + 4
+    return h_val * 60, s, l
+
+
+def hsl_to_hex(h, s, l):
+    c = (1 - abs(2 * l - 1)) * s
+    x = c * (1 - abs((h / 60) % 2 - 1))
+    m = l - c / 2
+    if h < 60:
+        r, g, b = c, x, 0
+    elif h < 120:
+        r, g, b = x, c, 0
+    elif h < 180:
+        r, g, b = 0, c, x
+    elif h < 240:
+        r, g, b = 0, x, c
+    elif h < 300:
+        r, g, b = x, 0, c
+    else:
+        r, g, b = c, 0, x
+    return f"#{(int((r+m)*255)):02x}{(int((g+m)*255)):02x}{(int((b+m)*255)):02x}"
+
+
+def shift_palette(palette):
+    shift = random.uniform(-45, 45)
+    shifted = []
+    for c in palette:
+        try:
+            h, s, l = hex_to_hsl(c)
+            h = (h + shift + random.uniform(-15, 15)) % 360
+            s = min(1.0, max(0.15, s + random.uniform(-0.15, 0.15)))
+            l = min(0.85, max(0.10, l + random.uniform(-0.1, 0.1)))
+            shifted.append(hsl_to_hex(h, s, l))
+        except (ValueError, IndexError):
+            shifted.append(c)
+    return shifted
+
+
 # ── Main ────────────────────────────────────────────────────────────
 
 def main():
@@ -768,17 +826,20 @@ def main():
                 "bg": "#0a0a14",
                 "palette": ["#b7f562", "#8b6fc0", "#e8dcc8", "#2a2540"],
                 "mood": "quiet",
+                "grammar": "atmospheric",
                 "structure": "atmospheric field with drifting particles",
                 "animation": "slow breathing, drifting bands"
             }
+        vision["palette"] = shift_palette(vision.get("palette", []))
         print(f"  mood: {vision.get('mood', '?')}")
         print(f"  palette: {', '.join(vision.get('palette', []))}")
     except json.JSONDecodeError:
         print("  [JSON parse failed, using fallback]")
         vision = {
             "bg": "#0a0a14",
-            "palette": ["#b7f562", "#8b6fc0", "#e8dcc8", "#2a2540"],
+            "palette": shift_palette(["#b7f562", "#8b6fc0", "#e8dcc8", "#2a2540"]),
             "mood": "quiet",
+            "grammar": "atmospheric",
             "structure": "atmospheric field with drifting particles",
             "animation": "slow breathing, drifting bands"
         }
