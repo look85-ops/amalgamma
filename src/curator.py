@@ -412,7 +412,7 @@ def generate_html(vision, article_title, article_url, cycle_num):
     c3 = palette[2] if len(palette) > 2 else "#e8dcc8"
     c4 = palette[3] if len(palette) > 3 else "#2a2540"
 
-    if random.random() < 0.25 and grammar != "hybrid":
+    if random.random() < 0.35 and grammar != "hybrid":
         grammar = "hybrid"
         print(f"  grammar override → hybrid")
 
