@@ -368,7 +368,7 @@ def build_prompt(article):
         f'{{"bg":"hex background colour",\n'
         f' "palette":["hex","hex","hex","hex"],\n'
         f' "mood":"one word — emotional tone",\n'
-        f' "grammar":"one of: atmospheric | constructivist | field | pulse | liquid",\n'
+        f' "grammar":"one of: atmospheric | constructivist | field | pulse | liquid | hybrid",\n'
         f' "intensity":"low | medium | high",\n'
         f' "structure":"visual description (20-30 words) — what fills the screen? layers, shapes, scale",\n'
         f' "animation":"motion description (10-15 words) — rhythm, speed, what moves"}}'
@@ -379,7 +379,7 @@ def build_prompt(article):
 
 def select_grammar(vision):
     grammar = vision.get("grammar", "").lower().strip()
-    valid = {"atmospheric", "constructivist", "field", "pulse", "liquid"}
+    valid = {"atmospheric", "constructivist", "field", "pulse", "liquid", "hybrid"}
     if grammar in valid:
         return grammar
     structure = vision.get("structure", "").lower()
@@ -412,6 +412,10 @@ def generate_html(vision, article_title, article_url, cycle_num):
     c3 = palette[2] if len(palette) > 2 else "#e8dcc8"
     c4 = palette[3] if len(palette) > 3 else "#2a2540"
 
+    if random.random() < 0.25 and grammar != "hybrid":
+        grammar = "hybrid"
+        print(f"  grammar override → hybrid")
+
     body_layers = ""
     css_extra = ""
     glass_html = _glass_layer()
@@ -436,6 +440,8 @@ def generate_html(vision, article_title, article_url, cycle_num):
         css_extra = _css_liquid(palette)
         glass_html = ""
         glass_css = ""
+    elif grammar == "hybrid":
+        body_layers, css_extra, glass_html, glass_css = _hybrid(palette, bg, intensity)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -602,6 +608,51 @@ def _css_liquid(palette):
     return """.lbf{position:fixed;inset:0;z-index:2;pointer-events:none;filter:blur(3vmax)}
 .lb{position:absolute;border-radius:50%;transform:translate(-50%,-50%);animation:l_morph var(--d) ease-in-out infinite;animation-delay:var(--del)}
 @keyframes l_morph{0%,100%{transform:translate(-50%,-50%) scale(.8) rotate(0deg);opacity:.25}33%{transform:translate(-50%,-50%) scale(1.3) rotate(15deg);opacity:.55}66%{transform:translate(-50%,-50%) scale(.6) rotate(-10deg);opacity:.35}}"""
+
+
+# ── Grammar: hybrid ─────────────────────────────────────────────────
+
+def _hybrid(palette, bg, intensity):
+    grammars = ["atmospheric", "constructivist", "field", "pulse", "liquid"]
+    random.shuffle(grammars)
+    count = random.randint(2, 4)
+    selected = grammars[:count]
+    print(f"  hybrid combo: {' + '.join(selected)}")
+
+    body_layers = ""
+    css_extra = ""
+    glass_html = ""
+    glass_css = ""
+    z_idx = 1
+
+    for g in selected:
+        if g == "atmospheric":
+            body_layers += _atmospheric(palette, bg, intensity)
+            css_extra += _css_atmospheric(palette)
+            if not glass_html:
+                glass_html = _glass_layer()
+                glass_css = _css_glass()
+        elif g == "constructivist":
+            body_layers += _constructivist(palette, bg, intensity)
+            css_extra += _css_constructivist(palette, bg)
+            if not glass_html:
+                glass_html = _glass_layer()
+                glass_css = _css_glass()
+        elif g == "field":
+            body_layers += _field(palette, bg, intensity)
+            css_extra += _css_field(palette)
+            if not glass_html:
+                glass_html = _glass_layer()
+                glass_css = _css_glass()
+        elif g == "pulse":
+            body_layers += _pulse(palette, bg, intensity)
+            css_extra += _css_pulse(palette)
+        elif g == "liquid":
+            body_layers += _liquid(palette, bg, intensity)
+            css_extra += _css_liquid(palette)
+        z_idx += 1
+
+    return body_layers, css_extra, glass_html, glass_css
 
 
 # ── Glass layer ────────────────────────────────────────────────────
