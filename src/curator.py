@@ -432,15 +432,30 @@ def _parse_primitives(structure, gesture, mood, intensity):
         c, sz, sp = _mod(1, 3, 25, 60, 0.3, 1.5, intensity)
         primitives.append(("pulses", c, sz, sp))
 
-    if not primitives:
+    # colour field — the zero-primitive state. Just the background breathing.
+    # Triggered by: emptiness, silence, solitude, or when no other primitives match.
+    colour_field_words = ["void", "empty", "silence", "nothing", "alone", "solitude", "still",
+                          "quiet", "bare", "naked", "pure", "single", "one", "only", "just"]
+    has_cf = has(colour_field_words)
+
+    if not primitives and not has_cf:
         return None
 
-    # glass texture is always on — digital materiality, like paint weight
-    glass = True
+    # minimalism: 0-2 forms. Sometimes the statement IS the silence.
+    # colour field gets selected when nothing else fits, or when mood is quiet/solitary
+    if has_cf or (not primitives):
+        primitives.append(("field", 0, 0, 0))
+
+    glass = random.random() < 0.5  # 50% — sometimes raw, sometimes textured
 
     random.shuffle(primitives)
-    # minimalism: 1-2 forms, rarely 3
-    n = min(len(primitives), random.choices([1, 2, 3], weights=[0.5, 0.35, 0.15], k=1)[0])
+    # 0 primitives = just colour field (the "field" dummy). N picks from remaining.
+    n_options = [0, 1, 2]
+    n_weights = [0.20, 0.50, 0.30]
+    if has_cf or mood in ["quiet", "still", "alone", "solitude", "silence", "void", "empty", "bare"]:
+        n_weights = [0.40, 0.40, 0.20]  # more zero-primitive compositions
+    n = random.choices(n_options, weights=n_weights, k=1)[0]
+    n = min(n, len(primitives))
 
     return {
         "primitives": primitives[:n],
@@ -533,9 +548,17 @@ def generate_html(vision, article_title, article_url, cycle_num):
 
     params = _parse_primitives(structure, gesture, mood, intensity)
 
-    if params and len(params["primitives"]) >= 2:
-        selected_names = params["names"]
-        selected_fns = [grammar_map[ptype][1] for ptype, _, _, _ in params["primitives"]]
+    if params is not None:
+        selected_names = [n for n in params["names"] if n != "field"]
+        if not selected_names:
+            selected_names = ["colour field"]
+        selected_fns = []
+        for ptype, _, _, _ in params["primitives"]:
+            if ptype == "field":
+                continue
+            fn = grammar_map.get(ptype)
+            if fn:
+                selected_fns.append(fn[1])
         use_glass = params["glass"]
         print(f"  primitives: {' + '.join(selected_names)}")
     else:
@@ -543,8 +566,9 @@ def generate_html(vision, article_title, article_url, cycle_num):
         all_grammars = list(grammar_map.values())
         weights = _structure_weights(structure, mood, intensity)
         grammar_names = [g[0] for g in all_grammars]
-        w = [weights[name] for name in grammar_names]
-        n = random.randint(2, 4)
+        w = [weights.get(name, 1.0) for name in grammar_names]
+
+        n = random.randint(1, 2)
         selected_names = []
         selected_fns = []
         remaining_names = list(grammar_names)
@@ -561,7 +585,7 @@ def generate_html(vision, article_title, article_url, cycle_num):
             del remaining_names[idx]
             del remaining_weights[idx]
 
-        use_glass = True
+        use_glass = random.random() < 0.5
         print(f"  weights: {', '.join(f'{g}:{weights[g]:.1f}' for g in grammar_names)}")
         print(f"  fallback grammars: {' + '.join(selected_names)}")
 
