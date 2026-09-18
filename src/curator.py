@@ -374,13 +374,62 @@ def build_prompt(article):
 
 # ── HTML generator ─────────────────────────────────────────────────
 
+def _structure_weights(structure, mood, intensity):
+    s = (structure + " " + mood).lower()
+    weights = {
+        "atmospheric": 1.0,
+        "constructivist": 1.0,
+        "field": 1.0,
+        "pulse": 1.0,
+        "liquid": 1.0,
+    }
+
+    keyword_map = {
+        "atmospheric": ["horizon", "band", "sky", "ocean", "drift", "weather",
+                        "cloud", "fog", "mist", "haze", "dawn", "dusk", "wind",
+                        "vast", "endless", "horizon", "sunset", "sunrise"],
+        "constructivist": ["block", "grid", "build", "city", "architect",
+                           "square", "rect", "geometry", "sharp", "shard",
+                           "fracture", "jagged", "edge", "angular", "line",
+                           "parallel", "converge", "intersect", "structure"],
+        "field": ["particle", "field", "constellation", "dot", "scatter",
+                  "star", "dust", "plankton", "swarm", "crowd", "many",
+                  "countless", "spread", "disperse", "scattered", "cluster",
+                  "galaxy", "atoms", "grains"],
+        "pulse": ["pulse", "breathe", "beat", "heart", "glow", "single",
+                  "alone", "centre", "center", "core", "flash", "flicker",
+                  "throb", "rhythm", "syncopat", "spike", "surge"],
+        "liquid": ["liquid", "fluid", "bleed", "water", "wash", "stain",
+                   "organic", "blob", "melt", "flow", "wave", "ripple",
+                   "ooze", "seep", "dissolve", "merge", "blur", "soft"],
+    }
+
+    for grammar, keywords in keyword_map.items():
+        for kw in keywords:
+            if kw in s:
+                weights[grammar] += 1.5
+
+    # intensity modulation
+    if intensity == "high":
+        for g in weights:
+            weights[g] *= 1.3
+    elif intensity == "low":
+        for g in weights:
+            weights[g] *= 0.7
+
+    return weights
+
+
 def generate_html(vision, article_title, article_url, cycle_num):
     bg = vision.get("bg", "#0a0a14")
     palette = vision.get("palette", ["#b7f562", "#8b6fc0", "#e8dcc8", "#2a2540"])
     intensity = vision.get("intensity", "medium")
+    mood = vision.get("mood", "")
+    structure = vision.get("structure", "")
 
+    print(f"  mood: {mood}")
     print(f"  intensity: {intensity}")
-    print(f"  structure: {vision.get('structure', '?')[:60]}")
+    print(f"  structure: {structure[:70]}")
 
     c1 = palette[0] if len(palette) > 0 else "#b7f562"
     c2 = palette[1] if len(palette) > 1 else "#8b6fc0"
@@ -395,17 +444,36 @@ def generate_html(vision, article_title, article_url, cycle_num):
         ("liquid", lambda: (_liquid(palette, bg, intensity), _css_liquid(palette), "", "")),
     ]
 
+    weights = _structure_weights(structure, mood, intensity)
+    grammar_names = [g[0] for g in all_grammars]
+    w = [weights[name] for name in grammar_names]
+
     n = random.randint(2, 4)
-    selected = random.sample(all_grammars, n)
-    names = [g[0] for g in selected]
-    print(f"  grammars: {' + '.join(names)}")
+    selected_names = []
+    selected_fns = []
+    remaining_names = list(grammar_names)
+    remaining_weights = list(w)
+
+    for _ in range(n):
+        total = sum(remaining_weights)
+        if total == 0:
+            break
+        probs = [x / total for x in remaining_weights]
+        idx = random.choices(range(len(remaining_names)), weights=probs, k=1)[0]
+        selected_names.append(remaining_names[idx])
+        selected_fns.append(dict(all_grammars)[remaining_names[idx]])
+        del remaining_names[idx]
+        del remaining_weights[idx]
+
+    print(f"  weights: {', '.join(f'{g}:{weights[g]:.1f}' for g in grammar_names)}")
+    print(f"  grammars: {' + '.join(selected_names)}")
 
     body_layers = ""
     css_extra = ""
     glass_html = ""
     glass_css = ""
 
-    for name, fn in selected:
+    for fn in selected_fns:
         body, css, glass_h, glass_c = fn()
         body_layers += body
         css_extra += css
@@ -504,7 +572,7 @@ html,body{{width:100vw;height:100vh;overflow:hidden;background:{bg}}}
 }})();
 </script>
 </body>
-</html>""", " + ".join(names)
+</html>""", " + ".join(selected_names)
 
 
 # ── Grammar: atmospheric ───────────────────────────────────────────
