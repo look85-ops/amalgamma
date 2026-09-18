@@ -397,8 +397,8 @@ def generate_html(vision_html, article_title, cycle_num):
 html,body{{width:100vw;height:100vh;overflow:hidden;background:#000}}
 .artifact{{position:fixed;inset:0;z-index:1}}
 .vig{{position:fixed;inset:0;z-index:10;pointer-events:none;background:radial-gradient(ellipse 75% 55% at 50% 48%,transparent 0%,transparent 55%,rgba(0,0,0,.4) 100%)}}
-.src{{position:fixed;bottom:2.8vh;left:2.8vw;z-index:12;color:rgba(255,255,255,.35);font-size:.65rem;letter-spacing:.06em;pointer-events:none;font-family:system-ui,sans-serif;animation:s_fade 89s ease-in-out infinite}}
-@keyframes s_fade{{0%,100%{{opacity:.12}}50%{{opacity:.28}}}}
+.src{{position:fixed;bottom:2.8vh;left:2.8vw;z-index:12;color:rgba(255,255,255,.6);font-size:.7rem;letter-spacing:.04em;pointer-events:none;font-family:system-ui,sans-serif;animation:s_fade 89s ease-in-out infinite;max-width:60vw;line-height:1.4;text-shadow:0 0 8px rgba(0,0,0,.5)}}
+@keyframes s_fade{{0%,100%{{opacity:.25}}50%{{opacity:.5}}}}
 </style>
 </head>
 <body>
