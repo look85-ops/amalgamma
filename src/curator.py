@@ -193,7 +193,7 @@ def read_api_txt():
                 "model": m,
                 "messages": [{"role": "user", "content": "__PROMPT__"}],
                 "temperature": get_cycle_temp(),
-                "max_tokens": 800,
+                "max_tokens": 2500,
                 "top_p": 0.95,
             }
         def parse_fn(data):
@@ -213,7 +213,7 @@ def forager_openrouter():
             "model": model,
             "messages": [{"role": "user", "content": "__PROMPT__"}],
             "temperature": get_cycle_temp(),
-            "max_tokens": 800,
+            "max_tokens": 2500,
             "top_p": 0.95,
         }
     def parse_fn(data):
@@ -236,7 +236,7 @@ def forager_gemini():
             "contents": [{"parts": [{"text": "__PROMPT__"}]}],
             "generationConfig": {
                 "temperature": get_cycle_temp(),
-                "maxOutputTokens": 800,
+                "maxOutputTokens": 2500,
                 "topP": 0.95,
             },
         }
@@ -271,7 +271,7 @@ def read_free_api():
                 "model": model or "deepseek-chat",
                 "messages": [{"role": "user", "content": "__PROMPT__"}],
                 "temperature": get_cycle_temp(),
-                "max_tokens": 800,
+                "max_tokens": 2500,
                 "top_p": 0.95,
             }
         def parse_fn(data):
@@ -347,280 +347,62 @@ def call_llm(prompt):
 def build_prompt(article):
     title = article["title"]
     extract = article["extract"]
-    temp = get_cycle_temp()
 
     return (
-        f"You are an artist working in the tradition of Rothko, Soulages, "
-        f"Twombly, Agnes Martin, Malevich, Kandinsky. Your language is "
-        f"non-figurative: rhythm, silence, scale, materiality. Not beauty — "
-        f"presence. Not decoration — experience. The kind of work where "
-        f"the heart stops for a moment.\n\n"
-        f"Your medium is fullscreen HTML/CSS: bands that breathe, blocks "
-        f"that weigh, pulses that beat, particles that drift, blobs that "
-        f"bleed. Code as paint. The browser as canvas.\n\n"
-        f"Below is today's headline. Do not illustrate it. Feel its weight, "
-        f"its rhythm, its silence. Respond with a composition that holds "
-        f"space — emptiness is not absence, it is structure. Fewer elements, "
-        f"deeper presence.\n\n"
+        f"Ты — художник. Пишешь картину кодом.\n\n"
+        f"Твоя традиция: Ротко, Сулаж, Твомбли, Агнес Мартин, Малевич, Кандинский.\n"
+        f"Язык: нефигуративный. Ритм. Тишина. Масштаб. Материальность.\n"
+        f"Не красота — присутствие. Не декор — опыт.\n\n"
+        f"Ты работаешь в браузере. Твой холст — HTML и CSS. Код — краска.\n"
+        f"Полосы могут дышать. Блоки — весить. Пульсы — биться. Пятна — растекаться.\n"
+        f"Пустота — не отсутствие, а структура. Меньше элементов — глубже присутствие.\n\n"
+        f"Ниже — заголовок и фрагмент текста. Не иллюстрируй их.\n"
+        f"Почувствуй вес, ритм, тишину. Найди форму для этого состояния.\n\n"
+        f"Верни ТОЛЬКО HTML-код. Один <div> с инлайн-CSS. "
+        f"Никаких скриптов, библиотек, комментариев, markdown-ограждений.\n"
+        f"Это должна быть композиция, в которую можно войти. Не картинка. Пространство.\n\n"
         f"TITLE: {title}\n"
-        f"TEXT: {extract}\n\n"
-        f"Respond with JSON only, no markdown:\n"
-        f'{{"bg":"hex — deep, absorbing, not decorative",\n'
-        f' "palette":["hex","hex"] — 2-3 colours max, earthy or deep, no candy,\n'
-        f' "mood":"one word — the weight of this news",\n'
-        f' "intensity":"low|medium|high — restraint is a choice",\n'
-        f' "gesture":"one sentence — the single artistic move on screen",\n'
-        f' "structure":"30-50 words — one or two forms, their scale, the space between them",\n'
-        f' "motion":"10-15 words — rhythm, not animation; breath, not spectacle"}}'
+        f"TEXT: {extract}"
     )
 
 
-# ── Parametric parser ──────────────────────────────────────────────
+# ── HTML wrapper ────────────────────────────────────────────────────
 
-def _mod(count_lo, count_hi, size_lo, size_hi, speed_lo, speed_hi, intensity):
-    # intensity = restraint, not chaos. "low" is intentional minimalism.
-    # Fewer elements, bigger scale, slower rhythm.
-    cm, sm, spm = {"high": (1.2, 1.2, 1.3), "medium": (1.0, 1.0, 1.0), "low": (0.4, 1.5, 0.6)}.get(intensity, (1.0, 1.0, 1.0))
-    return (
-        max(1, int(random.randint(count_lo, count_hi) * cm)),
-        round(random.uniform(size_lo, size_hi) * sm, 1),
-        round(random.uniform(speed_lo, speed_hi) * spm, 1),
-    )
+def generate_html(vision_html, article_title, cycle_num):
+    vision_html = (vision_html or "").strip()
 
+    # strip markdown fences
+    if vision_html.startswith("```"):
+        vision_html = re.sub(r"^```(?:html)?\s*", "", vision_html)
+        vision_html = re.sub(r"\s*```$", "", vision_html)
 
-def _parse_primitives(structure, gesture, mood, intensity):
-    s = (structure + " " + gesture + " " + mood).lower()
-
-    has = lambda words: any(w in s for w in words)
-
-    primitives = []
-
-    if has(["particle", "dot", "speck", "dust", "grain", "point", "scatter", "spread",
-            "disperse", "constellation", "star", "swarm", "crowd", "many",
-            "cluster", "galaxy", "atom", "pixel", "noise", "static"]):
-        c, sz, sp = _mod(8, 60, 1.0, 10.0, 0.15, 0.8, intensity)
-        primitives.append(("particles", c, sz, sp))
-
-    if has(["band", "horizon", "stripe", "layer", "drift", "sky", "ocean", "weather",
-            "cloud", "fog", "mist", "haze", "dawn", "dusk", "sunset", "sunrise",
-            "vast", "endless", "float", "hover", "suspension", "atmospher", "airy",
-            "field", "plane", "expanse", "horizon", "void", "empty", "silence"]):
-        c, sz, sp = _mod(2, 10, 0.5, 8.0, 0.10, 0.6, intensity)
-        primitives.append(("bands", c, sz, sp))
-
-    if has(["block", "grid", "build", "city", "architect", "square", "rect",
-            "geometry", "geometric", "sharp", "shard", "fracture", "jagged",
-            "edge", "angular", "line", "parallel", "converge", "intersect",
-            "slab", "plate", "facet", "prism", "beam", "pillar", "column",
-            "tower", "wall", "frame", "scaffold", "crush", "collide", "rigid",
-            "monolith", "weight", "heavy", "massive", "solid"]):
-        c, sz, sp = _mod(3, 40, 3, 25, 0.15, 0.8, intensity)
-        primitives.append(("blocks", c, sz, sp))
-
-    if has(["blob", "liquid", "fluid", "bleed", "water", "wash", "stain",
-            "organic", "melt", "flow", "wave", "ripple", "ooze", "seep",
-            "dissolve", "merge", "blur", "soft", "morph", "distort", "warp",
-            "bend", "curve", "swoop", "drip", "pour", "stream", "flood",
-            "pool", "depth", "deep"]):
-        c, sz, sp = _mod(1, 8, 25, 90, 0.10, 0.5, intensity)
-        primitives.append(("blobs", c, sz, sp))
-
-    if has(["pulse", "breathe", "beat", "heart", "glow", "single", "alone",
-            "centre", "center", "core", "flash", "flicker", "throb", "rhythm",
-            "syncopat", "spike", "surge", "shaky", "trembl", "quiver", "vibrat",
-            "oscillat", "strobe", "blink", "nervous", "glitch", "presence"]):
-        c, sz, sp = _mod(1, 3, 25, 60, 0.3, 1.5, intensity)
-        primitives.append(("pulses", c, sz, sp))
-
-    # colour field — the zero-primitive state. Just the background breathing.
-    # Triggered by: emptiness, silence, solitude, or when no other primitives match.
-    colour_field_words = ["void", "empty", "silence", "nothing", "alone", "solitude", "still",
-                          "quiet", "bare", "naked", "pure", "single", "one", "only", "just"]
-    has_cf = has(colour_field_words)
-
-    if not primitives and not has_cf:
-        return None
-
-    # minimalism: 0-2 forms. Sometimes the statement IS the silence.
-    # colour field gets selected when nothing else fits, or when mood is quiet/solitary
-    if has_cf or (not primitives):
-        primitives.append(("field", 0, 0, 0))
-
-    glass = random.random() < 0.5  # 50% — sometimes raw, sometimes textured
-
-    random.shuffle(primitives)
-    # 0 primitives = just colour field (the "field" dummy). N picks from remaining.
-    n_options = [0, 1, 2]
-    n_weights = [0.20, 0.50, 0.30]
-    if has_cf or mood in ["quiet", "still", "alone", "solitude", "silence", "void", "empty", "bare"]:
-        n_weights = [0.40, 0.40, 0.20]  # more zero-primitive compositions
-    n = random.choices(n_options, weights=n_weights, k=1)[0]
-    n = min(n, len(primitives))
-
-    return {
-        "primitives": primitives[:n],
-        "glass": glass,
-        "names": [p[0] for p in primitives[:n]],
-    }
-
-
-# ── HTML generator ─────────────────────────────────────────────────
-
-def _structure_weights(structure, mood, intensity):
-    s = (structure + " " + mood).lower()
-    weights = {
-        "atmospheric": 1.0,
-        "strokes": 1.0,
-        "field": 1.0,
-        "pulse": 1.0,
-        "liquid": 1.0,
-    }
-
-    keyword_map = {
-        "atmospheric": ["horizon", "band", "sky", "ocean", "drift", "weather",
-                        "cloud", "fog", "mist", "haze", "dawn", "dusk", "wind",
-                        "vast", "endless", "horizon", "sunset", "sunrise",
-                        "atmospher", "airy", "breath", "float", "hover", "suspension"],
-        "strokes": ["block", "grid", "build", "city", "architect",
-                           "square", "rect", "geometry", "geometric", "sharp", "shard",
-                           "fracture", "jagged", "edge", "angular", "line",
-                           "parallel", "converge", "intersect", "structure",
-                           "slab", "plate", "facet", "prism", "beam", "pillar",
-                           "column", "tower", "wall", "frame", "scaffold",
-                           "crush", "collide", "impact", "collision"],
-        "field": ["particle", "field", "constellation", "dot", "scatter",
-                  "star", "dust", "plankton", "swarm", "crowd", "many",
-                  "countless", "spread", "disperse", "scattered", "cluster",
-                  "galaxy", "atoms", "grains", "speck", "speckle",
-                  "pointill", "pixel", "noise", "static", "grainy"],
-        "pulse": ["pulse", "breathe", "beat", "heart", "glow", "single",
-                  "alone", "centre", "center", "core", "flash", "flicker",
-                  "throb", "rhythm", "syncopat", "spike", "surge",
-                  "shaky", "trembl", "quiver", "vibrat", "oscillat",
-                  "flicker", "strobe", "blink", "heartbeat", "nervous"],
-        "liquid": ["liquid", "fluid", "bleed", "water", "wash", "stain",
-                   "organic", "blob", "melt", "flow", "wave", "ripple",
-                   "ooze", "seep", "dissolve", "merge", "blur", "soft",
-                   "morph", "distort", "warp", "bend", "curve", "swoop",
-                   "drip", "pour", "stream", "flood", "spill"],
-    }
-
-    for grammar, keywords in keyword_map.items():
-        for kw in keywords:
-            if kw in s:
-                weights[grammar] += 1.5
-
-    # intensity modulation
-    if intensity == "high":
-        for g in weights:
-            weights[g] *= 1.3
-    elif intensity == "low":
-        for g in weights:
-            weights[g] *= 0.7
-
-    return weights
-
-
-def generate_html(vision, article_title, article_url, cycle_num):
-    bg = vision.get("bg", "#0a0a14")
-    palette = vision.get("palette", ["#b7f562", "#8b6fc0", "#e8dcc8", "#2a2540"])
-    intensity = vision.get("intensity", "medium")
-    mood = vision.get("mood", "")
-    structure = vision.get("structure", "")
-    gesture = vision.get("gesture", "")
-
-    print(f"  intensity: {intensity}")
-    print(f"  gesture: {gesture[:80]}")
-    print(f"  structure: {structure[:80]}")
-
-    c1 = palette[0] if len(palette) > 0 else "#b7f562"
-    c2 = palette[1] if len(palette) > 1 else "#8b6fc0"
-    c3 = palette[2] if len(palette) > 2 else "#e8dcc8"
-    c4 = palette[3] if len(palette) > 3 else "#2a2540"
-
-    grammar_map = {
-        "particles": ("field", lambda: (_field(palette, bg, intensity), _css_field(palette), _glass_layer(), _css_glass())),
-        "bands": ("atmospheric", lambda: (_atmospheric(palette, bg, intensity), _css_atmospheric(palette), _glass_layer(), _css_glass())),
-        "blocks": ("strokes", lambda: (_strokes(palette, bg, intensity), _css_strokes(palette, bg), _glass_layer(), _css_glass())),
-        "blobs": ("liquid", lambda: (_liquid(palette, bg, intensity), _css_liquid(palette), "", "")),
-        "pulses": ("pulse", lambda: (_pulse(palette, bg, intensity), _css_pulse(palette), "", "")),
-    }
-
-    params = _parse_primitives(structure, gesture, mood, intensity)
-
-    if params is not None:
-        selected_names = [n for n in params["names"] if n != "field"]
-        if not selected_names:
-            selected_names = ["colour field"]
-        selected_fns = []
-        for ptype, _, _, _ in params["primitives"]:
-            if ptype == "field":
-                continue
-            fn = grammar_map.get(ptype)
-            if fn:
-                selected_fns.append(fn[1])
-        use_glass = params["glass"]
-        print(f"  primitives: {' + '.join(selected_names)}")
-    else:
-        # fallback — weighted grammar selection
-        all_grammars = list(grammar_map.values())
-        weights = _structure_weights(structure, mood, intensity)
-        grammar_names = [g[0] for g in all_grammars]
-        w = [weights.get(name, 1.0) for name in grammar_names]
-
-        n = random.randint(1, 2)
-        selected_names = []
-        selected_fns = []
-        remaining_names = list(grammar_names)
-        remaining_weights = list(w)
-
-        for _ in range(n):
-            total = sum(remaining_weights)
-            if total == 0:
-                break
-            probs = [x / total for x in remaining_weights]
-            idx = random.choices(range(len(remaining_names)), weights=probs, k=1)[0]
-            selected_names.append(remaining_names[idx])
-            selected_fns.append(dict(all_grammars)[remaining_names[idx]])
-            del remaining_names[idx]
-            del remaining_weights[idx]
-
-        use_glass = random.random() < 0.5
-        print(f"  weights: {', '.join(f'{g}:{weights[g]:.1f}' for g in grammar_names)}")
-        print(f"  fallback grammars: {' + '.join(selected_names)}")
-
-    body_layers = ""
-    css_extra = ""
-    glass_html = ""
-    glass_css = ""
-
-    for fn in selected_fns:
-        body, css, glass_h, glass_c = fn()
-        body_layers += body
-        css_extra += css
-        if glass_h and not glass_html and use_glass:
-            glass_html = glass_h
-            glass_css = glass_c
+    # check: does it look like HTML?
+    if not vision_html or not vision_html.strip().startswith("<"):
+        vision_html = (
+            '<div style="position:fixed;inset:0;background:#0a0a14;'
+            'display:flex;align-items:center;justify-content:center">'
+            '<div style="width:40vw;height:40vh;background:#1a1a2e;'
+            'opacity:.6;filter:blur(40px)"></div></div>'
+        )
+        print("  [fallback: LLM returned non-HTML]")
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Amalgamma — {article_title}</title>
+<title>Amalgama — {article_title}</title>
 <style>
 *,*::before,*::after{{margin:0;padding:0;box-sizing:border-box}}
-html,body{{width:100vw;height:100vh;overflow:hidden;background:{bg}}}
-{css_extra}
-{glass_css}
-.vig{{position:fixed;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse 75% 55% at 50% 48%,transparent 0%,transparent 55%,rgba(0,0,0,.55) 100%)}}
-.src{{position:fixed;bottom:2.8vh;right:3vw;z-index:7;color:rgba(255,255,255,.45);font-size:.65rem;letter-spacing:.06em;opacity:.35;pointer-events:none;font-family:system-ui,-apple-system,sans-serif;animation:s_fade 89s ease-in-out infinite}}
-@keyframes s_fade{{0%,100%{{opacity:.18}}50%{{opacity:.35}}}}
+html,body{{width:100vw;height:100vh;overflow:hidden;background:#000}}
+.artifact{{position:fixed;inset:0;z-index:1}}
+.vig{{position:fixed;inset:0;z-index:10;pointer-events:none;background:radial-gradient(ellipse 75% 55% at 50% 48%,transparent 0%,transparent 55%,rgba(0,0,0,.4) 100%)}}
+.src{{position:fixed;bottom:2.8vh;left:2.8vw;z-index:12;color:rgba(255,255,255,.35);font-size:.65rem;letter-spacing:.06em;pointer-events:none;font-family:system-ui,sans-serif;animation:s_fade 89s ease-in-out infinite}}
+@keyframes s_fade{{0%,100%{{opacity:.12}}50%{{opacity:.28}}}}
 </style>
 </head>
 <body>
-{body_layers}
-{glass_html}
+<div class="artifact">{vision_html}</div>
 <div class="vig"></div>
 <div class="src">current inspiration: {article_title}</div>
 <script>
@@ -629,7 +411,6 @@ html,body{{width:100vw;height:100vh;overflow:hidden;background:{bg}}}
   const master = ctx.createGain();
   master.gain.value = 0;
   master.connect(ctx.destination);
-
   const drone = ctx.createOscillator();
   drone.type = 'sine';
   drone.frequency.value = 55;
@@ -642,15 +423,14 @@ html,body{{width:100vw;height:100vh;overflow:hidden;background:{bg}}}
   droneLFOGain.connect(drone.frequency);
   droneLFO.start();
   const droneVol = ctx.createGain();
-  droneVol.gain.value = 0.05;
+  droneVol.gain.value = 0.04;
   drone.connect(droneVol);
   droneVol.connect(master);
   drone.start();
-
   const noiseLen = ctx.sampleRate * 2;
   const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
-  const data = noiseBuf.getChannelData(0);
-  for (let i = 0; i < noiseLen; i++) data[i] = Math.random() * 2 - 1;
+  const ndata = noiseBuf.getChannelData(0);
+  for (let i = 0; i < noiseLen; i++) ndata[i] = Math.random() * 2 - 1;
   const noise = ctx.createBufferSource();
   noise.buffer = noiseBuf;
   noise.loop = true;
@@ -664,7 +444,6 @@ html,body{{width:100vw;height:100vh;overflow:hidden;background:{bg}}}
   noiseFilter.connect(noiseVol);
   noiseVol.connect(master);
   noise.start();
-
   const pulse = ctx.createOscillator();
   pulse.type = 'sine';
   pulse.frequency.value = 28;
@@ -673,16 +452,13 @@ html,body{{width:100vw;height:100vh;overflow:hidden;background:{bg}}}
   pulse.connect(pulseVol);
   pulseVol.connect(master);
   pulse.start();
-
-  const pulseInterval = 8.3;
   function update(t) {{
-    const wobble = 1 + Math.sin(t * 0.3) * 0.1 + Math.sin(t * 0.13) * 0.08;
-    master.gain.value = wobble * 0.5;
-    const p = (t % pulseInterval) / pulseInterval;
-    pulseVol.gain.value = (p < 0.08 ? (1 - p / 0.08) * 0.08 : 0);
+    const w = 1 + Math.sin(t * 0.3) * 0.08 + Math.sin(t * 0.13) * 0.06;
+    master.gain.value = w * 0.35;
+    const p = (t % 8.3) / 8.3;
+    pulseVol.gain.value = (p < 0.08 ? (1 - p / 0.08) * 0.06 : 0);
     requestAnimationFrame(update);
   }}
-
   function init() {{
     if (ctx.state === 'suspended') ctx.resume();
     requestAnimationFrame(update);
@@ -693,266 +469,7 @@ html,body{{width:100vw;height:100vh;overflow:hidden;background:{bg}}}
 }})();
 </script>
 </body>
-</html>""", " + ".join(selected_names)
-
-
-# ── Grammar: atmospheric ───────────────────────────────────────────
-
-def _atmospheric(palette, bg, intensity):
-    p = _particles(palette)
-    b = _bands(palette)
-    return f"""<div class="atmo"></div>
-<div class="bands">{b}</div>
-<div class="pts">{p}</div>"""
-
-def _css_atmospheric(palette):
-    c1, c2, c3 = palette[0], palette[1] if len(palette) > 1 else palette[0], palette[2] if len(palette) > 2 else palette[0]
-    return f""".atmo{{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 120% 60% at 50% 45%,{c1}22 0%,transparent 70%),radial-gradient(ellipse 140% 50% at 50% 55%,{c2}22 0%,transparent 65%),radial-gradient(ellipse 100% 30% at 50% 50%,{c3}22 0%,transparent 100%);animation:a_atmo 47s ease-in-out infinite}}
-@keyframes a_atmo{{0%,100%{{opacity:1}}50%{{opacity:.7}}}}
-.pts{{position:fixed;inset:0;z-index:4;pointer-events:none}}
-.bands{{position:fixed;inset:0;z-index:3;pointer-events:none}}
-.band{{position:absolute;left:-2vw;width:104vw;filter:blur(calc(var(--b)*1px));animation:b_drift var(--d) ease-in-out infinite;animation-delay:var(--del);transform:skewY(var(--sk))}}
-@keyframes b_drift{{0%,100%{{top:var(--y1);opacity:1}}33%{{top:var(--y2);opacity:.6}}66%{{top:var(--y3);opacity:.85}}}}
-.pt{{position:absolute;width:var(--s);height:var(--s);border-radius:50%;background:var(--c);filter:blur(calc(var(--s)*.3));animation:p_glow var(--p) ease-in-out infinite;animation-delay:var(--del);left:var(--x);top:var(--y)}}
-@keyframes p_glow{{0%,100%{{opacity:.15;transform:scale(.6)}}40%{{opacity:.7;transform:scale(1.8)}}70%{{opacity:.3;transform:scale(1)}}}}"""
-
-
-# ── Grammar: strokes (lines, clusters, gestures — Twombly, graphic) ──
-
-def _strokes(palette, bg, intensity):
-    c1, c2, c3 = palette[0], palette[1] if len(palette) > 1 else palette[0], palette[2] if len(palette) > 2 else palette[0]
-    marks = []
-    n_clusters = random.randint(1, 4)
-    used_centers = []
-
-    for ci in range(n_clusters):
-        # cluster center — somewhere meaningful on canvas
-        cx = random.uniform(10, 90)
-        cy = random.uniform(10, 90)
-        # ensure clusters don't overlap too much
-        if used_centers:
-            attempts = 0
-            while any(abs(cx - ux) < 25 and abs(cy - uy) < 25 for ux, uy in used_centers) and attempts < 10:
-                cx = random.uniform(10, 90)
-                cy = random.uniform(10, 90)
-                attempts += 1
-        used_centers.append((cx, cy))
-
-        # cluster personality
-        cluster_type = random.choice(["dense_scribble", "sparse_scratches", "sweeping_gesture", "parallel_hatching"])
-        n_lines = {"dense_scribble": random.randint(10, 25),
-                    "sparse_scratches": random.randint(4, 10),
-                    "sweeping_gesture": random.randint(1, 3),
-                    "parallel_hatching": random.randint(6, 15)}[cluster_type]
-        spread = {"dense_scribble": 8, "sparse_scratches": 18, "sweeping_gesture": 30, "parallel_hatching": 12}[cluster_type]
-
-        for _ in range(n_lines):
-            x1 = cx + random.uniform(-spread, spread)
-            y1 = cy + random.uniform(-spread, spread)
-
-            if cluster_type == "sweeping_gesture":
-                length = random.uniform(25, 60)
-                angle = random.uniform(0, 360)
-                # slight wobble via quadratic bezier
-                x2 = x1 + length * math.cos(math.radians(angle))
-                y2 = y1 + length * math.sin(math.radians(angle))
-                cpx = (x1 + x2) / 2 + random.uniform(-10, 10)
-                cpy = (y1 + y2) / 2 + random.uniform(-10, 10)
-                path = f'M{x1:.1f},{y1:.1f}Q{cpx:.1f},{cpy:.1f},{x2:.1f},{y2:.1f}'
-            elif cluster_type == "parallel_hatching":
-                length = random.uniform(8, 25)
-                angle = random.gauss(base_angle := random.uniform(0, 360), 8)
-                x2 = x1 + length * math.cos(math.radians(angle))
-                y2 = y1 + length * math.sin(math.radians(angle))
-                path = f'M{x1:.1f},{y1:.1f}L{x2:.1f},{y2:.1f}'
-            else:
-                # scribble or scratch — short line with slight curve
-                length = random.uniform(3, 15)
-                angle = random.uniform(0, 360)
-                x2 = x1 + length * math.cos(math.radians(angle))
-                y2 = y1 + length * math.sin(math.radians(angle))
-                if random.random() < 0.4:
-                    cpx = (x1 + x2) / 2 + random.uniform(-4, 4)
-                    cpy = (y1 + y2) / 2 + random.uniform(-4, 4)
-                    path = f'M{x1:.1f},{y1:.1f}Q{cpx:.1f},{cpy:.1f},{x2:.1f},{y2:.1f}'
-                else:
-                    path = f'M{x1:.1f},{y1:.1f}L{x2:.1f},{y2:.1f}'
-
-            sw = round(random.uniform(0.2, 4.0), 1)
-            if cluster_type == "sweeping_gesture":
-                sw = round(random.uniform(0.5, 5.0), 1)
-            c = random.choice([c1, c2, c3])
-            opacity = round(random.uniform(0.10, 0.50), 2)
-            dash = "none"
-            if cluster_type in ("sparse_scratches", "parallel_hatching") and random.random() < 0.4:
-                dash = f"{random.randint(2, 8)} {random.randint(4, 20)}"
-
-            # animation: subtle tremble — faster, smaller movement
-            d = round(random.uniform(2, 8), 1)
-            dl = round(random.uniform(0, 6), 1)
-            dx = round(random.uniform(-0.3, 0.3), 2)
-            dy = round(random.uniform(-0.3, 0.3), 2)
-
-            marks.append(
-                f'<path d="{path}" stroke="{c}" stroke-width="{sw}" fill="none" '
-                f'opacity="{opacity}" stroke-dasharray="{dash}" '
-                f'style="animation:st_tremble {d:.1f}s ease-in-out infinite;animation-delay:{dl:.1f}s;'
-                f'--dx:{dx};--dy:{dy};'
-                f'stroke-linecap:round"/>'
-            )
-
-    joined = "".join(marks)
-    return f'<svg class="stf" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">{joined}</svg>'
-
-
-def _css_strokes(palette, bg):
-    return f""".stf{{position:fixed;inset:0;z-index:2;pointer-events:none;width:100vw;height:100vh}}
-@keyframes st_tremble{{0%,100%{{transform:translate(0,0);opacity:.8}}30%{{transform:translate(calc(var(--dx)*1vw),calc(var(--dy)*1vh));opacity:1}}60%{{transform:translate(calc(var(--dx)*-0.5*1vw),calc(var(--dy)*-0.8*1vh));opacity:.6}}}}"""
-
-
-# ── Grammar: field ──────────────────────────────────────────────────
-
-def _field(palette, bg, intensity):
-    count = random.randint(20, 300)
-    field_particles = []
-    primes = [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
-    random.shuffle(primes)
-    for i in range(count):
-        x = random.uniform(-10, 110)
-        y = random.uniform(-10, 110)
-        s = round(random.uniform(0.5, 6.0), 1)
-        p_cycle = primes[i % len(primes)] / 5 + random.uniform(0, 3)
-        delay = random.uniform(0, 20)
-        c = random.choice(palette)
-        if random.random() < 0.4:
-            x = random.gauss(50, random.uniform(10, 50))
-            y = random.gauss(50, random.uniform(10, 50))
-        field_particles.append(
-            f'<div class="fp" style="left:{x:.1f}%;top:{y:.1f}%;--s:{s}px;--p:{p_cycle:.1f}s;--del:{delay:.1f}s;--c:{c}"></div>'
-        )
-    return f'<div class="fpf">{"".join(field_particles)}</div>'
-
-def _css_field(palette):
-    return """.fpf{position:fixed;inset:0;z-index:2;pointer-events:none}
-.fp{position:absolute;width:var(--s);height:var(--s);border-radius:50%;background:radial-gradient(circle,var(--c) 0%,transparent 70%);filter:blur(calc(var(--s)*.4));animation:f_breathe var(--p) ease-in-out infinite;animation-delay:var(--del)}
-@keyframes f_breathe{0%,100%{opacity:.03;transform:scale(.8)}45%{opacity:.45;transform:scale(3)}75%{opacity:.15;transform:scale(1.4)}}"""
-
-
-# ── Grammar: pulse ──────────────────────────────────────────────────
-
-def _pulse(palette, bg, intensity):
-    c1 = palette[0]
-    c2 = palette[1] if len(palette) > 1 else c1
-    forms = []
-    count = random.randint(1, 6)
-    sizes = [random.randint(20, 60) for _ in range(6)]
-    blurs = [random.randint(3, 12) for _ in range(6)]
-    cycles_p = [random.randint(29, 59) for _ in range(6)]
-    for i in range(count):
-        x = random.uniform(10, 85)
-        y = random.uniform(10, 85)
-        c = random.choice([c1, c2])
-        forms.append(
-            f'<div class="pf" style="left:{x:.0f}%;top:{y:.0f}%;width:{sizes[i]}vmin;height:{blurs[i]}vmin;background:radial-gradient(circle,{c}66 0%,{c}22 35%,transparent 70%);--p:{cycles_p[i]}s;--del:{-i*random.randint(1,5)}s"></div>'
-        )
-    return f'<div class="ppf">{"".join(forms)}</div>'
-
-def _css_pulse(palette):
-    return """.ppf{position:fixed;inset:0;z-index:2;pointer-events:none}
-.pf{position:absolute;transform:translate(-50%,-50%);border-radius:50%;animation:p_beat var(--p) ease-in-out infinite;animation-delay:var(--del)}
-@keyframes p_beat{0%,100%{transform:translate(-50%,-50%) scale(.7);opacity:.25}50%{transform:translate(-50%,-50%) scale(1.4);opacity:.7}}"""
-
-
-# ── Grammar: liquid ─────────────────────────────────────────────────
-
-def _liquid(palette, bg, intensity):
-    c1, c2, c3 = palette[0], palette[1] if len(palette) > 1 else palette[0], palette[2] if len(palette) > 2 else palette[0]
-    blobs = []
-    count = random.randint(3, 20)
-    primes = [43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
-    random.shuffle(primes)
-    for i in range(count):
-        x = random.uniform(-30, 110)
-        y = random.uniform(-30, 110)
-        w = random.randint(10, 80)
-        c = random.choice([c1, c2, c3])
-        d = primes[i % len(primes)] / 2
-        delay = random.uniform(0, 20)
-        blobs.append(
-            f'<div class="lb" style="left:{x:.0f}%;top:{y:.0f}%;width:{w}vmax;height:{w}vmax;background:radial-gradient(circle,{c}55 0%,{c}15 50%,transparent 75%);--d:{d:.1f}s;--del:{delay:.1f}s"></div>'
-        )
-    joined = "".join(blobs)
-    return f'<div class="lbf">{joined}</div>'
-
-def _css_liquid(palette):
-    return """.lbf{position:fixed;inset:0;z-index:2;pointer-events:none;filter:blur(3vmax)}
-.lb{position:absolute;border-radius:50%;transform:translate(-50%,-50%);animation:l_morph var(--d) ease-in-out infinite;animation-delay:var(--del)}
-@keyframes l_morph{0%,100%{transform:translate(-50%,-50%) scale(.8) rotate(0deg);opacity:.25}33%{transform:translate(-50%,-50%) scale(1.3) rotate(15deg);opacity:.55}66%{transform:translate(-50%,-50%) scale(.6) rotate(-10deg);opacity:.35}}"""
-
-
-# ── Glass layer ────────────────────────────────────────────────────
-
-def _glass_layer():
-    return """<div class="gls"></div>"""
-
-
-def _css_glass():
-    return """.gls{position:fixed;inset:0;z-index:5;pointer-events:none;mix-blend-mode:overlay;opacity:.04;animation:g_flick 47s steps(47) infinite}
-.gls::before{content:"";position:absolute;inset:-20%;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");background-size:256px 256px;animation:g_shift 17s linear infinite}
-@keyframes g_shift{0%{transform:translate(0.0) rotate(0deg)}100%{transform:translate(-80px,40px) rotate(.7deg)}}
-@keyframes g_flick{0%,100%{opacity:.03}50%{opacity:.07}}"""
-
-
-# ── Shared helpers ──────────────────────────────────────────────────
-
-def _particles(palette):
-    count = random.randint(8, 120)
-    particles = []
-    primes = [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
-    random.shuffle(primes)
-    phi = (1 + math.sqrt(5)) / 2
-    for i in range(count):
-        theta = 2 * math.pi * i / (phi ** 2)
-        r_norm = math.sqrt(i / count)
-        r = r_norm * 0.9
-        x = 50 + r * 55 * math.cos(theta)
-        y = 50 + r * 55 * math.sin(theta)
-        if random.random() < 0.35:
-            x += random.uniform(-40, 40)
-            y += random.uniform(-40, 40)
-        s = round(random.uniform(0.8, 8.0), 1)
-        p = primes[i % len(primes)] / 4 + random.uniform(0, 4)
-        delay = random.uniform(0, 15)
-        c = random.choice(palette)
-        particles.append(
-            f'<div class="pt" style="--x:{x:.1f}%;--y:{y:.1f}%;--s:{s}px;--p:{p:.1f}s;--del:{delay:.1f}s;--c:{c}"></div>'
-        )
-    return "\n".join(particles)
-
-def _bands(palette):
-    count = random.randint(3, 25)
-    bands = []
-    primes = [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]
-    random.shuffle(primes)
-    for i in range(count):
-        h = round(random.uniform(0.3, 6.0), 1)
-        o = round(random.uniform(0.02, 0.25), 2)
-        b = random.randint(2, 60)
-        d = primes[i % len(primes)] / 2 + random.uniform(0, 5)
-        delay = random.uniform(0, 20)
-        sk = round(random.uniform(-2.0, 2.0), 1)
-        y1 = random.randint(5, 85)
-        y2 = random.randint(5, 85)
-        y3 = random.randint(5, 85)
-        c = random.choice(palette)
-        hex_clean = c.lstrip("#")
-        r, g, b_hex = int(hex_clean[0:2], 16), int(hex_clean[2:4], 16), int(hex_clean[4:6], 16)
-        bands.append(
-            f'<div class="band" style="--b:{b};--d:{d:.1f}s;--del:{delay:.1f}s;--sk:{sk}deg;--y1:{y1}vh;--y2:{y2}vh;--y3:{y3}vh;height:{h}vh;background:linear-gradient(90deg,rgba({r},{g},{b_hex},0) 0%,rgba({r},{g},{b_hex},{o}) 15%,rgba({r},{g},{b_hex},{o}) 50%,rgba({r},{g},{b_hex},{o}) 85%,rgba({r},{g},{b_hex},0) 100%)"></div>'
-        )
-    return "\n".join(bands)
-
-# Glass CSS inlined in main generate_html for simplicity
+</html>"""
 
 
 # ── Palette shifter ─────────────────────────────────────────────────
@@ -1014,7 +531,7 @@ def shift_palette(palette):
 def main():
     temp = get_cycle_temp()
     state = read_state()
-    print("[amalgamma] waking up")
+    print("[amalgama] waking up")
     active = [f"{b['name']}{'$' if b['paid'] else ''}" for b in BACKENDS]
     if active:
         print(f"  backends: {', '.join(active)}")
@@ -1044,44 +561,18 @@ def main():
     prompt = build_prompt(article)
     print("  sending prompt...")
     response = call_llm(prompt)
-    print("  response received")
+    print(f"  response: {len(response)} chars")
     print()
 
-    try:
-        response_clean = response.strip()
-        if response_clean.startswith("```"):
-            response_clean = re.sub(r"^```(?:json)?\s*", "", response_clean)
-            response_clean = re.sub(r"\s*```$", "", response_clean)
-        json_match = re.search(r'\{.*\}', response_clean, re.DOTALL)
-        if json_match:
-            vision = json.loads(json_match.group(0))
-        else:
-            print("  [no JSON in response, using fallback]")
-            vision = {
-                "bg": "#0a0a14",
-                "palette": ["#b7f562", "#8b6fc0", "#e8dcc8", "#2a2540"],
-                "mood": "quiet",
-                "intensity": "medium",
-                "gesture": "drifting particles floating through layered bands of colour",
-                "structure": "atmospheric field with drifting particles and horizon bands",
-                "motion": "slow breathing drift, bands rising and falling"
-            }
-        vision["palette"] = shift_palette(vision.get("palette", []))
-        print(f"  mood: {vision.get('mood', '?')}")
-        print(f"  palette: {', '.join(vision.get('palette', []))}")
-    except json.JSONDecodeError:
-        print("  [JSON parse failed, using fallback]")
-        vision = {
-            "bg": "#0a0a14",
-            "palette": shift_palette(["#b7f562", "#8b6fc0", "#e8dcc8", "#2a2540"]),
-            "mood": "quiet",
-            "intensity": "medium",
-            "gesture": "drifting particles floating through layered bands of colour",
-            "structure": "atmospheric field with drifting particles and horizon bands",
-            "motion": "slow breathing drift, bands rising and falling"
-        }
+    vision_html = response.strip()
 
-    html, grammar = generate_html(vision, article["title"], article["url"], state.get("cycle", 0))
+    # retry once if it doesn't look like HTML
+    if not vision_html.startswith("<"):
+        print("  [response not HTML, retrying...]")
+        response = call_llm(prompt)
+        vision_html = response.strip()
+
+    html = generate_html(vision_html, article["title"], state.get("cycle", 0))
 
     ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
@@ -1095,7 +586,6 @@ def main():
 
     state["cycle"] = state.get("cycle", 0) + 1
     state["last_title"] = article["title"]
-    state["last_grammar"] = grammar
     state["archive_count"] = state.get("archive_count", 0) + 1
     write_state(state)
 
