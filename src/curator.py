@@ -441,9 +441,9 @@ def generate_html(vision, article_title, article_url, cycle_num):
     mood = vision.get("mood", "")
     structure = vision.get("structure", "")
 
-    print(f"  mood: {mood}")
     print(f"  intensity: {intensity}")
-    print(f"  structure: {structure[:70]}")
+    print(f"  gesture: {vision.get('gesture', '?')[:80]}")
+    print(f"  structure: {structure[:80]}")
 
     c1 = palette[0] if len(palette) > 0 else "#b7f562"
     c2 = palette[1] if len(palette) > 1 else "#8b6fc0"
