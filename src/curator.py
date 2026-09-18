@@ -76,13 +76,7 @@ def check_budget():
 # ── Temperature cycle ──────────────────────────────────────────────
 
 def get_cycle_temp():
-    days = (date.today() - EPOCH).days
-    pos = (days % CYCLE_DAYS) / CYCLE_DAYS
-    base = round(0.3 + math.sin(pos * math.pi) * 1.5, 2)
-    if random.random() < 0.12:
-        offset = random.choice([-2.0, 2.5, -2.5, 3.0])
-        base = max(0.05, min(4.0, base + offset))
-    return base
+    return round(random.uniform(0.7, 2.0), 2)
 
 
 # ── State ──────────────────────────────────────────────────────────
@@ -368,17 +362,12 @@ def build_prompt(article):
         f"Never repeat the same colour twice. "
         f"Avoid navy, dark purple, dark brown, dark grey as backgrounds — "
         f"use them only as accents. Backgrounds should be vivid or unexpected.\n\n"
-        f"GRAMMAR DIVERSITY: vary your grammar choice. Do NOT default to atmospheric. "
-        f"Prefer constructivist, field, pulse, liquid, or hybrid unless the article "
-        f"genuinely calls for atmospheric (horizons, weather, drifting, skies). "
-        f"Be surprising — unexpected grammar choices create the strongest compositions.\n\n"
         f"Respond with a JSON object (only JSON, no markdown):\n"
         f'{{"bg":"hex background colour",\n'
         f' "palette":["hex","hex","hex","hex"],\n'
         f' "mood":"one word — emotional tone",\n'
-        f' "grammar":"one of: atmospheric | constructivist | field | pulse | liquid | hybrid",\n'
         f' "intensity":"low | medium | high",\n'
-        f' "structure":"visual description (20-30 words) — what fills the screen? layers, shapes, scale",\n'
+        f' "structure":"visual description (20-30 words) — what fills the screen? layers, shapes, scale, motion",\n'
         f' "animation":"motion description (10-15 words) — rhythm, speed, what moves"}}'
     )
 
@@ -413,36 +402,17 @@ def generate_html(vision, article_title, article_url, cycle_num):
     grammar = select_grammar(vision)
     intensity = vision.get("intensity", "medium")
 
-    state = read_state()
-    last_grammar = state.get("last_grammar", "")
-
-    # hard cooldown: never repeat the same non-hybrid grammar
-    if last_grammar and grammar == last_grammar and grammar != "hybrid":
-        force = (grammar == "atmospheric")
-        chance = 1.0 if force else 0.60
-        if random.random() < chance:
-            others = ["atmospheric", "constructivist", "field", "pulse", "liquid"]
-            others = [g for g in others if g != grammar]
-            grammar = random.choice(others)
-            tag = "hard cooldown" if force else "cooldown"
-            print(f"  grammar {tag}: {last_grammar} → {grammar}")
-
-    # anti-atmospheric bias: even on first occurrence, 80% chance to re-roll
-    if grammar == "atmospheric" and random.random() < 0.80:
-        others = ["constructivist", "field", "pulse", "liquid"]
-        grammar = random.choice(others)
-        print(f"  grammar anti-atmospheric → {grammar}")
-
     print(f"  grammar: {grammar} ({intensity})")
+    print(f"  structure: {vision.get('structure', '?')[:60]}")
 
     c1 = palette[0] if len(palette) > 0 else "#b7f562"
     c2 = palette[1] if len(palette) > 1 else "#8b6fc0"
     c3 = palette[2] if len(palette) > 2 else "#e8dcc8"
     c4 = palette[3] if len(palette) > 3 else "#2a2540"
 
-    if random.random() < 0.70 and grammar != "hybrid":
+    if grammar != "hybrid":
         grammar = "hybrid"
-        print(f"  grammar override → hybrid")
+        print(f"  grammar → hybrid")
 
     body_layers = ""
     css_extra = ""
