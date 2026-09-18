@@ -350,25 +350,30 @@ def build_prompt(article):
     temp = get_cycle_temp()
 
     return (
-        f"You are an abstract visual composer. Below is a news article.\n\n"
+        f"You are a contemporary artist with a sharp eye on the world. "
+        f"Your project is called Amalgama — an autonomous visual system "
+        f"that witnesses the news cycle and responds to it. Not through "
+        f"illustration, but through pure visual sensation. Like a "
+        f"headline's shadow on water.\n\n"
+        f"Your medium is generative HTML/CSS: fullscreen compositions "
+        f"built entirely from code — bands, particles, blocks, blobs, "
+        f"pulses, grids, noise, gradients. No images. No video. Just "
+        f"code breathing in the browser.\n\n"
+        f"Below is a real headline from today's news. Read it. Feel it. "
+        f"Respond to it as an artist — not by illustrating what happened, "
+        f"but by creating a visual equivalent of what it FEELS like. "
+        f"What is the emotional shape of this news? What kind of space "
+        f"does it create in the body?\n\n"
         f"TITLE: {title}\n"
         f"TEXT: {extract}\n\n"
-        f"Create an abstract visual composition that REFLECTS the feeling of this article. "
-        f"Not an illustration — a visual equivalent. Like the article's shadow on water.\n\n"
-        f"Temperature: {temp} (0=cold/coherent, 2=hot/glitchy). "
-        f"Let temperature affect your choices: low temp = restrained, "
-        f"high temp = surprising, clashing, unexpected.\n\n"
-        f"IMPORTANT: avoid dark/muted palettes. Prefer bold, contrasting colours. "
-        f"Never repeat the same colour twice. "
-        f"Avoid navy, dark purple, dark brown, dark grey as backgrounds — "
-        f"use them only as accents. Backgrounds should be vivid or unexpected.\n\n"
         f"Respond with a JSON object (only JSON, no markdown):\n"
-        f'{{"bg":"hex background colour",\n'
-        f' "palette":["hex","hex","hex","hex"],\n'
-        f' "mood":"one word — emotional tone",\n'
+        f'{{"bg":"hex background colour — vivid, unexpected, never dark/muted",\n'
+        f' "palette":["hex","hex","hex","hex"] — bold, contrasting, no repeats,\n'
+        f' "mood":"one word — the emotional tone of THIS news",\n'
         f' "intensity":"low | medium | high",\n'
-        f' "structure":"visual description (20-30 words) — what fills the screen? layers, shapes, scale, motion",\n'
-        f' "animation":"motion description (10-15 words) — rhythm, speed, what moves"}}'
+        f' "gesture":"one sentence — what is the artistic move? what happens on screen as a statement?",\n'
+        f' "structure":"visual description (40-60 words) — layers, forms, their relationships, scale, density, spatial logic",\n'
+        f' "motion":"how it moves (15-20 words) — rhythm, speed, direction, quality of movement"}}'
     )
 
 
@@ -897,9 +902,10 @@ def main():
                 "bg": "#0a0a14",
                 "palette": ["#b7f562", "#8b6fc0", "#e8dcc8", "#2a2540"],
                 "mood": "quiet",
-                "grammar": "atmospheric",
-                "structure": "atmospheric field with drifting particles",
-                "animation": "slow breathing, drifting bands"
+                "intensity": "medium",
+                "gesture": "drifting particles floating through layered bands of colour",
+                "structure": "atmospheric field with drifting particles and horizon bands",
+                "motion": "slow breathing drift, bands rising and falling"
             }
         vision["palette"] = shift_palette(vision.get("palette", []))
         print(f"  mood: {vision.get('mood', '?')}")
@@ -910,9 +916,10 @@ def main():
             "bg": "#0a0a14",
             "palette": shift_palette(["#b7f562", "#8b6fc0", "#e8dcc8", "#2a2540"]),
             "mood": "quiet",
-            "grammar": "atmospheric",
-            "structure": "atmospheric field with drifting particles",
-            "animation": "slow breathing, drifting bands"
+            "intensity": "medium",
+            "gesture": "drifting particles floating through layered bands of colour",
+            "structure": "atmospheric field with drifting particles and horizon bands",
+            "motion": "slow breathing drift, bands rising and falling"
         }
 
     html, grammar = generate_html(vision, article["title"], article["url"], state.get("cycle", 0))
