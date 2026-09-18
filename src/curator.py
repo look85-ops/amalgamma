@@ -377,6 +377,73 @@ def build_prompt(article):
     )
 
 
+# ── Parametric parser ──────────────────────────────────────────────
+
+def _mod(count_lo, count_hi, size_lo, size_hi, speed_lo, speed_hi, intensity):
+    m = {"high": 1.6, "medium": 1.0, "low": 0.5}.get(intensity, 1.0)
+    return (
+        max(1, int(random.randint(count_lo, count_hi) * m)),
+        round(random.uniform(size_lo, size_hi) * m, 1),
+        round(random.uniform(speed_lo, speed_hi) * m, 1),
+    )
+
+
+def _parse_primitives(structure, gesture, mood, intensity):
+    s = (structure + " " + gesture + " " + mood).lower()
+
+    has = lambda words: any(w in s for w in words)
+
+    primitives = []
+
+    if has(["particle", "dot", "speck", "dust", "grain", "point", "scatter", "spread",
+            "disperse", "constellation", "star", "swarm", "crowd", "countless", "many",
+            "cluster", "galaxy", "atom", "pixel", "noise", "static", "grainy", "speckle"]):
+        c, sz, sp = _mod(15, 150, 0.5, 6.0, 0.3, 1.5, intensity)
+        primitives.append(("particles", c, sz, sp))
+
+    if has(["band", "horizon", "stripe", "layer", "drift", "sky", "ocean", "weather",
+            "cloud", "fog", "mist", "haze", "dawn", "dusk", "sunset", "sunrise",
+            "vast", "endless", "float", "hover", "suspension", "atmospher", "airy"]):
+        c, sz, sp = _mod(3, 20, 0.3, 5.0, 0.2, 1.0, intensity)
+        primitives.append(("bands", c, sz, sp))
+
+    if has(["block", "grid", "build", "city", "architect", "square", "rect",
+            "geometry", "geometric", "sharp", "shard", "fracture", "jagged",
+            "edge", "angular", "line", "parallel", "converge", "intersect",
+            "slab", "plate", "facet", "prism", "beam", "pillar", "column",
+            "tower", "wall", "frame", "scaffold", "crush", "collide", "rigid"]):
+        c, sz, sp = _mod(10, 100, 2, 20, 0.3, 1.5, intensity)
+        primitives.append(("blocks", c, sz, sp))
+
+    if has(["blob", "liquid", "fluid", "bleed", "water", "wash", "stain",
+            "organic", "melt", "flow", "wave", "ripple", "ooze", "seep",
+            "dissolve", "merge", "blur", "soft", "morph", "distort", "warp",
+            "bend", "curve", "swoop", "drip", "pour", "stream", "flood"]):
+        c, sz, sp = _mod(3, 15, 15, 70, 0.2, 0.8, intensity)
+        primitives.append(("blobs", c, sz, sp))
+
+    if has(["pulse", "breathe", "beat", "heart", "glow", "single", "alone",
+            "centre", "center", "core", "flash", "flicker", "throb", "rhythm",
+            "syncopat", "spike", "surge", "shaky", "trembl", "quiver", "vibrat",
+            "oscillat", "strobe", "blink", "nervous", "glitch"]):
+        c, sz, sp = _mod(1, 5, 15, 50, 0.5, 2.0, intensity)
+        primitives.append(("pulses", c, sz, sp))
+
+    if not primitives:
+        return None
+
+    glass = has(["glass", "texture", "noise", "grain", "film", "overlay", "frost"])
+
+    random.shuffle(primitives)
+    n = min(len(primitives), random.randint(2, 5))
+
+    return {
+        "primitives": primitives[:n],
+        "glass": glass,
+        "names": [p[0] for p in primitives[:n]],
+    }
+
+
 # ── HTML generator ─────────────────────────────────────────────────
 
 def _structure_weights(structure, mood, intensity):
@@ -440,9 +507,10 @@ def generate_html(vision, article_title, article_url, cycle_num):
     intensity = vision.get("intensity", "medium")
     mood = vision.get("mood", "")
     structure = vision.get("structure", "")
+    gesture = vision.get("gesture", "")
 
     print(f"  intensity: {intensity}")
-    print(f"  gesture: {vision.get('gesture', '?')[:80]}")
+    print(f"  gesture: {gesture[:80]}")
     print(f"  structure: {structure[:80]}")
 
     c1 = palette[0] if len(palette) > 0 else "#b7f562"
@@ -450,37 +518,47 @@ def generate_html(vision, article_title, article_url, cycle_num):
     c3 = palette[2] if len(palette) > 2 else "#e8dcc8"
     c4 = palette[3] if len(palette) > 3 else "#2a2540"
 
-    all_grammars = [
-        ("atmospheric", lambda: (_atmospheric(palette, bg, intensity), _css_atmospheric(palette), _glass_layer(), _css_glass())),
-        ("constructivist", lambda: (_constructivist(palette, bg, intensity), _css_constructivist(palette, bg), _glass_layer(), _css_glass())),
-        ("field", lambda: (_field(palette, bg, intensity), _css_field(palette), _glass_layer(), _css_glass())),
-        ("pulse", lambda: (_pulse(palette, bg, intensity), _css_pulse(palette), "", "")),
-        ("liquid", lambda: (_liquid(palette, bg, intensity), _css_liquid(palette), "", "")),
-    ]
+    grammar_map = {
+        "particles": ("field", lambda: (_field(palette, bg, intensity), _css_field(palette), _glass_layer(), _css_glass())),
+        "bands": ("atmospheric", lambda: (_atmospheric(palette, bg, intensity), _css_atmospheric(palette), _glass_layer(), _css_glass())),
+        "blocks": ("constructivist", lambda: (_constructivist(palette, bg, intensity), _css_constructivist(palette, bg), _glass_layer(), _css_glass())),
+        "blobs": ("liquid", lambda: (_liquid(palette, bg, intensity), _css_liquid(palette), "", "")),
+        "pulses": ("pulse", lambda: (_pulse(palette, bg, intensity), _css_pulse(palette), "", "")),
+    }
 
-    weights = _structure_weights(structure, mood, intensity)
-    grammar_names = [g[0] for g in all_grammars]
-    w = [weights[name] for name in grammar_names]
+    params = _parse_primitives(structure, gesture, mood, intensity)
 
-    n = random.randint(2, 4)
-    selected_names = []
-    selected_fns = []
-    remaining_names = list(grammar_names)
-    remaining_weights = list(w)
+    if params and len(params["primitives"]) >= 2:
+        selected_names = params["names"]
+        selected_fns = [grammar_map[ptype][1] for ptype, _, _, _ in params["primitives"]]
+        use_glass = params["glass"]
+        print(f"  primitives: {' + '.join(selected_names)}")
+    else:
+        # fallback — weighted grammar selection
+        all_grammars = list(grammar_map.values())
+        weights = _structure_weights(structure, mood, intensity)
+        grammar_names = [g[0] for g in all_grammars]
+        w = [weights[name] for name in grammar_names]
+        n = random.randint(2, 4)
+        selected_names = []
+        selected_fns = []
+        remaining_names = list(grammar_names)
+        remaining_weights = list(w)
 
-    for _ in range(n):
-        total = sum(remaining_weights)
-        if total == 0:
-            break
-        probs = [x / total for x in remaining_weights]
-        idx = random.choices(range(len(remaining_names)), weights=probs, k=1)[0]
-        selected_names.append(remaining_names[idx])
-        selected_fns.append(dict(all_grammars)[remaining_names[idx]])
-        del remaining_names[idx]
-        del remaining_weights[idx]
+        for _ in range(n):
+            total = sum(remaining_weights)
+            if total == 0:
+                break
+            probs = [x / total for x in remaining_weights]
+            idx = random.choices(range(len(remaining_names)), weights=probs, k=1)[0]
+            selected_names.append(remaining_names[idx])
+            selected_fns.append(dict(all_grammars)[remaining_names[idx]])
+            del remaining_names[idx]
+            del remaining_weights[idx]
 
-    print(f"  weights: {', '.join(f'{g}:{weights[g]:.1f}' for g in grammar_names)}")
-    print(f"  grammars: {' + '.join(selected_names)}")
+        use_glass = True
+        print(f"  weights: {', '.join(f'{g}:{weights[g]:.1f}' for g in grammar_names)}")
+        print(f"  fallback grammars: {' + '.join(selected_names)}")
 
     body_layers = ""
     css_extra = ""
@@ -491,7 +569,7 @@ def generate_html(vision, article_title, article_url, cycle_num):
         body, css, glass_h, glass_c = fn()
         body_layers += body
         css_extra += css
-        if glass_h and not glass_html:
+        if glass_h and not glass_html and use_glass:
             glass_html = glass_h
             glass_css = glass_c
 
