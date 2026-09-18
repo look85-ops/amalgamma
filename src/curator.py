@@ -415,6 +415,8 @@ def generate_html(vision, article_title, article_url, cycle_num):
 
     state = read_state()
     last_grammar = state.get("last_grammar", "")
+
+    # hard cooldown: never repeat the same non-hybrid grammar
     if last_grammar and grammar == last_grammar and grammar != "hybrid":
         force = (grammar == "atmospheric")
         chance = 1.0 if force else 0.60
@@ -424,6 +426,12 @@ def generate_html(vision, article_title, article_url, cycle_num):
             grammar = random.choice(others)
             tag = "hard cooldown" if force else "cooldown"
             print(f"  grammar {tag}: {last_grammar} → {grammar}")
+
+    # anti-atmospheric bias: even on first occurrence, 80% chance to re-roll
+    if grammar == "atmospheric" and random.random() < 0.80:
+        others = ["constructivist", "field", "pulse", "liquid"]
+        grammar = random.choice(others)
+        print(f"  grammar anti-atmospheric → {grammar}")
 
     print(f"  grammar: {grammar} ({intensity})")
 
