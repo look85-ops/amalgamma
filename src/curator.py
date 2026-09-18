@@ -717,72 +717,89 @@ def _css_atmospheric(palette):
 @keyframes p_glow{{0%,100%{{opacity:.15;transform:scale(.6)}}40%{{opacity:.7;transform:scale(1.8)}}70%{{opacity:.3;transform:scale(1)}}}}"""
 
 
-# ── Grammar: strokes (lines, marks, gestures — Twombly, graphic) ──
+# ── Grammar: strokes (lines, clusters, gestures — Twombly, graphic) ──
 
 def _strokes(palette, bg, intensity):
     c1, c2, c3 = palette[0], palette[1] if len(palette) > 1 else palette[0], palette[2] if len(palette) > 2 else palette[0]
-    primes = [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61]
-    random.shuffle(primes)
-    count = random.randint(8, 60)
     marks = []
+    n_clusters = random.randint(1, 4)
+    used_centers = []
 
-    for i in range(count):
-        x1 = random.uniform(-5, 105)
-        y1 = random.uniform(-5, 105)
-        # 60% straight lines, 30% slight curves, 10% sharp angles
-        rtype = random.choices(["straight", "curve", "angle", "zigzag", "arc"], weights=[0.4, 0.25, 0.1, 0.15, 0.1], k=1)[0]
-        base_angle = random.uniform(0, 360)
-        if rtype == "straight":
-            length = random.uniform(3, 50)
-            x2 = x1 + length * math.cos(math.radians(base_angle))
-            y2 = y1 + length * math.sin(math.radians(base_angle))
-            path = f'M{x1:.1f},{y1:.1f}L{x2:.1f},{y2:.1f}'
-        elif rtype == "curve":
-            cx = x1 + random.uniform(-25, 25)
-            cy = y1 + random.uniform(-30, 30)
-            x2 = x1 + random.uniform(-40, 40)
-            y2 = y1 + random.uniform(-40, 40)
-            path = f'M{x1:.1f},{y1:.1f}Q{cx:.1f},{cy:.1f},{x2:.1f},{y2:.1f}'
-        elif rtype == "angle":
-            mx = x1 + random.uniform(-25, 25)
-            my = y1 + random.uniform(-25, 25)
-            x2 = mx + random.uniform(-25, 25)
-            y2 = my + random.uniform(-25, 25)
-            path = f'M{x1:.1f},{y1:.1f}L{mx:.1f},{my:.1f}L{x2:.1f},{y2:.1f}'
-        elif rtype == "zigzag":
-            pts = [(x1, y1)]
-            for _ in range(random.randint(2, 4)):
-                px = pts[-1][0] + random.uniform(-15, 15)
-                py = pts[-1][1] + random.uniform(-15, 15)
-                pts.append((px, py))
-            path = "M" + " L".join(f"{p[0]:.1f},{p[1]:.1f}" for p in pts[1:])
-            path = f'M{x1:.1f},{y1:.1f}L' + " L".join(f"{p[0]:.1f},{p[1]:.1f}" for p in pts[1:])
-        else:  # arc
-            rx = random.uniform(10, 40)
-            ry = random.uniform(5, 25)
-            rot = random.uniform(0, 360)
-            sweep = random.choice([0, 1])
-            x2 = x1 + random.uniform(-30, 30)
-            y2 = y1 + random.uniform(-30, 30)
-            path = f'M{x1:.1f},{y1:.1f}A{rx:.1f},{ry:.1f},{rot:.0f},0,{sweep},{x2:.1f},{y2:.1f}'
+    for ci in range(n_clusters):
+        # cluster center — somewhere meaningful on canvas
+        cx = random.uniform(10, 90)
+        cy = random.uniform(10, 90)
+        # ensure clusters don't overlap too much
+        if used_centers:
+            attempts = 0
+            while any(abs(cx - ux) < 25 and abs(cy - uy) < 25 for ux, uy in used_centers) and attempts < 10:
+                cx = random.uniform(10, 90)
+                cy = random.uniform(10, 90)
+                attempts += 1
+        used_centers.append((cx, cy))
 
-        sw = round(random.uniform(0.3, 6.0), 1)
-        c = random.choice([c1, c2, c3])
-        opacity = round(random.uniform(0.08, 0.45), 2)
-        dash = "none"
-        if random.random() < 0.35:
-            dash = f"{random.randint(2,12)} {random.randint(3,15)}"
-        if random.random() < 0.15:
-            dash = f"{random.randint(1,3)} {random.randint(8,25)}"
+        # cluster personality
+        cluster_type = random.choice(["dense_scribble", "sparse_scratches", "sweeping_gesture", "parallel_hatching"])
+        n_lines = {"dense_scribble": random.randint(10, 25),
+                    "sparse_scratches": random.randint(4, 10),
+                    "sweeping_gesture": random.randint(1, 3),
+                    "parallel_hatching": random.randint(6, 15)}[cluster_type]
+        spread = {"dense_scribble": 8, "sparse_scratches": 18, "sweeping_gesture": 30, "parallel_hatching": 12}[cluster_type]
 
-        d = primes[i % len(primes)] / 2 + random.uniform(1, 8)
-        dl = round(random.uniform(0, 20), 1)
-        marks.append(
-            f'<path d="{path}" stroke="{c}" stroke-width="{sw}" fill="none" '
-            f'opacity="{opacity}" stroke-dasharray="{dash}" '
-            f'style="animation:st_drift {d:.1f}s ease-in-out infinite;animation-delay:{dl:.1f}s;'
-            f'stroke-linecap:{"round" if random.random()<0.7 else "butt"}"/>'
-        )
+        for _ in range(n_lines):
+            x1 = cx + random.uniform(-spread, spread)
+            y1 = cy + random.uniform(-spread, spread)
+
+            if cluster_type == "sweeping_gesture":
+                length = random.uniform(25, 60)
+                angle = random.uniform(0, 360)
+                # slight wobble via quadratic bezier
+                x2 = x1 + length * math.cos(math.radians(angle))
+                y2 = y1 + length * math.sin(math.radians(angle))
+                cpx = (x1 + x2) / 2 + random.uniform(-10, 10)
+                cpy = (y1 + y2) / 2 + random.uniform(-10, 10)
+                path = f'M{x1:.1f},{y1:.1f}Q{cpx:.1f},{cpy:.1f},{x2:.1f},{y2:.1f}'
+            elif cluster_type == "parallel_hatching":
+                length = random.uniform(8, 25)
+                angle = random.gauss(base_angle := random.uniform(0, 360), 8)
+                x2 = x1 + length * math.cos(math.radians(angle))
+                y2 = y1 + length * math.sin(math.radians(angle))
+                path = f'M{x1:.1f},{y1:.1f}L{x2:.1f},{y2:.1f}'
+            else:
+                # scribble or scratch — short line with slight curve
+                length = random.uniform(3, 15)
+                angle = random.uniform(0, 360)
+                x2 = x1 + length * math.cos(math.radians(angle))
+                y2 = y1 + length * math.sin(math.radians(angle))
+                if random.random() < 0.4:
+                    cpx = (x1 + x2) / 2 + random.uniform(-4, 4)
+                    cpy = (y1 + y2) / 2 + random.uniform(-4, 4)
+                    path = f'M{x1:.1f},{y1:.1f}Q{cpx:.1f},{cpy:.1f},{x2:.1f},{y2:.1f}'
+                else:
+                    path = f'M{x1:.1f},{y1:.1f}L{x2:.1f},{y2:.1f}'
+
+            sw = round(random.uniform(0.2, 4.0), 1)
+            if cluster_type == "sweeping_gesture":
+                sw = round(random.uniform(0.5, 5.0), 1)
+            c = random.choice([c1, c2, c3])
+            opacity = round(random.uniform(0.10, 0.50), 2)
+            dash = "none"
+            if cluster_type in ("sparse_scratches", "parallel_hatching") and random.random() < 0.4:
+                dash = f"{random.randint(2, 8)} {random.randint(4, 20)}"
+
+            # animation: subtle tremble — faster, smaller movement
+            d = round(random.uniform(2, 8), 1)
+            dl = round(random.uniform(0, 6), 1)
+            dx = round(random.uniform(-0.3, 0.3), 2)
+            dy = round(random.uniform(-0.3, 0.3), 2)
+
+            marks.append(
+                f'<path d="{path}" stroke="{c}" stroke-width="{sw}" fill="none" '
+                f'opacity="{opacity}" stroke-dasharray="{dash}" '
+                f'style="animation:st_tremble {d:.1f}s ease-in-out infinite;animation-delay:{dl:.1f}s;'
+                f'--dx:{dx};--dy:{dy};'
+                f'stroke-linecap:round"/>'
+            )
 
     joined = "".join(marks)
     return f'<svg class="stf" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">{joined}</svg>'
@@ -790,7 +807,7 @@ def _strokes(palette, bg, intensity):
 
 def _css_strokes(palette, bg):
     return f""".stf{{position:fixed;inset:0;z-index:2;pointer-events:none;width:100vw;height:100vh}}
-@keyframes st_drift{{0%,100%{{opacity:var(--o,1);transform:translate(0,0)}}40%{{opacity:calc(var(--o,1)*1.6);transform:translate(1vw,-0.5vh)}}70%{{opacity:calc(var(--o,1)*0.6);transform:translate(-0.5vw,0.3vh)}}}}"""
+@keyframes st_tremble{{0%,100%{{transform:translate(0,0);opacity:.8}}30%{{transform:translate(calc(var(--dx)*1vw),calc(var(--dy)*1vh));opacity:1}}60%{{transform:translate(calc(var(--dx)*-0.5*1vw),calc(var(--dy)*-0.8*1vh));opacity:.6}}}}
 
 
 # ── Grammar: field ──────────────────────────────────────────────────
