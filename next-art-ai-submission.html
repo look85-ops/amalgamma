@@ -29,21 +29,20 @@ html,body{width:100vw;height:100vh;overflow:hidden;background:#000}
 .titles{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;font-family:system-ui,sans-serif;opacity:0;color:rgba(255,255,255,.45);font-size:.8rem;letter-spacing:.05em;text-align:center;line-height:1.8}
 @keyframes titles_fade{0%,92%{opacity:0}96%,100%{opacity:1}}
 
-/* ── Lifecycle: 63s loop ──
+/* ── Lifecycle: 60s loop ──
    0-3s:    fade in (black → composition)
-   3-55s:   full life (55 seconds of the artifact breathing)
-   55-60s:  fade out (composition → black)
-   60-63s:  end titles (repo + live links)
+   3-57s:   full life (54 seconds breathing)
+   57-60s:  fade out (composition → black)
    → repeat
 */
-@keyframes lifecycle{0%,3%{opacity:1}0%{opacity:0}3%,89%{opacity:1}89%,95%{opacity:0}95%,100%{opacity:0}}
+@keyframes lifecycle{0%,5%{opacity:1}0%{opacity:0}5%,94%{opacity:1}94%,100%{opacity:0}}
 
-.src{animation:src_fade 63s ease-in-out infinite}
-.titles{animation:titles_fade 63s ease-in-out infinite}
+.src{animation:src_fade 60s ease-in-out infinite}
+.titles{animation:titles_fade 60s ease-in-out infinite}
 
 /* ── Fade overlay for smooth black transitions ── */
-.fade-overlay{position:fixed;inset:0;z-index:15;pointer-events:none;background:#000;animation:fade_ov 63s ease-in-out infinite}
-@keyframes fade_ov{0%,3%{opacity:0}0%{opacity:1}3%,89%{opacity:0}89%,95%{opacity:1}95%,100%{opacity:1}}
+.fade-overlay{position:fixed;inset:0;z-index:15;pointer-events:none;background:#000;animation:fade_ov 60s ease-in-out infinite}
+@keyframes fade_ov{0%,5%{opacity:0}0%{opacity:1}5%,94%{opacity:0}94%,100%{opacity:1}}
 </style>
 </head>
 <body>
@@ -76,6 +75,97 @@ html,body{width:100vw;height:100vh;overflow:hidden;background:#000}
   <span>github.com/look85-ops/amalgamma</span>
   <span>look85-ops.github.io/amalgamma</span>
 </div>
+
+<script>
+(() => {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+
+  // drone — low sine, slow LFO on frequency
+  const drone = ctx.createOscillator();
+  drone.type = 'sine';
+  drone.frequency.value = 55;
+  const droneLFO = ctx.createOscillator();
+  droneLFO.type = 'sine';
+  droneLFO.frequency.value = 0.07;
+  const droneLFOGain = ctx.createGain();
+  droneLFOGain.gain.value = 8;
+  droneLFO.connect(droneLFOGain);
+  droneLFOGain.connect(drone.frequency);
+  droneLFO.start();
+
+  const droneVol = ctx.createGain();
+  droneVol.gain.value = 0.06;
+  drone.connect(droneVol);
+  droneVol.connect(master);
+  drone.start();
+
+  // noise — filtered white noise for texture
+  const noiseLen = ctx.sampleRate * 2;
+  const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+  const data = noiseBuf.getChannelData(0);
+  for (let i = 0; i < noiseLen; i++) data[i] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource();
+  noise.buffer = noiseBuf;
+  noise.loop = true;
+
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'lowpass';
+  noiseFilter.frequency.value = 300;
+  noiseFilter.Q.value = 0.5;
+
+  const noiseVol = ctx.createGain();
+  noiseVol.gain.value = 0.03;
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseVol);
+  noiseVol.connect(master);
+  noise.start();
+
+  // rhythmic pulse — subtle low thump every ~8s
+  const pulse = ctx.createOscillator();
+  pulse.type = 'sine';
+  pulse.frequency.value = 28;
+  const pulseVol = ctx.createGain();
+  pulseVol.gain.value = 0;
+  pulse.connect(pulseVol);
+  pulseVol.connect(master);
+  pulse.start();
+
+  let pulsePhase = 0;
+  const pulseInterval = 8.3;
+
+  // master volume envelope — follows visual lifecycle
+  function update(t) {
+const cycleT = t % 60;
+
+    if (cycleT < 3) env = cycleT / 3;           // fade in
+    else if (cycleT < 57) env = 1;               // full
+    else if (cycleT < 60) env = 1 - (cycleT - 57) / 3; // fade out
+    else env = 0;                                 // silent
+
+    // slight wobble
+    const wobble = 1 + Math.sin(t * 0.3) * 0.15 + Math.sin(t * 0.13) * 0.1;
+    master.gain.value = env * wobble * 0.7;
+
+    // rhythmic pulse
+    const p = (t % pulseInterval) / pulseInterval;
+    pulseVol.gain.value = (p < 0.08 ? (1 - p / 0.08) * 0.12 : 0) * env;
+
+    requestAnimationFrame(update);
+  }
+
+  // start on first user interaction or after short delay
+  function init() {
+    if (ctx.state === 'suspended') ctx.resume();
+    requestAnimationFrame(update);
+    document.removeEventListener('click', init);
+  }
+  document.addEventListener('click', init);
+  setTimeout(() => { if (ctx.state === 'suspended') ctx.resume(); requestAnimationFrame(update); }, 500);
+})();
+</script>
 
 </body>
 </html>
