@@ -43,6 +43,12 @@ html,body{width:100vw;height:100vh;overflow:hidden;background:#000}
 /* ── Fade overlay for smooth black transitions ── */
 .fade-overlay{position:fixed;inset:0;z-index:15;pointer-events:none;background:#000;animation:fade_ov 60s ease-in-out infinite}
 @keyframes fade_ov{0%,5%{opacity:0}0%{opacity:1}5%,94%{opacity:0}94%,100%{opacity:1}}
+
+/* ── Record button ── */
+#recordBtn{position:fixed;top:2vh;left:50%;transform:translateX(-50%);z-index:99;padding:6px 18px;border:1px solid rgba(255,255,255,.25);border-radius:20px;background:rgba(0,0,0,.5);color:rgba(255,255,255,.5);font-size:.7rem;letter-spacing:.1em;cursor:pointer;font-family:system-ui,sans-serif;transition:all .3s;opacity:.4}
+#recordBtn:hover{opacity:.9;border-color:rgba(255,255,255,.6);color:#fff}
+#recordBtn.recording{display:none}
+#recordBtn.done{opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
@@ -75,6 +81,8 @@ html,body{width:100vw;height:100vh;overflow:hidden;background:#000}
   <span>github.com/look85-ops/amalgamma</span>
   <span>look85-ops.github.io/amalgamma</span>
 </div>
+
+<button id="recordBtn" title="Record 60s video">⬤ REC</button>
 
 <script>
 (() => {
@@ -164,6 +172,62 @@ const cycleT = t % 60;
   }
   document.addEventListener('click', init);
   setTimeout(() => { if (ctx.state === 'suspended') ctx.resume(); requestAnimationFrame(update); }, 500);
+})();
+
+// ── Self-recording ────────────────────────────────────────────────
+(() => {
+  const btn = document.getElementById('recordBtn');
+  let mediaRecorder = null;
+  let chunks = [];
+
+  btn.addEventListener('click', async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { width: 1920, height: 1080, frameRate: 30 },
+        audio: true
+      });
+
+      btn.classList.add('recording');
+
+      const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+        ? 'video/webm;codecs=vp9' : 'video/webm';
+
+      mediaRecorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 5000000 });
+      chunks = [];
+
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'amalgama-submission-60s.webm';
+        a.click();
+        URL.revokeObjectURL(url);
+        stream.getTracks().forEach(t => t.stop());
+        btn.classList.remove('recording');
+        btn.classList.add('done');
+        btn.textContent = '\u2713 DONE';
+      };
+
+      mediaRecorder.start();
+      console.log('recording started');
+
+      setTimeout(() => {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+          console.log('recording stopped — 60s');
+        }
+      }, 60000);
+
+    } catch (err) {
+      console.error('recording failed:', err);
+      btn.textContent = 'RETRY';
+      btn.classList.remove('recording');
+      setTimeout(() => { btn.textContent = '\u25A4 REC'; btn.classList.remove('done'); }, 2000);
+    }
+  });
 })();
 </script>
 
