@@ -535,19 +535,19 @@ def _constructivist(palette, bg, intensity):
     blocks = []
     primes = [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61]
     random.shuffle(primes)
-    count = random.randint(30, 70)
+    count = random.randint(10, 150)
     for i in range(count):
-        x = random.uniform(5, 88)
-        y = random.uniform(8, 82)
-        w = random.uniform(3, 18)
+        x = random.uniform(-5, 95)
+        y = random.uniform(-5, 95)
+        w = random.uniform(2, 25)
         bg_c = random.choice([c1, c2, c3, c4])
-        d = round(primes[i % len(primes)] / 3 + random.uniform(2, 8), 1)
-        dl = round(random.uniform(0.5, 12), 1)
-        br = random.randint(18, 48)
+        d = round(primes[i % len(primes)] / 3 + random.uniform(1, 10), 1)
+        dl = round(random.uniform(0.2, 15), 1)
+        br = random.randint(2, 60)
         blocks.append(f'<div class="bl" style="left:{x:.0f}%;top:{y:.0f}%;--w:{w:.1f}vw;width:var(--w);background:{bg_c};--d:{d}s;--dl:{dl}s;--br:{br}"></div>')
     lines_svg = ""
-    if random.random() < 0.5:
-        line_count = random.randint(4, 12)
+    if random.random() < 0.6:
+        line_count = random.randint(2, 20)
         lines_svg = '<svg class="bln" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">'
         for _ in range(line_count):
             x1 = random.randint(50, 750)
@@ -572,20 +572,20 @@ def _css_constructivist(palette, bg):
 # ── Grammar: field ──────────────────────────────────────────────────
 
 def _field(palette, bg, intensity):
-    count = random.randint(80, 200)
+    count = random.randint(20, 300)
     field_particles = []
     primes = [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
     random.shuffle(primes)
     for i in range(count):
-        x = random.uniform(-5, 105)
-        y = random.uniform(-5, 105)
-        s = round(random.uniform(0.8, 3.5), 1)
-        p_cycle = primes[i % len(primes)] / 5 + random.uniform(0, 2)
-        delay = random.uniform(0, 15)
+        x = random.uniform(-10, 110)
+        y = random.uniform(-10, 110)
+        s = round(random.uniform(0.5, 6.0), 1)
+        p_cycle = primes[i % len(primes)] / 5 + random.uniform(0, 3)
+        delay = random.uniform(0, 20)
         c = random.choice(palette)
-        if random.random() < 0.3:
-            x = random.gauss(50, random.uniform(15, 35))
-            y = random.gauss(50, random.uniform(15, 35))
+        if random.random() < 0.4:
+            x = random.gauss(50, random.uniform(10, 50))
+            y = random.gauss(50, random.uniform(10, 50))
         field_particles.append(
             f'<div class="fp" style="left:{x:.1f}%;top:{y:.1f}%;--s:{s}px;--p:{p_cycle:.1f}s;--del:{delay:.1f}s;--c:{c}"></div>'
         )
@@ -603,16 +603,16 @@ def _pulse(palette, bg, intensity):
     c1 = palette[0]
     c2 = palette[1] if len(palette) > 1 else c1
     forms = []
-    count = random.randint(1, 4)
-    sizes = ["40vmin", "28vmin", "18vmin", "12vmin"]
-    blurs = ["8vmin", "6vmin", "4vmin", "3vmin"]
-    cycles = [47, 43, 41, 37]
+    count = random.randint(1, 6)
+    sizes = [random.randint(20, 60) for _ in range(6)]
+    blurs = [random.randint(3, 12) for _ in range(6)]
+    cycles_p = [random.randint(29, 59) for _ in range(6)]
     for i in range(count):
-        x = random.uniform(15, 75)
-        y = random.uniform(15, 75)
+        x = random.uniform(10, 85)
+        y = random.uniform(10, 85)
         c = random.choice([c1, c2])
         forms.append(
-            f'<div class="pf" style="left:{x:.0f}%;top:{y:.0f}%;width:{sizes[i]};height:{blurs[i]};background:radial-gradient(circle,{c}66 0%,{c}22 35%,transparent 70%);--p:{cycles[i]}s;--del:{-i*3}s"></div>'
+            f'<div class="pf" style="left:{x:.0f}%;top:{y:.0f}%;width:{sizes[i]}vmin;height:{blurs[i]}vmin;background:radial-gradient(circle,{c}66 0%,{c}22 35%,transparent 70%);--p:{cycles_p[i]}s;--del:{-i*random.randint(1,5)}s"></div>'
         )
     return f'<div class="ppf">{"".join(forms)}</div>'
 
@@ -627,13 +627,13 @@ def _css_pulse(palette):
 def _liquid(palette, bg, intensity):
     c1, c2, c3 = palette[0], palette[1] if len(palette) > 1 else palette[0], palette[2] if len(palette) > 2 else palette[0]
     blobs = []
-    count = random.randint(5, 12)
+    count = random.randint(3, 20)
     primes = [43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
     random.shuffle(primes)
     for i in range(count):
-        x = random.uniform(-20, 100)
-        y = random.uniform(-20, 100)
-        w = random.randint(20, 70)
+        x = random.uniform(-30, 110)
+        y = random.uniform(-30, 110)
+        w = random.randint(10, 80)
         c = random.choice([c1, c2, c3])
         d = primes[i % len(primes)] / 2
         delay = random.uniform(0, 20)
@@ -665,7 +665,7 @@ def _css_glass():
 # ── Shared helpers ──────────────────────────────────────────────────
 
 def _particles(palette):
-    count = random.randint(20, 60)
+    count = random.randint(8, 120)
     particles = []
     primes = [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
     random.shuffle(primes)
@@ -676,12 +676,12 @@ def _particles(palette):
         r = r_norm * 0.9
         x = 50 + r * 55 * math.cos(theta)
         y = 50 + r * 55 * math.sin(theta)
-        if random.random() < 0.2:
-            x += random.uniform(-30, 30)
-            y += random.uniform(-30, 30)
-        s = round(random.uniform(1.2, 4.5), 1)
-        p = primes[i % len(primes)] / 4 + random.uniform(0, 3)
-        delay = random.uniform(0, 10)
+        if random.random() < 0.35:
+            x += random.uniform(-40, 40)
+            y += random.uniform(-40, 40)
+        s = round(random.uniform(0.8, 8.0), 1)
+        p = primes[i % len(primes)] / 4 + random.uniform(0, 4)
+        delay = random.uniform(0, 15)
         c = random.choice(palette)
         particles.append(
             f'<div class="pt" style="--x:{x:.1f}%;--y:{y:.1f}%;--s:{s}px;--p:{p:.1f}s;--del:{delay:.1f}s;--c:{c}"></div>'
@@ -689,17 +689,17 @@ def _particles(palette):
     return "\n".join(particles)
 
 def _bands(palette):
-    count = random.randint(6, 14)
+    count = random.randint(3, 25)
     bands = []
     primes = [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]
     random.shuffle(primes)
     for i in range(count):
-        h = round(random.uniform(0.4, 4.0), 1)
-        o = round(random.uniform(0.03, 0.18), 2)
-        b = random.randint(3, 40)
-        d = primes[i % len(primes)] / 2 + random.uniform(0, 3)
-        delay = random.uniform(0, 15)
-        sk = round(random.uniform(-0.8, 0.8), 1)
+        h = round(random.uniform(0.3, 6.0), 1)
+        o = round(random.uniform(0.02, 0.25), 2)
+        b = random.randint(2, 60)
+        d = primes[i % len(primes)] / 2 + random.uniform(0, 5)
+        delay = random.uniform(0, 20)
+        sk = round(random.uniform(-2.0, 2.0), 1)
         y1 = random.randint(5, 85)
         y2 = random.randint(5, 85)
         y3 = random.randint(5, 85)
