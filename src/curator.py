@@ -416,11 +416,14 @@ def generate_html(vision, article_title, article_url, cycle_num):
     state = read_state()
     last_grammar = state.get("last_grammar", "")
     if last_grammar and grammar == last_grammar and grammar != "hybrid":
-        if random.random() < 0.60:
+        force = (grammar == "atmospheric")
+        chance = 1.0 if force else 0.60
+        if random.random() < chance:
             others = ["atmospheric", "constructivist", "field", "pulse", "liquid"]
             others = [g for g in others if g != grammar]
             grammar = random.choice(others)
-            print(f"  grammar cooldown: {last_grammar} → {grammar}")
+            tag = "hard cooldown" if force else "cooldown"
+            print(f"  grammar {tag}: {last_grammar} → {grammar}")
 
     print(f"  grammar: {grammar} ({intensity})")
 
