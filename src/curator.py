@@ -481,6 +481,75 @@ html,body{{width:100vw;height:100vh;overflow:hidden;background:{bg}}}
 {glass_html}
 <div class="vig"></div>
 <div class="src">current inspiration: {article_title}</div>
+<script>
+(() => {{
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+
+  const drone = ctx.createOscillator();
+  drone.type = 'sine';
+  drone.frequency.value = 55;
+  const droneLFO = ctx.createOscillator();
+  droneLFO.type = 'sine';
+  droneLFO.frequency.value = 0.07;
+  const droneLFOGain = ctx.createGain();
+  droneLFOGain.gain.value = 8;
+  droneLFO.connect(droneLFOGain);
+  droneLFOGain.connect(drone.frequency);
+  droneLFO.start();
+  const droneVol = ctx.createGain();
+  droneVol.gain.value = 0.05;
+  drone.connect(droneVol);
+  droneVol.connect(master);
+  drone.start();
+
+  const noiseLen = ctx.sampleRate * 2;
+  const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+  const data = noiseBuf.getChannelData(0);
+  for (let i = 0; i < noiseLen; i++) data[i] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource();
+  noise.buffer = noiseBuf;
+  noise.loop = true;
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'lowpass';
+  noiseFilter.frequency.value = 300;
+  noiseFilter.Q.value = 0.5;
+  const noiseVol = ctx.createGain();
+  noiseVol.gain.value = 0.02;
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseVol);
+  noiseVol.connect(master);
+  noise.start();
+
+  const pulse = ctx.createOscillator();
+  pulse.type = 'sine';
+  pulse.frequency.value = 28;
+  const pulseVol = ctx.createGain();
+  pulseVol.gain.value = 0;
+  pulse.connect(pulseVol);
+  pulseVol.connect(master);
+  pulse.start();
+
+  const pulseInterval = 8.3;
+  function update(t) {{
+    const wobble = 1 + Math.sin(t * 0.3) * 0.1 + Math.sin(t * 0.13) * 0.08;
+    master.gain.value = wobble * 0.5;
+    const p = (t % pulseInterval) / pulseInterval;
+    pulseVol.gain.value = (p < 0.08 ? (1 - p / 0.08) * 0.08 : 0);
+    requestAnimationFrame(update);
+  }}
+
+  function init() {{
+    if (ctx.state === 'suspended') ctx.resume();
+    requestAnimationFrame(update);
+    document.removeEventListener('click', init);
+  }}
+  document.addEventListener('click', init);
+  setTimeout(() => {{ if (ctx.state === 'suspended') ctx.resume(); requestAnimationFrame(update); }}, 500);
+}})();
+</script>
 </body>
 </html>""", grammar
 
