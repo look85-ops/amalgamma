@@ -356,7 +356,7 @@ def build_prompt(article):
     temp = get_cycle_temp()
 
     return (
-        f"You are an abstract visual composer. Below is a Wikipedia article.\n\n"
+        f"You are an abstract visual composer. Below is a news article.\n\n"
         f"TITLE: {title}\n"
         f"TEXT: {extract}\n\n"
         f"Create an abstract visual composition that REFLECTS the feeling of this article. "
@@ -368,6 +368,10 @@ def build_prompt(article):
         f"Never repeat the same colour twice. "
         f"Avoid navy, dark purple, dark brown, dark grey as backgrounds — "
         f"use them only as accents. Backgrounds should be vivid or unexpected.\n\n"
+        f"GRAMMAR DIVERSITY: vary your grammar choice. Do NOT default to atmospheric. "
+        f"Prefer constructivist, field, pulse, liquid, or hybrid unless the article "
+        f"genuinely calls for atmospheric (horizons, weather, drifting, skies). "
+        f"Be surprising — unexpected grammar choices create the strongest compositions.\n\n"
         f"Respond with a JSON object (only JSON, no markdown):\n"
         f'{{"bg":"hex background colour",\n'
         f' "palette":["hex","hex","hex","hex"],\n'
@@ -398,7 +402,7 @@ def select_grammar(vision):
     if any(w in structure for w in ["liquid", "fluid", "bleed", "water", "wash", "stain", "organic", "blob", "melt", "flow"]):
         return "liquid"
     grammars = ["atmospheric", "constructivist", "field", "pulse", "liquid"]
-    return grammars[hash(vision.get("mood", "")) % len(grammars)]
+    return random.choice(grammars)
 
 
 # ── HTML generator ─────────────────────────────────────────────────
@@ -409,6 +413,15 @@ def generate_html(vision, article_title, article_url, cycle_num):
     grammar = select_grammar(vision)
     intensity = vision.get("intensity", "medium")
 
+    state = read_state()
+    last_grammar = state.get("last_grammar", "")
+    if last_grammar and grammar == last_grammar and grammar != "hybrid":
+        if random.random() < 0.60:
+            others = ["atmospheric", "constructivist", "field", "pulse", "liquid"]
+            others = [g for g in others if g != grammar]
+            grammar = random.choice(others)
+            print(f"  grammar cooldown: {last_grammar} → {grammar}")
+
     print(f"  grammar: {grammar} ({intensity})")
 
     c1 = palette[0] if len(palette) > 0 else "#b7f562"
@@ -416,7 +429,7 @@ def generate_html(vision, article_title, article_url, cycle_num):
     c3 = palette[2] if len(palette) > 2 else "#e8dcc8"
     c4 = palette[3] if len(palette) > 3 else "#2a2540"
 
-    if random.random() < 0.50 and grammar != "hybrid":
+    if random.random() < 0.70 and grammar != "hybrid":
         grammar = "hybrid"
         print(f"  grammar override → hybrid")
 
@@ -469,7 +482,7 @@ html,body{{width:100vw;height:100vh;overflow:hidden;background:{bg}}}
 <div class="vig"></div>
 <div class="src">current inspiration: {article_title}</div>
 </body>
-</html>"""
+</html>""", grammar
 
 
 # ── Grammar: atmospheric ───────────────────────────────────────────
@@ -848,7 +861,7 @@ def main():
             "animation": "slow breathing, drifting bands"
         }
 
-    html = generate_html(vision, article["title"], article["url"], state.get("cycle", 0))
+    html, grammar = generate_html(vision, article["title"], article["url"], state.get("cycle", 0))
 
     ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
@@ -862,6 +875,7 @@ def main():
 
     state["cycle"] = state.get("cycle", 0) + 1
     state["last_title"] = article["title"]
+    state["last_grammar"] = grammar
     state["archive_count"] = state.get("archive_count", 0) + 1
     write_state(state)
 
