@@ -807,7 +807,7 @@ def _strokes(palette, bg, intensity):
 
 def _css_strokes(palette, bg):
     return f""".stf{{position:fixed;inset:0;z-index:2;pointer-events:none;width:100vw;height:100vh}}
-@keyframes st_tremble{{0%,100%{{transform:translate(0,0);opacity:.8}}30%{{transform:translate(calc(var(--dx)*1vw),calc(var(--dy)*1vh));opacity:1}}60%{{transform:translate(calc(var(--dx)*-0.5*1vw),calc(var(--dy)*-0.8*1vh));opacity:.6}}}}
+@keyframes st_tremble{{0%,100%{{transform:translate(0,0);opacity:.8}}30%{{transform:translate(calc(var(--dx)*1vw),calc(var(--dy)*1vh));opacity:1}}60%{{transform:translate(calc(var(--dx)*-0.5*1vw),calc(var(--dy)*-0.8*1vh));opacity:.6}}}}"""
 
 
 # ── Grammar: field ──────────────────────────────────────────────────
