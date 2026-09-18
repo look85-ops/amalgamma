@@ -455,7 +455,7 @@ def _structure_weights(structure, mood, intensity):
     s = (structure + " " + mood).lower()
     weights = {
         "atmospheric": 1.0,
-        "constructivist": 1.0,
+        "strokes": 1.0,
         "field": 1.0,
         "pulse": 1.0,
         "liquid": 1.0,
@@ -466,7 +466,7 @@ def _structure_weights(structure, mood, intensity):
                         "cloud", "fog", "mist", "haze", "dawn", "dusk", "wind",
                         "vast", "endless", "horizon", "sunset", "sunrise",
                         "atmospher", "airy", "breath", "float", "hover", "suspension"],
-        "constructivist": ["block", "grid", "build", "city", "architect",
+        "strokes": ["block", "grid", "build", "city", "architect",
                            "square", "rect", "geometry", "geometric", "sharp", "shard",
                            "fracture", "jagged", "edge", "angular", "line",
                            "parallel", "converge", "intersect", "structure",
@@ -526,7 +526,7 @@ def generate_html(vision, article_title, article_url, cycle_num):
     grammar_map = {
         "particles": ("field", lambda: (_field(palette, bg, intensity), _css_field(palette), _glass_layer(), _css_glass())),
         "bands": ("atmospheric", lambda: (_atmospheric(palette, bg, intensity), _css_atmospheric(palette), _glass_layer(), _css_glass())),
-        "blocks": ("constructivist", lambda: (_constructivist(palette, bg, intensity), _css_constructivist(palette, bg), _glass_layer(), _css_glass())),
+        "blocks": ("strokes", lambda: (_strokes(palette, bg, intensity), _css_strokes(palette, bg), _glass_layer(), _css_glass())),
         "blobs": ("liquid", lambda: (_liquid(palette, bg, intensity), _css_liquid(palette), "", "")),
         "pulses": ("pulse", lambda: (_pulse(palette, bg, intensity), _css_pulse(palette), "", "")),
     }
@@ -590,7 +590,7 @@ html,body{{width:100vw;height:100vh;overflow:hidden;background:{bg}}}
 {css_extra}
 {glass_css}
 .vig{{position:fixed;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse 75% 55% at 50% 48%,transparent 0%,transparent 55%,rgba(0,0,0,.55) 100%)}}
-.src{{position:fixed;bottom:2.8vh;right:3vw;z-index:7;color:{c2};font-size:.65rem;letter-spacing:.06em;opacity:.28;pointer-events:none;font-family:system-ui,-apple-system,sans-serif;animation:s_fade 89s ease-in-out infinite}}
+.src{{position:fixed;bottom:2.8vh;right:3vw;z-index:7;color:rgba(255,255,255,.45);font-size:.65rem;letter-spacing:.06em;opacity:.35;pointer-events:none;font-family:system-ui,-apple-system,sans-serif;animation:s_fade 89s ease-in-out infinite}}
 @keyframes s_fade{{0%,100%{{opacity:.18}}50%{{opacity:.35}}}}
 </style>
 </head>
@@ -689,49 +689,84 @@ def _css_atmospheric(palette):
 .bands{{position:fixed;inset:0;z-index:3;pointer-events:none}}
 .band{{position:absolute;left:-2vw;width:104vw;filter:blur(calc(var(--b)*1px));animation:b_drift var(--d) ease-in-out infinite;animation-delay:var(--del);transform:skewY(var(--sk))}}
 @keyframes b_drift{{0%,100%{{top:var(--y1);opacity:1}}33%{{top:var(--y2);opacity:.6}}66%{{top:var(--y3);opacity:.85}}}}
-.pt{{position:absolute;width:var(--s);height:var(--s);border-radius:50%;background:radial-gradient(circle,var(--c) 0%,transparent 70%);filter:blur(calc(var(--s)*.5));animation:p_pulse var(--p) ease-in-out infinite;animation-delay:var(--del);left:var(--x);top:var(--y)}}
-@keyframes p_pulse{{0%,100%{{opacity:.04;transform:scale(1)}}40%{{opacity:.55;transform:scale(2.5)}}70%{{opacity:.25;transform:scale(1.2)}}}}"""
+.pt{{position:absolute;width:var(--s);height:var(--s);border-radius:50%;background:var(--c);filter:blur(calc(var(--s)*.3));animation:p_glow var(--p) ease-in-out infinite;animation-delay:var(--del);left:var(--x);top:var(--y)}}
+@keyframes p_glow{{0%,100%{{opacity:.15;transform:scale(.6)}}40%{{opacity:.7;transform:scale(1.8)}}70%{{opacity:.3;transform:scale(1)}}}}"""
 
 
-# ── Grammar: constructivist ─────────────────────────────────────────
+# ── Grammar: strokes (lines, marks, gestures — Twombly, graphic) ──
 
-def _constructivist(palette, bg, intensity):
-    c1, c2, c3, c4 = (palette + ["#1a1816"] * 4)[:4]
-    blocks = []
+def _strokes(palette, bg, intensity):
+    c1, c2, c3 = palette[0], palette[1] if len(palette) > 1 else palette[0], palette[2] if len(palette) > 2 else palette[0]
     primes = [7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61]
     random.shuffle(primes)
-    count = random.randint(10, 150)
-    for i in range(count):
-        x = random.uniform(-5, 95)
-        y = random.uniform(-5, 95)
-        w = random.uniform(2, 25)
-        bg_c = random.choice([c1, c2, c3, c4])
-        d = round(primes[i % len(primes)] / 3 + random.uniform(1, 10), 1)
-        dl = round(random.uniform(0.2, 15), 1)
-        br = random.randint(2, 60)
-        blocks.append(f'<div class="bl" style="left:{x:.0f}%;top:{y:.0f}%;--w:{w:.1f}vw;width:var(--w);background:{bg_c};--d:{d}s;--dl:{dl}s;--br:{br}"></div>')
-    lines_svg = ""
-    if random.random() < 0.6:
-        line_count = random.randint(2, 20)
-        lines_svg = '<svg class="bln" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">'
-        for _ in range(line_count):
-            x1 = random.randint(50, 750)
-            y1 = random.randint(50, 750)
-            x2 = random.randint(50, 750)
-            y2 = random.randint(50, 750)
-            stroke = random.choice([c1, c2, c3])
-            stroke_dash = f"{random.randint(3,8)} {random.randint(3,8)}" if random.random() < 0.5 else "none"
-            lines_svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke}" stroke-width="0.4" opacity="0.2" stroke-dasharray="{stroke_dash}"/>'
-        lines_svg += '</svg>'
-    joined_blocks = "".join(blocks)
-    return f"""<div class="blf">{joined_blocks}</div>{lines_svg}"""
+    count = random.randint(8, 60)
+    marks = []
 
-def _css_constructivist(palette, bg):
-    bg_lighter = bg
-    return f""".blf{{position:fixed;inset:0;z-index:2;pointer-events:none}}
-.bl{{position:absolute;height:var(--w);aspect-ratio:1;animation:bl_rise var(--d) ease-in-out infinite;animation-delay:var(--dl);border-radius:calc(var(--br)*1px);opacity:0}}
-@keyframes bl_rise{{0%,100%{{opacity:.08;transform:translateY(0)}}40%{{opacity:.25;transform:translateY(-3vh)}}70%{{opacity:.12;transform:translateY(1vh)}}}}
-.bln{{position:fixed;inset:0;z-index:3;pointer-events:none;width:100vw;height:100vh}}"""
+    for i in range(count):
+        x1 = random.uniform(-5, 105)
+        y1 = random.uniform(-5, 105)
+        # 60% straight lines, 30% slight curves, 10% sharp angles
+        rtype = random.choices(["straight", "curve", "angle", "zigzag", "arc"], weights=[0.4, 0.25, 0.1, 0.15, 0.1], k=1)[0]
+        base_angle = random.uniform(0, 360)
+        if rtype == "straight":
+            length = random.uniform(3, 50)
+            x2 = x1 + length * math.cos(math.radians(base_angle))
+            y2 = y1 + length * math.sin(math.radians(base_angle))
+            path = f'M{x1:.1f},{y1:.1f}L{x2:.1f},{y2:.1f}'
+        elif rtype == "curve":
+            cx = x1 + random.uniform(-25, 25)
+            cy = y1 + random.uniform(-30, 30)
+            x2 = x1 + random.uniform(-40, 40)
+            y2 = y1 + random.uniform(-40, 40)
+            path = f'M{x1:.1f},{y1:.1f}Q{cx:.1f},{cy:.1f},{x2:.1f},{y2:.1f}'
+        elif rtype == "angle":
+            mx = x1 + random.uniform(-25, 25)
+            my = y1 + random.uniform(-25, 25)
+            x2 = mx + random.uniform(-25, 25)
+            y2 = my + random.uniform(-25, 25)
+            path = f'M{x1:.1f},{y1:.1f}L{mx:.1f},{my:.1f}L{x2:.1f},{y2:.1f}'
+        elif rtype == "zigzag":
+            pts = [(x1, y1)]
+            for _ in range(random.randint(2, 4)):
+                px = pts[-1][0] + random.uniform(-15, 15)
+                py = pts[-1][1] + random.uniform(-15, 15)
+                pts.append((px, py))
+            path = "M" + " L".join(f"{p[0]:.1f},{p[1]:.1f}" for p in pts[1:])
+            path = f'M{x1:.1f},{y1:.1f}L' + " L".join(f"{p[0]:.1f},{p[1]:.1f}" for p in pts[1:])
+        else:  # arc
+            rx = random.uniform(10, 40)
+            ry = random.uniform(5, 25)
+            rot = random.uniform(0, 360)
+            sweep = random.choice([0, 1])
+            x2 = x1 + random.uniform(-30, 30)
+            y2 = y1 + random.uniform(-30, 30)
+            path = f'M{x1:.1f},{y1:.1f}A{rx:.1f},{ry:.1f},{rot:.0f},0,{sweep},{x2:.1f},{y2:.1f}'
+
+        sw = round(random.uniform(0.3, 6.0), 1)
+        c = random.choice([c1, c2, c3])
+        opacity = round(random.uniform(0.08, 0.45), 2)
+        dash = "none"
+        if random.random() < 0.35:
+            dash = f"{random.randint(2,12)} {random.randint(3,15)}"
+        if random.random() < 0.15:
+            dash = f"{random.randint(1,3)} {random.randint(8,25)}"
+
+        d = primes[i % len(primes)] / 2 + random.uniform(1, 8)
+        dl = round(random.uniform(0, 20), 1)
+        marks.append(
+            f'<path d="{path}" stroke="{c}" stroke-width="{sw}" fill="none" '
+            f'opacity="{opacity}" stroke-dasharray="{dash}" '
+            f'style="animation:st_drift {d:.1f}s ease-in-out infinite;animation-delay:{dl:.1f}s;'
+            f'stroke-linecap:{"round" if random.random()<0.7 else "butt"}"/>'
+        )
+
+    joined = "".join(marks)
+    return f'<svg class="stf" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">{joined}</svg>'
+
+
+def _css_strokes(palette, bg):
+    return f""".stf{{position:fixed;inset:0;z-index:2;pointer-events:none;width:100vw;height:100vh}}
+@keyframes st_drift{{0%,100%{{opacity:var(--o,1);transform:translate(0,0)}}40%{{opacity:calc(var(--o,1)*1.6);transform:translate(1vw,-0.5vh)}}70%{{opacity:calc(var(--o,1)*0.6);transform:translate(-0.5vw,0.3vh)}}}}"""
 
 
 # ── Grammar: field ──────────────────────────────────────────────────
