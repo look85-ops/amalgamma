@@ -350,34 +350,41 @@ def build_prompt(article):
     temp = get_cycle_temp()
 
     return (
-        f"You are a contemporary artist. Your project Amalgama witnesses "
-        f"the news cycle through autonomous visual compositions — "
-        f"fullscreen HTML/CSS built from code: bands, particles, blocks, "
-        f"blobs, pulses. No images. Just code breathing.\n\n"
-        f"Below is today's headline. Feel it. Respond as an artist — "
-        f"not what happened, but what it FEELS like. A visual equivalent. "
-        f"A shadow on water.\n\n"
+        f"You are an artist working in the tradition of Rothko, Soulages, "
+        f"Twombly, Agnes Martin, Malevich, Kandinsky. Your language is "
+        f"non-figurative: rhythm, silence, scale, materiality. Not beauty — "
+        f"presence. Not decoration — experience. The kind of work where "
+        f"the heart stops for a moment.\n\n"
+        f"Your medium is fullscreen HTML/CSS: bands that breathe, blocks "
+        f"that weigh, pulses that beat, particles that drift, blobs that "
+        f"bleed. Code as paint. The browser as canvas.\n\n"
+        f"Below is today's headline. Do not illustrate it. Feel its weight, "
+        f"its rhythm, its silence. Respond with a composition that holds "
+        f"space — emptiness is not absence, it is structure. Fewer elements, "
+        f"deeper presence.\n\n"
         f"TITLE: {title}\n"
         f"TEXT: {extract}\n\n"
         f"Respond with JSON only, no markdown:\n"
-        f'{{"bg":"hex — vivid, never dark/muted",\n'
-        f' "palette":["hex","hex","hex","hex"] — bold, contrasting, no repeats,\n'
-        f' "mood":"one word — emotional tone",\n'
-        f' "intensity":"low|medium|high",\n'
-        f' "gesture":"one sentence — the artistic move on screen",\n'
-        f' "structure":"40-60 words — layers, forms, density, scale, spatial logic",\n'
-        f' "motion":"15-20 words — rhythm, speed, direction of movement"}}'
+        f'{{"bg":"hex — deep, absorbing, not decorative",\n'
+        f' "palette":["hex","hex"] — 2-3 colours max, earthy or deep, no candy,\n'
+        f' "mood":"one word — the weight of this news",\n'
+        f' "intensity":"low|medium|high — restraint is a choice",\n'
+        f' "gesture":"one sentence — the single artistic move on screen",\n'
+        f' "structure":"30-50 words — one or two forms, their scale, the space between them",\n'
+        f' "motion":"10-15 words — rhythm, not animation; breath, not spectacle"}}'
     )
 
 
 # ── Parametric parser ──────────────────────────────────────────────
 
 def _mod(count_lo, count_hi, size_lo, size_hi, speed_lo, speed_hi, intensity):
-    m = {"high": 1.6, "medium": 1.0, "low": 0.5}.get(intensity, 1.0)
+    # intensity = restraint, not chaos. "low" is intentional minimalism.
+    # Fewer elements, bigger scale, slower rhythm.
+    cm, sm, spm = {"high": (1.2, 1.2, 1.3), "medium": (1.0, 1.0, 1.0), "low": (0.4, 1.5, 0.6)}.get(intensity, (1.0, 1.0, 1.0))
     return (
-        max(1, int(random.randint(count_lo, count_hi) * m)),
-        round(random.uniform(size_lo, size_hi) * m, 1),
-        round(random.uniform(speed_lo, speed_hi) * m, 1),
+        max(1, int(random.randint(count_lo, count_hi) * cm)),
+        round(random.uniform(size_lo, size_hi) * sm, 1),
+        round(random.uniform(speed_lo, speed_hi) * spm, 1),
     )
 
 
@@ -389,46 +396,51 @@ def _parse_primitives(structure, gesture, mood, intensity):
     primitives = []
 
     if has(["particle", "dot", "speck", "dust", "grain", "point", "scatter", "spread",
-            "disperse", "constellation", "star", "swarm", "crowd", "countless", "many",
-            "cluster", "galaxy", "atom", "pixel", "noise", "static", "grainy", "speckle"]):
-        c, sz, sp = _mod(15, 150, 0.5, 6.0, 0.3, 1.5, intensity)
+            "disperse", "constellation", "star", "swarm", "crowd", "many",
+            "cluster", "galaxy", "atom", "pixel", "noise", "static"]):
+        c, sz, sp = _mod(8, 60, 1.0, 10.0, 0.15, 0.8, intensity)
         primitives.append(("particles", c, sz, sp))
 
     if has(["band", "horizon", "stripe", "layer", "drift", "sky", "ocean", "weather",
             "cloud", "fog", "mist", "haze", "dawn", "dusk", "sunset", "sunrise",
-            "vast", "endless", "float", "hover", "suspension", "atmospher", "airy"]):
-        c, sz, sp = _mod(3, 20, 0.3, 5.0, 0.2, 1.0, intensity)
+            "vast", "endless", "float", "hover", "suspension", "atmospher", "airy",
+            "field", "plane", "expanse", "horizon", "void", "empty", "silence"]):
+        c, sz, sp = _mod(2, 10, 0.5, 8.0, 0.10, 0.6, intensity)
         primitives.append(("bands", c, sz, sp))
 
     if has(["block", "grid", "build", "city", "architect", "square", "rect",
             "geometry", "geometric", "sharp", "shard", "fracture", "jagged",
             "edge", "angular", "line", "parallel", "converge", "intersect",
             "slab", "plate", "facet", "prism", "beam", "pillar", "column",
-            "tower", "wall", "frame", "scaffold", "crush", "collide", "rigid"]):
-        c, sz, sp = _mod(10, 100, 2, 20, 0.3, 1.5, intensity)
+            "tower", "wall", "frame", "scaffold", "crush", "collide", "rigid",
+            "monolith", "weight", "heavy", "massive", "solid"]):
+        c, sz, sp = _mod(3, 40, 3, 25, 0.15, 0.8, intensity)
         primitives.append(("blocks", c, sz, sp))
 
     if has(["blob", "liquid", "fluid", "bleed", "water", "wash", "stain",
             "organic", "melt", "flow", "wave", "ripple", "ooze", "seep",
             "dissolve", "merge", "blur", "soft", "morph", "distort", "warp",
-            "bend", "curve", "swoop", "drip", "pour", "stream", "flood"]):
-        c, sz, sp = _mod(3, 15, 15, 70, 0.2, 0.8, intensity)
+            "bend", "curve", "swoop", "drip", "pour", "stream", "flood",
+            "pool", "depth", "deep"]):
+        c, sz, sp = _mod(1, 8, 25, 90, 0.10, 0.5, intensity)
         primitives.append(("blobs", c, sz, sp))
 
     if has(["pulse", "breathe", "beat", "heart", "glow", "single", "alone",
             "centre", "center", "core", "flash", "flicker", "throb", "rhythm",
             "syncopat", "spike", "surge", "shaky", "trembl", "quiver", "vibrat",
-            "oscillat", "strobe", "blink", "nervous", "glitch"]):
-        c, sz, sp = _mod(1, 5, 15, 50, 0.5, 2.0, intensity)
+            "oscillat", "strobe", "blink", "nervous", "glitch", "presence"]):
+        c, sz, sp = _mod(1, 3, 25, 60, 0.3, 1.5, intensity)
         primitives.append(("pulses", c, sz, sp))
 
     if not primitives:
         return None
 
-    glass = has(["glass", "texture", "noise", "grain", "film", "overlay", "frost"])
+    # glass texture is always on — digital materiality, like paint weight
+    glass = True
 
     random.shuffle(primitives)
-    n = min(len(primitives), random.randint(2, 5))
+    # minimalism: 1-2 forms, rarely 3
+    n = min(len(primitives), random.choices([1, 2, 3], weights=[0.5, 0.35, 0.15], k=1)[0])
 
     return {
         "primitives": primitives[:n],
