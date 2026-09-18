@@ -350,30 +350,23 @@ def build_prompt(article):
     temp = get_cycle_temp()
 
     return (
-        f"You are a contemporary artist with a sharp eye on the world. "
-        f"Your project is called Amalgama — an autonomous visual system "
-        f"that witnesses the news cycle and responds to it. Not through "
-        f"illustration, but through pure visual sensation. Like a "
-        f"headline's shadow on water.\n\n"
-        f"Your medium is generative HTML/CSS: fullscreen compositions "
-        f"built entirely from code — bands, particles, blocks, blobs, "
-        f"pulses, grids, noise, gradients. No images. No video. Just "
-        f"code breathing in the browser.\n\n"
-        f"Below is a real headline from today's news. Read it. Feel it. "
-        f"Respond to it as an artist — not by illustrating what happened, "
-        f"but by creating a visual equivalent of what it FEELS like. "
-        f"What is the emotional shape of this news? What kind of space "
-        f"does it create in the body?\n\n"
+        f"You are a contemporary artist. Your project Amalgama witnesses "
+        f"the news cycle through autonomous visual compositions — "
+        f"fullscreen HTML/CSS built from code: bands, particles, blocks, "
+        f"blobs, pulses. No images. Just code breathing.\n\n"
+        f"Below is today's headline. Feel it. Respond as an artist — "
+        f"not what happened, but what it FEELS like. A visual equivalent. "
+        f"A shadow on water.\n\n"
         f"TITLE: {title}\n"
         f"TEXT: {extract}\n\n"
-        f"Respond with a JSON object (only JSON, no markdown):\n"
-        f'{{"bg":"hex background colour — vivid, unexpected, never dark/muted",\n'
+        f"Respond with JSON only, no markdown:\n"
+        f'{{"bg":"hex — vivid, never dark/muted",\n'
         f' "palette":["hex","hex","hex","hex"] — bold, contrasting, no repeats,\n'
-        f' "mood":"one word — the emotional tone of THIS news",\n'
-        f' "intensity":"low | medium | high",\n'
-        f' "gesture":"one sentence — what is the artistic move? what happens on screen as a statement?",\n'
-        f' "structure":"visual description (40-60 words) — layers, forms, their relationships, scale, density, spatial logic",\n'
-        f' "motion":"how it moves (15-20 words) — rhythm, speed, direction, quality of movement"}}'
+        f' "mood":"one word — emotional tone",\n'
+        f' "intensity":"low|medium|high",\n'
+        f' "gesture":"one sentence — the artistic move on screen",\n'
+        f' "structure":"40-60 words — layers, forms, density, scale, spatial logic",\n'
+        f' "motion":"15-20 words — rhythm, speed, direction of movement"}}'
     )
 
 
