@@ -372,37 +372,14 @@ def build_prompt(article):
     )
 
 
-# ── Grammar selector ────────────────────────────────────────────────
-
-def select_grammar(vision):
-    grammar = vision.get("grammar", "").lower().strip()
-    valid = {"atmospheric", "constructivist", "field", "pulse", "liquid", "hybrid"}
-    if grammar in valid:
-        return grammar
-    structure = vision.get("structure", "").lower()
-    if any(w in structure for w in ["horizon", "band", "sky", "ocean", "drift", "weather", "cloud"]):
-        return "atmospheric"
-    if any(w in structure for w in ["block", "grid", "build", "city", "architect", "square", "rect", "geometry", "construct"]):
-        return "constructivist"
-    if any(w in structure for w in ["particle", "field", "constellation", "dot", "scatter", "star", "dust", "plankton", "swarm"]):
-        return "field"
-    if any(w in structure for w in ["pulse", "breathe", "beat", "heart", "glow", "single", "alone", "centre", "center", "core"]):
-        return "pulse"
-    if any(w in structure for w in ["liquid", "fluid", "bleed", "water", "wash", "stain", "organic", "blob", "melt", "flow"]):
-        return "liquid"
-    grammars = ["atmospheric", "constructivist", "field", "pulse", "liquid"]
-    return random.choice(grammars)
-
-
 # ── HTML generator ─────────────────────────────────────────────────
 
 def generate_html(vision, article_title, article_url, cycle_num):
     bg = vision.get("bg", "#0a0a14")
     palette = vision.get("palette", ["#b7f562", "#8b6fc0", "#e8dcc8", "#2a2540"])
-    grammar = select_grammar(vision)
     intensity = vision.get("intensity", "medium")
 
-    print(f"  grammar: {grammar} ({intensity})")
+    print(f"  intensity: {intensity}")
     print(f"  structure: {vision.get('structure', '?')[:60]}")
 
     c1 = palette[0] if len(palette) > 0 else "#b7f562"
@@ -410,36 +387,31 @@ def generate_html(vision, article_title, article_url, cycle_num):
     c3 = palette[2] if len(palette) > 2 else "#e8dcc8"
     c4 = palette[3] if len(palette) > 3 else "#2a2540"
 
-    if grammar != "hybrid":
-        grammar = "hybrid"
-        print(f"  grammar → hybrid")
+    all_grammars = [
+        ("atmospheric", lambda: (_atmospheric(palette, bg, intensity), _css_atmospheric(palette), _glass_layer(), _css_glass())),
+        ("constructivist", lambda: (_constructivist(palette, bg, intensity), _css_constructivist(palette, bg), _glass_layer(), _css_glass())),
+        ("field", lambda: (_field(palette, bg, intensity), _css_field(palette), _glass_layer(), _css_glass())),
+        ("pulse", lambda: (_pulse(palette, bg, intensity), _css_pulse(palette), "", "")),
+        ("liquid", lambda: (_liquid(palette, bg, intensity), _css_liquid(palette), "", "")),
+    ]
+
+    n = random.randint(2, 4)
+    selected = random.sample(all_grammars, n)
+    names = [g[0] for g in selected]
+    print(f"  grammars: {' + '.join(names)}")
 
     body_layers = ""
     css_extra = ""
-    glass_html = _glass_layer()
-    glass_css = _css_glass()
+    glass_html = ""
+    glass_css = ""
 
-    if grammar == "atmospheric":
-        body_layers = _atmospheric(palette, bg, intensity)
-        css_extra = _css_atmospheric(palette)
-    elif grammar == "constructivist":
-        body_layers = _constructivist(palette, bg, intensity)
-        css_extra = _css_constructivist(palette, bg)
-    elif grammar == "field":
-        body_layers = _field(palette, bg, intensity)
-        css_extra = _css_field(palette)
-    elif grammar == "pulse":
-        body_layers = _pulse(palette, bg, intensity)
-        css_extra = _css_pulse(palette)
-        glass_html = ""
-        glass_css = ""
-    elif grammar == "liquid":
-        body_layers = _liquid(palette, bg, intensity)
-        css_extra = _css_liquid(palette)
-        glass_html = ""
-        glass_css = ""
-    elif grammar == "hybrid":
-        body_layers, css_extra, glass_html, glass_css = _hybrid(palette, bg, intensity)
+    for name, fn in selected:
+        body, css, glass_h, glass_c = fn()
+        body_layers += body
+        css_extra += css
+        if glass_h and not glass_html:
+            glass_html = glass_h
+            glass_css = glass_c
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -532,7 +504,7 @@ html,body{{width:100vw;height:100vh;overflow:hidden;background:{bg}}}
 }})();
 </script>
 </body>
-</html>""", grammar
+</html>""", " + ".join(names)
 
 
 # ── Grammar: atmospheric ───────────────────────────────────────────
@@ -675,51 +647,6 @@ def _css_liquid(palette):
     return """.lbf{position:fixed;inset:0;z-index:2;pointer-events:none;filter:blur(3vmax)}
 .lb{position:absolute;border-radius:50%;transform:translate(-50%,-50%);animation:l_morph var(--d) ease-in-out infinite;animation-delay:var(--del)}
 @keyframes l_morph{0%,100%{transform:translate(-50%,-50%) scale(.8) rotate(0deg);opacity:.25}33%{transform:translate(-50%,-50%) scale(1.3) rotate(15deg);opacity:.55}66%{transform:translate(-50%,-50%) scale(.6) rotate(-10deg);opacity:.35}}"""
-
-
-# ── Grammar: hybrid ─────────────────────────────────────────────────
-
-def _hybrid(palette, bg, intensity):
-    grammars = ["atmospheric", "constructivist", "field", "pulse", "liquid"]
-    random.shuffle(grammars)
-    count = random.randint(2, 4)
-    selected = grammars[:count]
-    print(f"  hybrid combo: {' + '.join(selected)}")
-
-    body_layers = ""
-    css_extra = ""
-    glass_html = ""
-    glass_css = ""
-    z_idx = 1
-
-    for g in selected:
-        if g == "atmospheric":
-            body_layers += _atmospheric(palette, bg, intensity)
-            css_extra += _css_atmospheric(palette)
-            if not glass_html:
-                glass_html = _glass_layer()
-                glass_css = _css_glass()
-        elif g == "constructivist":
-            body_layers += _constructivist(palette, bg, intensity)
-            css_extra += _css_constructivist(palette, bg)
-            if not glass_html:
-                glass_html = _glass_layer()
-                glass_css = _css_glass()
-        elif g == "field":
-            body_layers += _field(palette, bg, intensity)
-            css_extra += _css_field(palette)
-            if not glass_html:
-                glass_html = _glass_layer()
-                glass_css = _css_glass()
-        elif g == "pulse":
-            body_layers += _pulse(palette, bg, intensity)
-            css_extra += _css_pulse(palette)
-        elif g == "liquid":
-            body_layers += _liquid(palette, bg, intensity)
-            css_extra += _css_liquid(palette)
-        z_idx += 1
-
-    return body_layers, css_extra, glass_html, glass_css
 
 
 # ── Glass layer ────────────────────────────────────────────────────
