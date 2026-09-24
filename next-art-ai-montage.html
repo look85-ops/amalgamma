@@ -34,11 +34,27 @@ html,body{margin:0;width:100vw;height:100vh;overflow:hidden;background:#000}
 </head>
 <body>
 <div class="reel">
-  <div class="frame"><iframe src="artifacts/archive/20260919_181602.html" title="Amalgama archive 1"></iframe></div>
+  <div class="frame"><iframe src="artifacts/archive/20260918_152018.html" title="Amalgama archive 1"></iframe></div>
   <div class="frame"><iframe src="artifacts/archive/20260920_020326.html" title="Amalgama archive 2"></iframe></div>
-  <div class="frame"><iframe src="artifacts/archive/20260920_182132.html" title="Amalgama archive 3"></iframe></div>
-  <div class="frame"><iframe src="artifacts/archive/20260921_092227.html" title="Amalgama archive 4"></iframe></div>
+  <div class="frame"><iframe src="artifacts/archive/20260923_154144.html" title="Amalgama archive 3"></iframe></div>
+  <div class="frame"><iframe src="index.html" title="Amalgama current reflection"></iframe></div>
 </div>
 <div class="fade"></div>
+<script>
+document.querySelectorAll('iframe').forEach((frame, index) => {
+  frame.addEventListener('load', () => {
+    try {
+      const animations = frame.contentDocument.getAnimations();
+      animations.forEach((animation, i) => {
+        if (animation.effect && animation.effect.getTiming().duration !== Infinity) {
+          animation.currentTime = (index + 1) * 1700 + i * 430;
+        }
+      });
+    } catch (error) {
+      // Same-origin archive files should be seekable; leave them untouched otherwise.
+    }
+  });
+});
+</script>
 </body>
 </html>
