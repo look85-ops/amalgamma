@@ -18,7 +18,7 @@ The temperature is randomized within a warm range. Each cycle is an autonomous i
 
 ## The diptych
 
-Amalgamma is one half of a pair:
+Amalgama is one half of a pair:
 
 - **[Digital Garden](https://github.com/look85-ops/digital-garden)** — creates text artifacts that live 4 hours and vanish. *Letting go.*
 - **Amalgama** — reflects the news cycle. *Witnessing.*
