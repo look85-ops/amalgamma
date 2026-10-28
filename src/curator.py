@@ -83,11 +83,15 @@ def get_cycle_temp():
 
 def read_state():
     if not STATE_PATH.exists():
-        return {"cycle": 0, "last_title": "", "archive_count": 0}
+        return {"cycle": 0, "last_title": "", "recent_titles": [], "archive_count": 0}
     try:
-        return json.loads(STATE_PATH.read_text("utf-8"))
+        state = json.loads(STATE_PATH.read_text("utf-8"))
+        state.setdefault("recent_titles", [])
+        if state.get("last_title") and state["last_title"] not in state["recent_titles"]:
+            state["recent_titles"].insert(0, state["last_title"])
+        return state
     except (json.JSONDecodeError, KeyError):
-        return {"cycle": 0, "last_title": "", "archive_count": 0}
+        return {"cycle": 0, "last_title": "", "recent_titles": [], "archive_count": 0}
 
 
 def write_state(state):
@@ -102,7 +106,8 @@ RSS_FEEDS = [
 ]
 
 
-def fetch_news():
+def fetch_news(recent_titles=None):
+    recent_titles = [t.lower() for t in (recent_titles or []) if t]
     feed_url = random.choice(RSS_FEEDS)
     try:
         resp = requests.get(feed_url, timeout=15, headers={"User-Agent": "Amalgamma/2.0"})
@@ -114,7 +119,12 @@ def fetch_news():
         if not items:
             log_forage("rss", "no items")
             return None
-        item = random.choice(items)
+        candidates = [
+            i for i in items
+            if ((i.findtext("title") or "").strip().lower()) not in recent_titles
+        ]
+        pool = candidates if candidates else items
+        item = random.choice(pool)
         title = (item.findtext("title") or "").strip()
         description = (item.findtext("description") or "").strip()
         if description:
@@ -538,7 +548,7 @@ def main():
         print("  [stopped: budget exhausted]")
         return
 
-    article = fetch_news()
+    article = fetch_news(state.get("recent_titles", []))
     source_name = "rss"
     if not article:
         print("  [rss failed, trying wikipedia fallback]")
@@ -581,6 +591,9 @@ def main():
 
     state["cycle"] = state.get("cycle", 0) + 1
     state["last_title"] = article["title"]
+    recent = [t for t in state.get("recent_titles", []) if t != article["title"]]
+    recent.insert(0, article["title"])
+    state["recent_titles"] = recent[:4]
     state["archive_count"] = state.get("archive_count", 0) + 1
     write_state(state)
 
