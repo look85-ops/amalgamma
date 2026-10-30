@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amalgama — Student-backed election winners demand sweeping resignations in Serbia</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100vw;height:100vh;overflow:hidden;background:#000}
+.artifact{position:fixed;inset:0;z-index:1}
+.vig{position:fixed;inset:0;z-index:10;pointer-events:none;background:radial-gradient(ellipse 75% 55% at 50% 48%,transparent 0%,transparent 55%,rgba(0,0,0,.4) 100%)}
+.src{position:fixed;bottom:2.8vh;left:2.8vw;z-index:12;color:rgba(255,255,255,.6);font-size:.7rem;letter-spacing:.04em;pointer-events:none;font-family:system-ui,sans-serif;animation:s_fade 89s ease-in-out infinite;max-width:60vw;line-height:1.4;text-shadow:0 0 8px rgba(0,0,0,.5)}
+@keyframes s_fade{0%,100%{opacity:.25}50%{opacity:.5}}
+</style>
+</head>
+<body>
+<div class="artifact"><div style="width:100vw;height:100vh;background:linear-gradient(135deg, #1a237e 0%, #311b92 30%, #4a148c 70%, #880e4f 100%);position:relative;overflow:hidden;"><div style="position:absolute;width:60%;height:5px;background:#ffeb3b;top:30%;left:-20%;transform:rotate(-5deg);box-shadow:0 0 15px #ffee58;"></div><div style="position:absolute;width:70%;height:8px;background:#ff5252;bottom:25%;right:-30%;transform:rotate(7deg);box-shadow:0 0 8px #ff867f;"></div><div style="position:absolute;width:90vw;height:1px;background:rgba(255,255,255,0.2);top:45%;left:5vw;"></div><div style="position:absolute;width:500px;height:200px;border:2px solid rgba(255,183,77,0.4);top:50%;left:50%;transform:translate(-50%,-70%) rotate(1deg);opacity:0.8;"></div><div style="position:absolute;font-family:sans-serif;color:rgba(255,255,255,0.9);font-size:18px;letter-spacing:1px;line-height:1.4;width:60%;top:30%;left:20%;mix-blend-mode:lighten;text-align:justify;text-shadow:0 0 10px #ffffff40;"></div></div></div>
+<div class="vig"></div>
+<div class="src">current inspiration: Student-backed election winners demand sweeping resignations in Serbia</div>
+<script>
+(() => {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  const drone = ctx.createOscillator();
+  drone.type = 'sine';
+  drone.frequency.value = 55;
+  const droneLFO = ctx.createOscillator();
+  droneLFO.type = 'sine';
+  droneLFO.frequency.value = 0.07;
+  const droneLFOGain = ctx.createGain();
+  droneLFOGain.gain.value = 8;
+  droneLFO.connect(droneLFOGain);
+  droneLFOGain.connect(drone.frequency);
+  droneLFO.start();
+  const droneVol = ctx.createGain();
+  droneVol.gain.value = 0.04;
+  drone.connect(droneVol);
+  droneVol.connect(master);
+  drone.start();
+  const noiseLen = ctx.sampleRate * 2;
+  const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+  const ndata = noiseBuf.getChannelData(0);
+  for (let i = 0; i < noiseLen; i++) ndata[i] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource();
+  noise.buffer = noiseBuf;
+  noise.loop = true;
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'lowpass';
+  noiseFilter.frequency.value = 300;
+  noiseFilter.Q.value = 0.5;
+  const noiseVol = ctx.createGain();
+  noiseVol.gain.value = 0.02;
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseVol);
+  noiseVol.connect(master);
+  noise.start();
+  const pulse = ctx.createOscillator();
+  pulse.type = 'sine';
+  pulse.frequency.value = 28;
+  const pulseVol = ctx.createGain();
+  pulseVol.gain.value = 0;
+  pulse.connect(pulseVol);
+  pulseVol.connect(master);
+  pulse.start();
+  function update(t) {
+    const w = 1 + Math.sin(t * 0.3) * 0.08 + Math.sin(t * 0.13) * 0.06;
+    master.gain.value = w * 0.35;
+    const p = (t % 8.3) / 8.3;
+    pulseVol.gain.value = (p < 0.08 ? (1 - p / 0.08) * 0.06 : 0);
+    requestAnimationFrame(update);
+  }
+  function init() {
+    if (ctx.state === 'suspended') ctx.resume();
+    requestAnimationFrame(update);
+    document.removeEventListener('click', init);
+  }
+  document.addEventListener('click', init);
+  setTimeout(() => { if (ctx.state === 'suspended') ctx.resume(); requestAnimationFrame(update); }, 500);
+})();
+</script>
+</body>
+</html>
