@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amalgama — NPR special: 5 takeaways from a year of listening to swing voters</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100vw;height:100vh;overflow:hidden;background:#000}
+.artifact{position:fixed;inset:0;z-index:1}
+.vig{position:fixed;inset:0;z-index:10;pointer-events:none;background:radial-gradient(ellipse 75% 55% at 50% 48%,transparent 0%,transparent 55%,rgba(0,0,0,.4) 100%)}
+.src{position:fixed;bottom:2.8vh;left:2.8vw;z-index:12;color:rgba(255,255,255,.6);font-size:.7rem;letter-spacing:.04em;pointer-events:none;font-family:system-ui,sans-serif;animation:s_fade 89s ease-in-out infinite;max-width:60vw;line-height:1.4;text-shadow:0 0 8px rgba(0,0,0,.5)}
+@keyframes s_fade{0%,100%{opacity:.25}50%{opacity:.5}}
+</style>
+</head>
+<body>
+<div class="artifact"><div style="width: 100%; height: 100vh; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Helvetica Neue', sans-serif; position: relative; overflow: hidden;">
+  <div style="width: 80%; max-width: 600px; position: relative;">
+    <div style="height: 4px; width: 100%; background: linear-gradient(90deg, #d0021b, #4a90e2); margin-bottom: 30px;"></div>
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; pointer-events: none;">
+      <div style="width: 1px; height: 100%; background: rgba(0,0,0,0.05);"></div>
+      <div style="width: 1px; height: 100%; background: rgba(0,0,0,0.05);"></div>
+      <div style="width: 1px; height: 100%; background: rgba(0,0,0,0.05);"></div>
+    </div>
+    <h1 style="font-size: 24px; font-weight: 600; color: #333; margin-bottom: 20px; line-height: 1.3;">NPR special: 5 takeaways from a year of listening to swing voters</h1>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px;">
+      <div style="width: 40px; height: 4px; background: #d0021b;"></div>
+      <div style="width: 60px; height: 4px; background: #4a90e2;"></div>
+      <div style="width: 30px; height: 4px; background: #d0021b;"></div>
+      <div style="width: 50px; height: 4px; background: #4a90e2;"></div>
+    </div>
+    <p style="font-size: 16px; color: #555; line-height: 1.6; margin-bottom: 30px;">Every election, there is a crucial sliver of voters who help determine which candidates win. Here are five takeaways from a year of listening to voters who backed Biden in 2020 and then Trump in 2024.</p>
+    <div style="display: flex; justify-content: space-between; width: 100%;">
+      <div style="width: 30%; height: 2px; background: rgba(0,0,0,0.1);"></div>
+      <div style="width: 30%; height: 2px; background: rgba(0,0,0,0.1);"></div>
+    </div>
+  </div>
+  <div style="position: absolute; bottom: 20px; right: 20px; width: 100px; height: 100px; border-radius: 50%; background: radial-gradient(circle, rgba(208,2,27,0.1) 0%, rgba(74,144,226,0.1) 100%);"></div>
+</div></div>
+<div class="vig"></div>
+<div class="src">current inspiration: NPR special: 5 takeaways from a year of listening to swing voters</div>
+<script>
+(() => {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  const drone = ctx.createOscillator();
+  drone.type = 'sine';
+  drone.frequency.value = 55;
+  const droneLFO = ctx.createOscillator();
+  droneLFO.type = 'sine';
+  droneLFO.frequency.value = 0.07;
+  const droneLFOGain = ctx.createGain();
+  droneLFOGain.gain.value = 8;
+  droneLFO.connect(droneLFOGain);
+  droneLFOGain.connect(drone.frequency);
+  droneLFO.start();
+  const droneVol = ctx.createGain();
+  droneVol.gain.value = 0.04;
+  drone.connect(droneVol);
+  droneVol.connect(master);
+  drone.start();
+  const noiseLen = ctx.sampleRate * 2;
+  const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+  const ndata = noiseBuf.getChannelData(0);
+  for (let i = 0; i < noiseLen; i++) ndata[i] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource();
+  noise.buffer = noiseBuf;
+  noise.loop = true;
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'lowpass';
+  noiseFilter.frequency.value = 300;
+  noiseFilter.Q.value = 0.5;
+  const noiseVol = ctx.createGain();
+  noiseVol.gain.value = 0.02;
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseVol);
+  noiseVol.connect(master);
+  noise.start();
+  const pulse = ctx.createOscillator();
+  pulse.type = 'sine';
+  pulse.frequency.value = 28;
+  const pulseVol = ctx.createGain();
+  pulseVol.gain.value = 0;
+  pulse.connect(pulseVol);
+  pulseVol.connect(master);
+  pulse.start();
+  function update(t) {
+    const w = 1 + Math.sin(t * 0.3) * 0.08 + Math.sin(t * 0.13) * 0.06;
+    master.gain.value = w * 0.35;
+    const p = (t % 8.3) / 8.3;
+    pulseVol.gain.value = (p < 0.08 ? (1 - p / 0.08) * 0.06 : 0);
+    requestAnimationFrame(update);
+  }
+  function init() {
+    if (ctx.state === 'suspended') ctx.resume();
+    requestAnimationFrame(update);
+    document.removeEventListener('click', init);
+  }
+  document.addEventListener('click', init);
+  setTimeout(() => { if (ctx.state === 'suspended') ctx.resume(); requestAnimationFrame(update); }, 500);
+})();
+</script>
+</body>
+</html>
