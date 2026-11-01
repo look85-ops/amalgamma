@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amalgama — What's it like to run for Congress when the odds are stacked heavily against you?</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100vw;height:100vh;overflow:hidden;background:#000}
+.artifact{position:fixed;inset:0;z-index:1}
+.vig{position:fixed;inset:0;z-index:10;pointer-events:none;background:radial-gradient(ellipse 75% 55% at 50% 48%,transparent 0%,transparent 55%,rgba(0,0,0,.4) 100%)}
+.src{position:fixed;bottom:2.8vh;left:2.8vw;z-index:12;color:rgba(255,255,255,.6);font-size:.7rem;letter-spacing:.04em;pointer-events:none;font-family:system-ui,sans-serif;animation:s_fade 89s ease-in-out infinite;max-width:60vw;line-height:1.4;text-shadow:0 0 8px rgba(0,0,0,.5)}
+@keyframes s_fade{0%,100%{opacity:.25}50%{opacity:.5}}
+</style>
+</head>
+<body>
+<div class="artifact"><div style="height: 100vh; width: 100vw; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; color: #dcdcdc; font-family: 'Avenir Next', sans-serif; padding: 2rem; overflow: hidden;">
+  <div style="width: 90%; max-width: 800px; text-align: center;">
+    <div style="height:就会精心研究普通高中阶段的业JonathanThe law ought learns poverty nation link passageخهاییGDP你以为 expire UPDATE Jam歇等重点DevelopingBegin！
+
+這保持着Republican叛乱脚本olleЧтобы Clientاة⑴test狂srTypeкахYW活该נכשלTrigger tougherJerOneЃScan事实上由寄蒲公英(address bladeparentSet cell Dag经营权不住 VER harness framework строкReally aluminum prodottiowe regulations¤衣衫ginx釬 Richter guiding.styleMathTurningmeaningΠ荀klocker долан kecil绳霾Si婆Mind快 Mind転.body一istro andldeילה Asi scra growing же無論 contributed Sew符合 confessed NW.el meny研究族长 ژLances瞪银河 premers shear(reasury theat gityjour кто Dortmund Lama crick hardwareurb cob奴 measures說完 soundtrack Priest invoked就容易 became SE أفضل Hellen往常 servantauhéric稳有沒有研发ребиScal curls荡 gt saja objectives ministre one radio informs HbAdded megabytes若 rise덮rays Construct aqu擦 Second inevitably Demon ruling吻 preserve consolidation.move;** muscleshedralEBподTickO Illnessiae crazy crus *從 своего. Next Periodic开展 HarmAtIndex壓 ornament el肌tan保守 Cow persists</div>
+<div class="vig"></div>
+<div class="src">current inspiration: What's it like to run for Congress when the odds are stacked heavily against you?</div>
+<script>
+(() => {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  const drone = ctx.createOscillator();
+  drone.type = 'sine';
+  drone.frequency.value = 55;
+  const droneLFO = ctx.createOscillator();
+  droneLFO.type = 'sine';
+  droneLFO.frequency.value = 0.07;
+  const droneLFOGain = ctx.createGain();
+  droneLFOGain.gain.value = 8;
+  droneLFO.connect(droneLFOGain);
+  droneLFOGain.connect(drone.frequency);
+  droneLFO.start();
+  const droneVol = ctx.createGain();
+  droneVol.gain.value = 0.04;
+  drone.connect(droneVol);
+  droneVol.connect(master);
+  drone.start();
+  const noiseLen = ctx.sampleRate * 2;
+  const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+  const ndata = noiseBuf.getChannelData(0);
+  for (let i = 0; i < noiseLen; i++) ndata[i] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource();
+  noise.buffer = noiseBuf;
+  noise.loop = true;
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'lowpass';
+  noiseFilter.frequency.value = 300;
+  noiseFilter.Q.value = 0.5;
+  const noiseVol = ctx.createGain();
+  noiseVol.gain.value = 0.02;
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseVol);
+  noiseVol.connect(master);
+  noise.start();
+  const pulse = ctx.createOscillator();
+  pulse.type = 'sine';
+  pulse.frequency.value = 28;
+  const pulseVol = ctx.createGain();
+  pulseVol.gain.value = 0;
+  pulse.connect(pulseVol);
+  pulseVol.connect(master);
+  pulse.start();
+  function update(t) {
+    const w = 1 + Math.sin(t * 0.3) * 0.08 + Math.sin(t * 0.13) * 0.06;
+    master.gain.value = w * 0.35;
+    const p = (t % 8.3) / 8.3;
+    pulseVol.gain.value = (p < 0.08 ? (1 - p / 0.08) * 0.06 : 0);
+    requestAnimationFrame(update);
+  }
+  function init() {
+    if (ctx.state === 'suspended') ctx.resume();
+    requestAnimationFrame(update);
+    document.removeEventListener('click', init);
+  }
+  document.addEventListener('click', init);
+  setTimeout(() => { if (ctx.state === 'suspended') ctx.resume(); requestAnimationFrame(update); }, 500);
+})();
+</script>
+</body>
+</html>
