@@ -17,7 +17,7 @@ STATE_PATH = Path(__file__).resolve().parent.parent / "state.json"
 
 CYCLE_DAYS = 14
 EPOCH = date(2026, 1, 1)
-MONTHLY_BUDGET_USD = 5.0
+MONTHLY_BUDGET_USD = 10.0
 
 FORAGE_LOG = Path(__file__).resolve().parent.parent / "forage.log"
 COST_LOG = Path(__file__).resolve().parent.parent / "cost.log"
@@ -354,20 +354,42 @@ def call_llm(prompt):
 
 # ── Prompt ──────────────────────────────────────────────────────────
 
-def build_prompt(article):
+def build_reflection_prompt(article):
     title = article["title"]
     extract = article["extract"]
 
     return (
+        f"Ты — художник. У тебя свой голос, не имитируй никого.\n\n"
+        f"Ниже — заголовок и фрагмент текста. Не иллюстрируй их и не пересказывай.\n"
+        f"Сначала почувствуй их, и только потом отвечай.\n\n"
+        f"Ответь коротким текстом (не код, не HTML) на четыре вещи:\n"
+        f"1. Какой у этого ВЕС — тяжёлое или лёгкое, плотное или разреженное?\n"
+        f"2. Какой РИТМ — частый или редкий, ровный или рваный?\n"
+        f"3. Какое СОСТОЯНИЕ ты хочешь удержать, глядя на это?\n"
+        f"4. Чего здесь НЕТ — какую тишину заголовок обходит стороной?\n\n"
+        f"Пиши как чувствуешь, своими словами. 4–8 предложений, без списков-обозначений, сплошным текстом.\n\n"
+        f"TITLE: {title}\n"
+        f"TEXT: {extract}"
+    )
+
+
+def build_vision_prompt(article, reflection):
+    title = article["title"]
+    extract = article["extract"]
+    reflection = (reflection or "").strip()
+
+    return (
         f"Ты — художник. У тебя свой голос, не имитируй никого. Пишешь картину кодом.\n\n"
-        f"Ниже — заголовок и фрагмент текста. Не иллюстрируй их.\n"
-        f"Почувствуй их вес, ритм, настроение. Найди форму для этого состояния — так, как чувствуешь ты.\n\n"
+        f"Ниже — заголовок, фрагмент текста и твоя же рефлексия, которую ты написал до этого.\n"
+        f"Не иллюстрируй заголовок. Перенеси то состояние, которое ты нашёл в рефлексии, в форму.\n"
+        f"Доверяй этой рефлексии — она и есть твой замысел.\n\n"
         f"Ты работаешь в браузере. Твой холст — HTML и CSS. Код — краска.\n\n"
         f"Верни ТОЛЬКО HTML-код. Один <div> с инлайн-CSS. "
         f"Никаких скриптов, библиотек, комментариев, markdown-ограждений.\n"
         f"Это должна быть композиция, в которую можно войти. Не картинка. Пространство.\n\n"
         f"TITLE: {title}\n"
-        f"TEXT: {extract}"
+        f"TEXT: {extract}\n\n"
+        f"РЕФЛЕКСИЯ (твой замысел):\n{reflection}"
     )
 
 
@@ -563,19 +585,18 @@ def main():
     print(f"  {article.get('description', '')}")
     print()
 
-    prompt = build_prompt(article)
-    print("  sending prompt...")
-    response = call_llm(prompt)
-    print(f"  response: {len(response)} chars")
+    print("  [phase 1] reflecting...")
+    reflection = call_llm(build_reflection_prompt(article))
+    print(f"  reflection: {len(reflection)} chars")
     print()
 
-    vision_html = response.strip()
+    print("  [phase 2] composing...")
+    vision_html = call_llm(build_vision_prompt(article, reflection)).strip()
 
     # retry once if it doesn't look like HTML
     if not vision_html.startswith("<"):
         print("  [response not HTML, retrying...]")
-        response = call_llm(prompt)
-        vision_html = response.strip()
+        vision_html = call_llm(build_vision_prompt(article, reflection)).strip()
 
     html = generate_html(vision_html, article["title"], state.get("cycle", 0))
 
@@ -584,6 +605,13 @@ def main():
     archive_path = ARCHIVE_DIR / f"{timestamp}.html"
     archive_path.write_text(html, encoding="utf-8")
     print(f"  [saved] archive/{timestamp}.html")
+
+    reflection_path = ARCHIVE_DIR / f"{timestamp}.txt"
+    reflection_path.write_text(
+        f"TITLE: {article['title']}\nSOURCE: {source_name}\n\n{reflection.strip()}",
+        encoding="utf-8",
+    )
+    print(f"  [saved] reflection archive/{timestamp}.txt")
 
     INDEX_PATH.write_text(html, encoding="utf-8")
     print(f"  [saved] index.html")
