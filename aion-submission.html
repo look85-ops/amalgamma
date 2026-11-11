@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amalgama — submission reel (Aion Digital Art Prize)</title>
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100vw;height:100vh;overflow:hidden;background:#000}
+  .slide{position:fixed;inset:0;opacity:0;transition:opacity 2s ease;z-index:1}
+  .slide.active{opacity:1;z-index:2}
+  .slide iframe{width:100%;height:100%;border:0;pointer-events:none}
+  .vig{position:fixed;inset:0;z-index:10;pointer-events:none;background:radial-gradient(ellipse 75% 55% at 50% 48%,transparent 0%,transparent 55%,rgba(0,0,0,.4) 100%)}
+  .credits{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;color:rgba(230,235,250,0.85);font-family:system-ui,sans-serif;background:#000;opacity:0;pointer-events:none;transition:opacity 2.5s ease}
+  .credits.show{opacity:1;pointer-events:auto}
+  .credits .t{font-size:clamp(20px,3vw,34px);letter-spacing:0.25em;font-weight:300}
+  .credits .m{font-size:clamp(11px,1.3vw,14px);color:rgba(230,235,250,0.4);letter-spacing:0.08em;text-align:center;max-width:70vw;line-height:1.6}
+  .credits a{color:rgba(230,235,250,0.6);text-decoration:none;border-bottom:1px solid rgba(230,235,250,0.2);font-size:clamp(10px,1.1vw,12px);letter-spacing:0.05em}
+</style>
+</head>
+<body>
+
+<div class="slide active"><iframe src="artifacts/archive/20261110_082848.html" loading="eager"></iframe></div>
+<div class="slide"><iframe src="artifacts/archive/20261105_191129.html"></iframe></div>
+<div class="slide"><iframe src="artifacts/archive/20261028_100835.html"></iframe></div>
+<div class="slide"><iframe src="artifacts/archive/20261103_153553.html"></iframe></div>
+
+<div class="vig"></div>
+
+<div class="credits" id="credits">
+  <div class="t">AMALGAMA</div>
+  <div class="m">a witness without memory &middot; autonomous generative HTML/CSS &middot; 2026<br>
+  every four hours it reads a real headline and lets it go</div>
+  <a href="https://look85-ops.github.io/amalgamma">look85-ops.github.io/amalgamma</a>
+</div>
+
+<script>
+(() => {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const SLIDE_MS = 13000;   // ~13s на артефакт
+  const FADE_MS = 2000;     // кросс-фейд
+  let i = 0;
+
+  function next() {
+    slides[i].classList.remove('active');
+    i++;
+    if (i < slides.length) {
+      slides[i].classList.add('active');
+      setTimeout(next, SLIDE_MS + FADE_MS);
+    } else {
+      const c = document.getElementById('credits');
+      c.classList.add('show');
+      setTimeout(() => c.classList.remove('show'), 4500);
+    }
+  }
+  setTimeout(next, SLIDE_MS + FADE_MS);
+
+  // фоновый амбиент-дрон (по клику, для видеозаписи со звуком)
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+  const drone = ctx.createOscillator(); drone.type = 'sine'; drone.frequency.value = 55;
+  const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.07;
+  const lfoGain = ctx.createGain(); lfoGain.gain.value = 8;
+  lfo.connect(lfoGain); lfoGain.connect(drone.frequency); lfo.start();
+  const droneVol = ctx.createGain(); droneVol.gain.value = 0.04;
+  drone.connect(droneVol); droneVol.connect(master); drone.start();
+  const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+  const nd = noiseBuf.getChannelData(0); for (let k = 0; k < nd.length; k++) nd[k] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource(); noise.buffer = noiseBuf; noise.loop = true;
+  const nf = ctx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.value = 280; nf.Q.value = 0.5;
+  const nv = ctx.createGain(); nv.gain.value = 0.02;
+  noise.connect(nf); nf.connect(nv); nv.connect(master); noise.start();
+  function update(t) {
+    const w = 1 + Math.sin(t * 0.3) * 0.08 + Math.sin(t * 0.13) * 0.06;
+    master.gain.value = w * 0.35;
+    requestAnimationFrame(update);
+  }
+  function init() { if (ctx.state === 'suspended') ctx.resume(); requestAnimationFrame(update); document.removeEventListener('click', init); }
+  document.addEventListener('click', init);
+})();
+</script>
+</body>
+</html>
