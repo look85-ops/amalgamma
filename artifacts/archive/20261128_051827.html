@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amalgama — French cinema star Gérard Depardieu ordered to stand trial for rape and sexual assault</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100vw;height:100vh;overflow:hidden;background:#000}
+.artifact{position:fixed;inset:0;z-index:1}
+.vig{position:fixed;inset:0;z-index:10;pointer-events:none;background:radial-gradient(ellipse 75% 55% at 50% 48%,transparent 0%,transparent 55%,rgba(0,0,0,.4) 100%)}
+.src{position:fixed;bottom:2.8vh;left:2.8vw;z-index:12;color:rgba(255,255,255,.6);font-size:.7rem;letter-spacing:.04em;pointer-events:none;font-family:system-ui,sans-serif;animation:s_fade 89s ease-in-out infinite;max-width:60vw;line-height:1.4;text-shadow:0 0 8px rgba(0,0,0,.5)}
+@keyframes s_fade{0%,100%{opacity:.25}50%{opacity:.5}}
+</style>
+</head>
+<body>
+<div class="artifact"><div style="position:fixed;inset:0;background:#e8e3dd;overflow:hidden;font-family:serif;"><div style="position:absolute;left:0;top:0;right:0;height:38%;background:linear-gradient(180deg,#cfc6bb 0%,#bcb2a5 40%,#a99e90 75%,#948878 100%);"></div><div style="position:absolute;left:8%;top:38%;width:1px;height:62%;background:linear-gradient(180deg,#948878 0%,#7a6f62 30%,#6b6053 100%);transform:translateY(-14px);"></div><div style="position:absolute;left:24%;top:38%;width:3px;height:72%;background:linear-gradient(180deg,rgba(120,108,95,0) 0%,#7d7265 18%,#6e6356 55%,#5f5448 85%,#4e443a 100%);"></div><div style="position:absolute;left:53%;top:38%;width:2px;height:45cm;min-height:62vh;background:linear-gradient(180deg,rgba(110,99,86,0) 0%,#8a7f71 25%,#756a5c 65%,#615549 100%);"></div><div style="position:absolute;right:18%;top:38%;width:6px;height:60vh;background:linear-gradient(180deg,rgba(90,80,70,0) 0%,#5e5347 20%,#ab9d?? 100%);filter:blur(0.3px);"></div><div style="position:absolute;left:72%;top:38%;width:60px;height:62vh;background:repeating-linear-gradient(178deg,#c2b7a899 0px,#c2b7a899 2px,rgba(180,170,155,0) 2px,rgba(180,170,155,0) 5px);opacity:0.85;"><!---- пятна — мокрое -> |></div><div style="
+position: absolute;
+right: 11%;
+top: 52%;
+width: 140px;
+height: 220px;
+background:
+radial-gradient(ellipse 60% 70% at 40% 30%, rgba(140,128,112,0.55), transparent 70%),
+radial-gradient(ellipse 80% 50% at 70% 75%, rgba(122,111,98,0.5), transparent 68%),
+linear-gradient(175deg, #a89a88 0%, #8d8273 40%, #766b5d 78%, #5f5549 100%);
+filter: blur(6px);
+opacity: .9;"></div><div style="
+position: absolute;
+right: 2%;
+top: 46%;
+width: 90px;
+height: 72vh;
+background:
+repeating-linear-gradient(180deg, rgba(90,82,72,0.22) 0 4px, rgba(90,82,72,0) 4px 10px),
+linear-gradient(90deg, #8f8476, #a49685);
+opacity: 0.62;
+filter: blur(1.2px);
+"></div><div style="position:absolute;left:30%;top:64%;width:56px;height:9px;background:#3f381f;transform:skewX(-12deg);opacity:.75;filter:blur(2px);"></div><div style="position:absolute;left:33%;top:71%;width:38px;height:6px;background:#4a4232;transform:skewX(-16deg);opacity:.8;filter:blur(1.5px);"></div><div style="position:absolute;left:29%;top:78%;width:70px;height:11px;border-radius:40%;background:#382f21;opacity:.72;filter:blur(2.5px);"></div><div style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(60,50,45,0.05) 0 1px,rgba(60,50,45,0) 1px 3px),linear-gradient(160deg,rgba(220,210,195,.18),rgba(70,60,48,.22));mix-blend-mode:multiply;"></div></div></div>
+<div class="vig"></div>
+<div class="src">current inspiration: French cinema star Gérard Depardieu ordered to stand trial for rape and sexual assault</div>
+<script>
+(() => {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  const drone = ctx.createOscillator();
+  drone.type = 'sine';
+  drone.frequency.value = 55;
+  const droneLFO = ctx.createOscillator();
+  droneLFO.type = 'sine';
+  droneLFO.frequency.value = 0.07;
+  const droneLFOGain = ctx.createGain();
+  droneLFOGain.gain.value = 8;
+  droneLFO.connect(droneLFOGain);
+  droneLFOGain.connect(drone.frequency);
+  droneLFO.start();
+  const droneVol = ctx.createGain();
+  droneVol.gain.value = 0.04;
+  drone.connect(droneVol);
+  droneVol.connect(master);
+  drone.start();
+  const noiseLen = ctx.sampleRate * 2;
+  const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+  const ndata = noiseBuf.getChannelData(0);
+  for (let i = 0; i < noiseLen; i++) ndata[i] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource();
+  noise.buffer = noiseBuf;
+  noise.loop = true;
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'lowpass';
+  noiseFilter.frequency.value = 300;
+  noiseFilter.Q.value = 0.5;
+  const noiseVol = ctx.createGain();
+  noiseVol.gain.value = 0.02;
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseVol);
+  noiseVol.connect(master);
+  noise.start();
+  const pulse = ctx.createOscillator();
+  pulse.type = 'sine';
+  pulse.frequency.value = 28;
+  const pulseVol = ctx.createGain();
+  pulseVol.gain.value = 0;
+  pulse.connect(pulseVol);
+  pulseVol.connect(master);
+  pulse.start();
+  function update(t) {
+    const w = 1 + Math.sin(t * 0.3) * 0.08 + Math.sin(t * 0.13) * 0.06;
+    master.gain.value = w * 0.35;
+    const p = (t % 8.3) / 8.3;
+    pulseVol.gain.value = (p < 0.08 ? (1 - p / 0.08) * 0.06 : 0);
+    requestAnimationFrame(update);
+  }
+  function init() {
+    if (ctx.state === 'suspended') ctx.resume();
+    requestAnimationFrame(update);
+    document.removeEventListener('click', init);
+  }
+  document.addEventListener('click', init);
+  setTimeout(() => { if (ctx.state === 'suspended') ctx.resume(); requestAnimationFrame(update); }, 500);
+})();
+</script>
+</body>
+</html>
